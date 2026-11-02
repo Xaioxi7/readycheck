@@ -1,0 +1,1699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ReadyCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow phone column, cockpit-amber accent on cool instrument greys. */
+:root{
+  --bg:#eef2f6; --surface:#ffffff; --surface-2:#f6f8fb; --ink:#0f1b2d; --muted:#5a6779; --line:#d9e0e8;
+  --accent:#c98200; --accent-ink:#6e4700; --accent-soft:#fdf1dc;
+  --ok:#1d8656; --ok-soft:#e3f4ea; --warn:#b97300; --warn-soft:#fbefd9; --bad:#bf3b28; --bad-soft:#fbe6e2;
+  --test-bg:#05080e; --test-ink:#ffb52e;
+  --font-sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a111d; --surface:#121b2b; --surface-2:#172235; --ink:#e5ecf4; --muted:#93a1b4; --line:#26344b;
+  --accent:#f0a83a; --accent-ink:#ffd38a; --accent-soft:#2c2414;
+  --ok:#43c08a; --ok-soft:#14291f; --warn:#f0a83a; --warn-soft:#2c2414; --bad:#f06b55; --bad-soft:#331a17;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0a111d; --surface:#121b2b; --surface-2:#172235; --ink:#e5ecf4; --muted:#93a1b4; --line:#26344b;
+  --accent:#f0a83a; --accent-ink:#ffd38a; --accent-soft:#2c2414;
+  --ok:#43c08a; --ok-soft:#14291f; --warn:#f0a83a; --warn-soft:#2c2414; --bad:#f06b55; --bad-soft:#331a17;
+  color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+.app{max-width:460px;margin:0 auto;padding-block:12px 40px}
+header.bar{min-height:46px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:8px 16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.01em}
+.brand-mark{width:28px;height:28px;border-radius:8px;background:var(--ink);display:grid;place-items:center}
+.brand-mark span{width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.bar-actions{display:flex;gap:6px}
+h1{font-size:1.6rem;line-height:1.2;margin:0 0 6px;font-weight:600;text-wrap:balance}
+h2{font-size:1.15rem;margin:0 0 10px;font-weight:600;text-wrap:balance}
+h3{font-size:1rem;margin:0 0 6px;font-weight:600}
+p{margin:0 0 12px}
+.muted{color:var(--muted)}
+.small{font-size:.86rem}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card.flat{background:var(--surface-2)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:500;
+  padding:12px 16px;border-radius:12px;cursor:pointer;text-align:center;min-height:46px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary:hover{opacity:.92}
+.btn.amber{background:var(--accent);border-color:var(--accent);color:#1a1100}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted);padding:8px 10px;min-height:38px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,label.opt:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.icon-btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;
+  padding:7px 10px;font:inherit;font-size:.85rem;cursor:pointer}
+label.field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
+input[type=text],input[type=time],input[type=number]{font:inherit;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);
+  border-radius:10px;padding:10px 12px;min-width:0;width:100%}
+.opts{display:flex;flex-direction:column;gap:8px}
+label.opt{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer}
+label.opt input{margin-top:4px;accent-color:var(--accent)}
+label.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt-num{font-family:var(--font-mono);font-weight:500;min-width:1.2em}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:.88rem;cursor:pointer;background:var(--surface)}
+.chip:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.chip input{accent-color:var(--accent)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:500;padding:3px 10px;border-radius:999px;white-space:nowrap;flex:none}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.neutral{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:.92rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.ring-wrap{display:flex;gap:18px;align-items:center}
+.ring-wrap svg{flex:none}
+.ring-label{font-size:1.25rem;font-weight:600;line-height:1.2}
+.notice{border-radius:12px;padding:12px 14px;font-size:.92rem}
+.notice.warn{background:var(--warn-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent)}
+.notice.info{background:var(--surface-2);border:1px solid var(--line)}
+ul.tips{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px}
+.chart{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.list{display:flex;flex-direction:column}
+.list-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.list-item:last-child{border-bottom:0}
+.video-box{position:relative;border-radius:var(--r);overflow:hidden;background:#000;aspect-ratio:4/3;max-width:100%}
+.video-box video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
+.video-box .overlay{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.face-guide{width:52%;aspect-ratio:3/4;border:2px dashed rgba(255,255,255,.55);border-radius:50%}
+.face-guide.ok{border-color:#43c08a;border-style:solid}
+.status-list{display:flex;flex-direction:column;gap:6px;font-size:.92rem}
+.status-list .s{display:flex;gap:8px;align-items:center}
+/* Test screen: dark instrument display in both themes */
+#scr-test{position:fixed;inset:0;background:var(--test-bg);color:#e8eef6;z-index:20;display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 14px) max(16px,env(safe-area-inset-left,0px));
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.test-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--font-mono);font-size:.8rem;color:#8e9bb0}
+.test-progress{height:4px;background:#1a2333;border-radius:4px;overflow:hidden;margin-top:10px}
+.test-progress i{display:block;height:100%;width:0;background:var(--test-ink)}
+.test-pad{flex:1;display:grid;place-items:center;cursor:pointer;position:relative}
+.counter{font-family:var(--font-mono);font-size:clamp(3.4rem,18vw,6rem);color:var(--test-ink);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.fix{width:12px;height:12px;border-radius:50%;background:#3a475d}
+.feedback{text-align:center;font-family:var(--font-mono);color:#8e9bb0}
+.feedback b{display:block;font-size:2rem;color:#e8eef6;font-weight:500}
+.hint{position:absolute;top:14%;left:0;right:0;text-align:center;font-size:1.05rem;color:#e8eef6}
+.target{width:min(42vw,170px);aspect-ratio:1;border-radius:50%;background:#ffc21a;box-shadow:0 0 0 10px rgba(255,194,26,.18)}
+.demo-box{display:grid;place-items:center;height:110px;background:#000;border-radius:14px;border:1px solid #1f2a3c}
+.demo-box .target{width:80px;box-shadow:0 0 0 6px rgba(255,194,26,.18)}
+.demo-box .fix{width:10px;height:10px}
+.test-msg{position:absolute;bottom:18%;left:0;right:0;text-align:center;font-family:var(--font-mono);color:#8e9bb0;font-size:.95rem}
+.test-intro{max-width:420px;margin:auto;text-align:left;display:flex;flex-direction:column;gap:14px}
+.test-intro h2{color:#fff}
+.how{margin:0;padding-left:20px;color:#b7c2d3;display:flex;flex-direction:column;gap:6px}
+.how b{color:#fff}
+.test-intro p{color:#b7c2d3}
+.eye-ind{display:inline-flex;align-items:center;gap:6px}
+.eye-ind .dot{color:#43c08a}
+.eye-ind.off .dot{color:#f06b55}
+#mini-video{position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;pointer-events:none}
+.sheet-back{position:fixed;inset:0;background:rgba(5,8,14,.55);z-index:30;display:flex;align-items:flex-end;justify-content:center;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--surface);color:var(--ink);width:100%;max-width:460px;border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;gap:12px;border:1px solid var(--line);border-bottom:0}
+.msg-preview{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:.95rem}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:999px;font-size:.9rem;z-index:40;max-width:calc(100% - 32px);text-align:center}
+.timeline-labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.72rem;color:var(--muted);margin-top:4px}
+.divider{height:1px;background:var(--line);margin:4px 0}
+details summary{cursor:pointer;font-weight:500}
+details[open] summary{margin-bottom:8px}
+/* Results: glass-cockpit instrument panel, always dark like a real display */
+:root{--panel:#0b1220;--panel-2:#111b2e;--panel-line:#22314a;--panel-ink:#e8eef6;--panel-muted:#8e9bb0;--lit-ok:#3ddc84;--lit-warn:#ffb52e;--lit-bad:#ff5a4a;--lit-cyan:#4fd6ff}
+.panel{background:radial-gradient(120% 90% at 50% 0%,#15223a 0%,var(--panel) 70%);color:var(--panel-ink);border:1px solid #1d2a40;border-radius:18px;padding:18px;
+  box-shadow:inset 0 0 0 4px #070b14,inset 0 0 0 5px #24324a,0 6px 20px rgba(5,10,20,.18)}
+.panel .muted,.panel .small.muted{color:var(--panel-muted)}
+.panel h2{color:var(--panel-ink)}
+.panel .eyebrow{color:var(--lit-cyan)}
+.screws{position:relative}
+.screws:before,.screws:after{content:"";position:absolute;top:10px;width:7px;height:7px;border-radius:50%;background:#2a3852;box-shadow:inset 0 0 0 1.5px #0a0f1a}
+.screws:before{left:10px}.screws:after{right:10px}
+.annun{font-family:var(--font-mono);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;border-radius:6px;border:1.5px solid currentColor;
+  background:color-mix(in srgb,currentColor 12%,transparent);text-shadow:0 0 8px color-mix(in srgb,currentColor 55%,transparent)}
+.annun.ok{color:var(--lit-ok)}.annun.warn{color:var(--lit-warn)}.annun.bad{color:var(--lit-bad)}
+.brand-ai{flex:none}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.gauge-wrap svg{width:min(100%,280px);height:auto}
+.needle{transform-origin:140px 140px;transition:transform 1.1s cubic-bezier(.2,.9,.25,1.15)}
+.panel .headline{color:#fff}
+.headline{font-size:1.35rem;font-weight:600;line-height:1.25;text-wrap:balance;margin:6px 0 2px}
+.signals{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sig{background:var(--panel-2);border:1px solid var(--panel-line);border-top:3px solid var(--lc,var(--panel-muted));border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.sig .k{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lc,var(--panel-muted));display:flex;align-items:center;gap:6px}
+.sig .k .dot{box-shadow:0 0 6px currentColor}
+.sig .v{font-family:var(--font-mono);font-size:1.4rem;font-weight:500;line-height:1.15;font-variant-numeric:tabular-nums;color:var(--panel-ink)}
+.sig .v .small{color:var(--panel-muted)}
+.sig .d{font-size:.8rem;color:var(--panel-muted);line-height:1.35}
+.sig.ok{--lc:var(--lit-ok)} .sig.warn{--lc:var(--lit-warn)} .sig.bad{--lc:var(--lit-bad)} .sig.neutral{--lc:var(--panel-muted)}
+.wx{display:flex;flex-direction:column;gap:8px}
+.wx-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2)}
+.wx-row svg{flex:none}
+.wx-row .t{font-family:var(--font-mono);font-size:.82rem;color:var(--muted);min-width:96px}
+.wx-row b{font-weight:600}
+.badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.badge{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:.72rem;color:var(--muted);line-height:1.2}
+.badge .seal{width:100%;max-width:92px;height:auto;display:block}
+.badge.locked .seal{opacity:.55}
+.badge.earned{color:var(--ink)}
+.celebrate{border:1px solid var(--accent);background:var(--accent-soft)}
+.celebrate .seal{animation:pop .6s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.needle{transition:none}.celebrate .seal{animation:none}}
+.prog{height:8px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent);border-radius:8px}
+.week{display:flex;gap:6px}
+.week span{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--font-mono);font-size:.68rem;color:var(--muted)}
+.week span i{width:100%;max-width:30px;height:30px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);display:block}
+.week span.on i{background:var(--accent);border-color:var(--accent)}
+.week span.today{color:var(--ink);font-weight:600}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat3 .v{font-family:var(--font-mono);font-size:1.4rem;font-weight:500}
+.stat3 .k{font-size:.74rem;color:var(--muted)}
+.fact{border-left:3px solid var(--accent)}
+.fact .eyebrow{display:flex;align-items:center;gap:6px;color:var(--accent-ink)}
+.wx-row{position:relative}
+.wx-row .t{color:var(--ink)}
+.logo-row{display:flex;align-items:center;gap:10px}
+.fact .src{font-size:.75rem;color:var(--muted);margin:0}
+/* Navigation: bottom tabs like mature phone apps */
+.app{padding-bottom:110px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;gap:0;background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.tabbar button{flex:1;max-width:115px;appearance:none;border:0;background:none;color:var(--muted);font:inherit;font-size:.72rem;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;border-radius:10px}
+.tabbar button svg{width:24px;height:24px}
+.tabbar button{-webkit-tap-highlight-color:transparent}
+.tabbar button:focus:not(:focus-visible){outline:none;background:none}
+.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
+.tabbar button.on{color:var(--accent)}
+.tabbar button:focus-visible{outline:2px solid var(--accent)}
+.flow-head{display:flex;align-items:center;gap:12px;padding-block:6px 14px}
+.flow-x{appearance:none;width:40px;height:40px;flex:none;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:1.15rem;cursor:pointer;display:grid;place-items:center}
+.flow-prog{flex:1;display:flex;gap:6px}
+.flow-prog i{flex:1;height:6px;border-radius:6px;background:var(--line)}
+.flow-prog i.on{background:var(--accent)}
+.btn.big{min-height:54px;font-size:1.05rem;font-weight:600;border-radius:14px}
+.btn.danger{color:var(--bad)}
+.hero{display:flex;flex-direction:column;gap:14px}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.steps3 div{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;font-size:.8rem;line-height:1.3}
+.steps3 b{display:block;font-family:var(--font-mono);font-size:.72rem;color:var(--accent-ink);letter-spacing:.06em;margin-bottom:2px}
+.steps3 span{display:block;color:var(--muted);font-size:.74rem;margin-top:2px}
+.panel .btn{background:#1a2740;color:#fff;border-color:#2c3d5c}
+.panel .btn.amber{background:var(--accent);color:#1a1100;border-color:var(--accent)}
+.slides{min-height:430px}
+.slide{display:flex;flex-direction:column;gap:10px}
+.slide-art{height:220px;border-radius:20px;display:grid;place-items:center;margin-bottom:8px;overflow:hidden}
+.dots{display:flex;gap:8px;justify-content:center}
+.dots i{width:8px;height:8px;border-radius:8px;background:var(--line);transition:width .2s}
+.dots i.on{width:22px;background:var(--accent)}
+.avatar{width:56px;height:56px;border-radius:50%;background:var(--ink);color:var(--accent);display:grid;place-items:center;font-family:var(--font-mono);font-weight:600;font-size:1.2rem;flex:none}
+.menu{padding:4px 0}
+.menu-item{appearance:none;width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:none;color:var(--ink);font:inherit;padding:14px 18px;cursor:pointer;border-bottom:1px solid var(--line);text-align:left}
+.menu-item:last-child{border-bottom:0}
+.menu-item span:last-child{color:var(--muted)}
+.list-item.tap{cursor:pointer}
+.sticky-cta{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 22%);padding-top:18px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px;z-index:5}
+.video-box{max-height:34vh;margin-inline:auto;width:100%}
+.scene{display:block;width:100%;height:auto;aspect-ratio:400/180}
+.has-scene{padding-top:0;overflow:hidden}
+.has-scene>.scene{margin:0 -18px;width:calc(100% + 36px);max-width:none;border-bottom:1px solid var(--line)}
+.scene-wrap{border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.steps3 svg{width:30px;height:30px;display:block;margin:0 auto 6px}
+.fact-row{display:flex;gap:14px;align-items:flex-start}
+.fact-ic{flex:none;width:56px;height:56px;border-radius:14px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center}
+.fact-ic svg{width:40px;height:40px}
+:root{--lock-fill:#e3e8ef;--lock-line:#b4bfcd}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lock-fill:#1d2a40;--lock-line:#3a4b68}}
+:root[data-theme="dark"]{--lock-fill:#1d2a40;--lock-line:#3a4b68}
+.uniform{width:100%;height:auto;display:block;border-radius:12px}
+.mini-uni{appearance:none;flex:none;width:92px;height:62px;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0b1220;cursor:pointer}
+.mini-uni .uniform{border-radius:0}
+.avatar{width:92px;height:62px;border-radius:14px;overflow:hidden;background:#0b1220}
+.bdg-row{display:flex;gap:12px;align-items:center;padding:10px;border-radius:14px;border:1px solid var(--line);background:var(--surface-2)}
+.bdg-row .badge{width:86px;flex:none}
+.bdg-row.earned{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.bdg-row.worn{box-shadow:0 0 0 2px var(--accent)}
+.badge.locked .seal{opacity:1}
+.bname{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bname b{font-size:1.02rem}
+.tagline{font-style:italic;font-size:.88rem;margin:1px 0 2px}
+.metal{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:999px;color:#1a1100;font-weight:600}
+.metal.locked{background:var(--lock-fill);color:var(--muted);border:1px solid var(--lock-line)}
+.m-Bronze{background:linear-gradient(#f3c19a,#c47a45)} .m-Silver{background:linear-gradient(#fff,#c3ccd8)} .m-Ruby{background:linear-gradient(#ffb3b3,#e0414a);color:#fff}
+.m-Gold{background:linear-gradient(#ffe08a,#f0b23a)} .m-Orange{background:linear-gradient(#ffd1a1,#ff8a1f)} .m-Platinum{background:linear-gradient(#fff,#dfe9f5)}
+.m-Jade{background:linear-gradient(#bff5dc,#2fbf86)} .m-Midnight{background:linear-gradient(#a9c4ff,#3b5bdb);color:#fff}
+.sup-opt{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.sup-ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center}
+.sup-ic svg{width:28px;height:28px}
+.sup-card{display:flex;align-items:center;gap:12px;width:100%;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+.route{display:flex;align-items:flex-start}
+.route>div{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;font-size:.8rem;line-height:1.25;min-width:0}
+.route svg{width:34px;height:34px;margin-bottom:4px}
+.route em{font-style:normal;font-family:var(--font-mono);font-size:.72rem;color:var(--muted)}
+.route>i{flex:0 0 18px;height:2px;margin-top:17px;background:repeating-linear-gradient(90deg,var(--accent) 0 4px,transparent 4px 8px)}
+/* Today card motion: plane drifts, approach lights chase, steps light up in order, Start pulses */
+.fly{animation:fly 6s ease-in-out infinite}
+@keyframes fly{0%,100%{transform:translate(0,0)}50%{transform:translate(-7px,-6px)}}
+.tw{animation:tw 3.2s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.2}50%{opacity:1}}
+.rl{animation:rabbit 1.4s linear infinite}
+@keyframes rabbit{0%,60%,100%{opacity:.35}8%{opacity:1}}
+.trail{animation:trail 1.2s linear infinite}
+@keyframes trail{to{stroke-dashoffset:-14}}
+.route>div{animation:stepTxt 4.8s ease-in-out infinite;animation-delay:var(--d)}
+.route>div svg{animation:stepOn 4.8s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes stepOn{0%,34%,100%{transform:scale(1) translateY(0);filter:none}10%,24%{transform:scale(1.22) translateY(-3px);filter:drop-shadow(0 0 7px var(--accent))}}
+@keyframes stepTxt{0%,34%,100%{color:var(--ink)}10%,24%{color:var(--accent)}}
+.route>i{background-size:8px 2px;animation:dash .7s linear infinite}
+@keyframes dash{to{background-position:8px 0}}
+.btn.pulse{animation:pulse 2.4s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}70%,100%{box-shadow:0 0 0 14px color-mix(in srgb,var(--accent) 0%,transparent)}}
+.go-arrow{display:inline-block;margin-left:6px;animation:nudge 1.6s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+.demo-tag{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent-ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="wgGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset=".55" stop-color="#f0b23a"/><stop offset="1" stop-color="#c98200"/></linearGradient><linearGradient id="wgBronze" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3c19a"/><stop offset=".55" stop-color="#c47a45"/><stop offset="1" stop-color="#7a4219"/></linearGradient><linearGradient id="wgSilver" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#c3ccd8"/><stop offset="1" stop-color="#6c7a8c"/></linearGradient><linearGradient id="wgRuby" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3b3"/><stop offset=".55" stop-color="#e0414a"/><stop offset="1" stop-color="#7a1018"/></linearGradient><linearGradient id="wgOrange" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd1a1"/><stop offset=".55" stop-color="#ff8a1f"/><stop offset="1" stop-color="#8a3d00"/></linearGradient><linearGradient id="wgPlatinum" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#dfe9f5"/><stop offset="1" stop-color="#7f93ad"/></linearGradient><linearGradient id="wgJade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bff5dc"/><stop offset=".55" stop-color="#2fbf86"/><stop offset="1" stop-color="#0d5c3d"/></linearGradient><linearGradient id="wgMidnight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9c4ff"/><stop offset=".55" stop-color="#3b5bdb"/><stop offset="1" stop-color="#14245e"/></linearGradient></defs></svg>
+<div class="app">
+  <header class="bar">
+    <div class="brand" id="brand"><svg class="brand-ai" width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><defs><clipPath id="aiC"><circle cx="15" cy="15" r="12"/></clipPath></defs><g clip-path="url(#aiC)"><rect width="30" height="30" fill="#2f7fd1"/><rect y="16" width="30" height="14" fill="#8a5a2b" transform="rotate(-8 15 15)"/><line x1="0" y1="16" x2="30" y2="16" stroke="#fff" stroke-width="1.2" transform="rotate(-8 15 15)"/></g><circle cx="15" cy="15" r="12" fill="none" stroke="var(--ink)" stroke-width="2.4"/><path d="M8 15h4l3 2 3-2h4" fill="none" stroke="#ffb52e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>ReadyCheck</span></div>
+    <button class="icon-btn" id="btn-back" hidden>‹ Back</button>
+  </header>
+  <div class="flow-head" id="flow-head" hidden>
+    <button class="flow-x" id="flow-back" aria-label="Back">‹</button>
+    <div class="flow-prog" id="flow-prog"><i></i><i></i><i></i><i></i></div>
+    <button class="flow-x" id="flow-close" aria-label="Leave the check">✕</button>
+  </div>
+  </header>
+
+  <!-- WELCOME (first launch) -->
+  <section class="screen stack" id="scr-welcome" hidden>
+    <div class="slides" id="slides">
+      <div class="slide">
+        <div class="slide-art" id="art-1"></div>
+        <h1>Know your alertness before you fly.</h1>
+        <p class="muted">A 4-minute check on your phone. The same reaction test fatigue researchers use, plus your camera reading your eyelids.</p>
+      </div>
+      <div class="slide" hidden>
+        <div class="slide-art" id="art-2"></div>
+        <h1>Results in plain words.</h1>
+        <p class="muted">Ready, Caution or Low alertness, what caused it, and when today's low point is likely to hit.</p>
+      </div>
+      <div class="slide" hidden>
+        <div class="slide-art" id="art-3"></div>
+        <h1>Yours alone.</h1>
+        <p class="muted">Results stay on this phone. Nothing reaches your airline unless you choose to share it.</p>
+      </div>
+    </div>
+    <div class="dots" id="slide-dots"><i class="on"></i><i></i><i></i></div>
+    <button class="btn amber block big" id="btn-slide-next">Next</button>
+    <button class="btn ghost block" id="btn-slide-skip">Skip intro</button>
+  </section>
+
+  <!-- SIGN IN -->
+  <section class="screen stack" id="scr-signin" hidden>
+    <div class="scene-wrap" id="signin-scene"></div>
+    <div><div class="eyebrow">Sign in once</div><h1>What should we call you?</h1>
+      <p class="muted">Your name keeps your results separate if someone else uses this phone. No airline or crew ID needed.</p></div>
+    <form class="stack" id="signin-form">
+      <label class="field">Your name<input type="text" id="si-name" placeholder="e.g. Dana Ruiz" autocomplete="name" required></label>
+      <button class="btn amber block big" type="button" id="btn-signin">Continue</button>
+    </form>
+    <div class="card stack" id="profiles-box" hidden><h3 style="margin:0">Already on this phone</h3><div class="list" id="profiles-list"></div></div>
+  </section>
+
+  <!-- FIRST-TIME AGREEMENT -->
+  <section class="screen stack" id="scr-consent" hidden>
+    <div><div class="eyebrow">Before you start</div><h1>About ReadyCheck</h1>
+      <p class="muted">Please read this before your first check. You will only see it once.</p></div>
+    <div class="card stack">
+      <h3>What it does</h3>
+      <p class="small" style="margin:0">A short reaction test while the camera looks at your eyelids, to help you understand how alert you are before duty.</p>
+      <h3>It is not a medical device</h3>
+      <p class="small" style="margin:0">It does not diagnose anything and does not decide whether you are fit to fly. That decision stays with you and your airline's normal process.</p>
+      <h3>Camera</h3>
+      <p class="small" style="margin:0">The camera is used only during a check. Video is analysed on this phone and is never recorded, stored or sent.</p>
+      <h3>Your results</h3>
+      <p class="small" style="margin:0">Results are saved on this phone. Nothing is shared with anyone unless you choose to share it, and you can delete everything in Settings.</p>
+      <h3>Prototype</h3>
+      <p class="small muted" style="margin:0">This is a student prototype. Sharing buttons are demonstrations and do not send anything.</p>
+    </div>
+    <label class="opt"><input type="checkbox" id="consent-check"><span>I have read this and agree to use ReadyCheck on these terms.</span></label>
+    <button class="btn amber block big" id="btn-consent" disabled>Agree and continue</button>
+    <button class="btn ghost block" id="btn-consent-back">Not now</button>
+  </section>
+
+  <!-- TODAY (tab) -->
+  <section class="screen stack" id="scr-home" hidden>
+    <div class="row" style="flex-wrap:nowrap;justify-content:space-between;gap:12px"><div><div class="eyebrow" id="home-date"></div><h1 id="home-greet">Good morning</h1><div class="small muted" id="home-rank"></div></div>
+      <button class="mini-uni" data-go="logbook" id="home-uni" aria-label="Open your logbook and wings"></button></div>
+    <div id="home-hero"></div>
+    <div id="home-post"></div>
+    <div class="card stack" id="home-week"></div>
+    <div class="card stack fact" id="home-fact"></div>
+    <button class="card sup-card" id="home-support"><div class="sup-ic"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8h20v13H14l-6 5v-5H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 11.5c-1.2-1.6-4-1-4 1 0 2 4 4 4 4s4-2 4-4c0-2-2.8-2.6-4-1z" fill="currentColor"/></svg></div>
+      <div style="flex:1;text-align:left"><b>Need to talk?</b><div class="small muted">Peer pilot or confidential counselor. Your airline isn't told.</div></div><span class="muted">›</span></button>
+  </section>
+
+  <!-- STEP 1: FEELING -->
+  <section class="screen stack" id="scr-rate" hidden>
+    <div><div class="eyebrow">Step 1 of 4 · 10 seconds</div><h1>How do you feel right now?</h1>
+      <p class="muted">Tap the one that fits best. Your answer is compared with the test later.</p></div>
+    <form class="opts" id="sp-form"></form>
+  </section>
+
+  <!-- STEP 2: DUTY -->
+  <section class="screen stack" id="scr-duty" hidden>
+    <div><div class="eyebrow">Step 2 of 4 · 20 seconds</div><h1>About today</h1>
+      <p class="muted">Used to forecast when you're likely to feel your lowest during duty. We remember these for next time.</p></div>
+    <div class="card stack">
+      <div class="grid2">
+        <label class="field">Report time<input type="time" id="d-report"></label>
+        <label class="field">Duty length (hours)<input type="number" id="d-hours" min="1" max="16" step="0.5" inputmode="decimal"></label>
+        <label class="field">Number of legs<input type="number" id="d-legs" min="1" max="8" inputmode="numeric"></label>
+        <label class="field">Woke up at<input type="time" id="d-wake"></label>
+      </div>
+      <div>
+        <div class="small muted" style="margin-bottom:6px">Late hotel check-in or short rest last night?</div>
+        <div class="chips">
+          <label class="chip"><input type="radio" name="late" value="yes"> Yes</label>
+          <label class="chip"><input type="radio" name="late" value="no" checked> No</label>
+        </div>
+      </div>
+    </div>
+    <button class="btn amber block big" id="btn-duty-next">Continue</button>
+  </section>
+
+  <!-- CAMERA SETUP -->
+  <section class="screen stack" id="scr-camera" hidden>
+    <div><div class="eyebrow">Step 3 of 4 · 20 seconds</div><h1>Set up the camera</h1>
+      <p class="muted">Hold the phone at eye level, about 40 cm away, with your face inside the oval. Analysis runs on this device and the video is never saved.</p></div>
+    <div class="video-box"><video id="cam" playsinline muted autoplay></video><div class="overlay"><div class="face-guide" id="face-guide"></div></div></div>
+    <div class="card status-list" id="cam-status">
+      <div class="s" id="st-cam"><span class="pill neutral"><span class="dot"></span>Camera</span><span class="small muted">Starting…</span></div>
+      <div class="s" id="st-model"><span class="pill neutral"><span class="dot"></span>Eye analysis</span><span class="small muted">Loading…</span></div>
+      <div class="s" id="st-face"><span class="pill neutral"><span class="dot"></span>Face</span><span class="small muted">Waiting…</span></div>
+      <div class="s" id="st-light"><span class="pill neutral"><span class="dot"></span>Lighting</span><span class="small muted">Waiting…</span></div>
+    </div>
+<div class="sticky-cta">
+    <button class="btn amber block big" id="btn-cam-go" disabled>Continue to the test</button>
+    <button class="btn ghost block" id="btn-cam-skip">Skip the camera (reaction test only)</button>
+    </div>
+  </section>
+
+  <!-- TEST (fixed full-screen) -->
+  <section class="screen" id="scr-test" hidden>
+    <div id="test-intro" class="test-intro">
+      <div class="eyebrow" style="color:#8e9bb0">Step 4 of 4 · Reaction test · 3 minutes</div>
+      <h2 style="margin:0">Tap the moment the yellow number appears.</h2>
+      <div class="demo-box" id="demo-box"><div class="fix"></div></div>
+      <ol class="how">
+        <li>Watch the small grey dot.</li>
+        <li>A yellow number pops up and counts fast. <b>Tap anywhere</b> (space bar on a laptop).</li>
+        <li>Your time shows in white. Wait for the next one.</li>
+      </ol>
+      <p class="small" style="margin:0">Lasts exactly 3 minutes. Don't tap before the number shows.</p>
+      <div class="stack" id="test-start-btns" style="gap:10px">
+        <button class="btn amber block" id="btn-test-start">Practice first (3 tries)</button>
+        <button class="btn block" id="btn-test-skip" style="background:#121a28;color:#e8eef6;border-color:#2a3549">Skip practice, start the test</button>
+      </div>
+      <button class="btn ghost block" id="btn-test-cancel" style="color:#8e9bb0">Leave the check</button>
+    </div>
+    <div id="test-run" hidden style="display:flex;flex-direction:column;flex:1">
+      <div class="test-top">
+        <span id="test-time">0:00 / 3:00</span>
+        <span class="eye-ind" id="eye-ind"><span class="dot"></span><span id="eye-ind-text">Eye analysis on</span></span>
+        <button class="icon-btn" id="btn-test-stop" style="background:#121a28;color:#b7c2d3;border-color:#2a3549">Stop</button>
+      </div>
+      <div class="test-progress"><i id="test-bar"></i></div>
+      <div class="test-pad" id="test-pad">
+        <div id="stim"><div class="fix"></div></div>
+        <div class="hint" id="test-hint"></div>
+        <div class="test-msg" id="test-msg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="screen stack" id="scr-results" hidden></section>
+
+  <!-- TRENDS -->
+  <section class="screen stack" id="scr-trends" hidden></section>
+
+  <!-- LOGBOOK (tab) -->
+  <section class="screen stack" id="scr-logbook" hidden>
+    <div><div class="eyebrow">Your progress</div><h1>Logbook</h1></div>
+    <div class="panel screws stack" id="lb-uniform"></div>
+    <div class="card stack"><h2 style="margin:0">Wings collection</h2><div class="stack" id="lb-badges"></div></div>
+    <div class="card stack" id="lb-card"></div>
+  </section>
+
+  <!-- POST DUTY -->
+  <section class="screen stack" id="scr-post" hidden>
+    <div><div class="eyebrow">Post-duty</div><h1>How was today?</h1>
+      <p class="muted">Thirty seconds. Nothing here is shared unless you choose to.</p></div>
+    <form class="opts" id="post-sp-form"></form>
+    <div class="card stack">
+      <div class="small muted">Did today include any of these?</div>
+      <div class="chips" id="post-events">
+        <label class="chip"><input type="checkbox" value="Go-around"> Go-around</label>
+        <label class="chip"><input type="checkbox" value="Diversion"> Diversion</label>
+        <label class="chip"><input type="checkbox" value="Medical event on board"> Medical event on board</label>
+        <label class="chip"><input type="checkbox" value="Long delay"> Long delay</label>
+        <label class="chip"><input type="checkbox" value="Other stressful event"> Other stressful event</label>
+      </div>
+      <label class="field">Next report time<input type="time" id="post-next"></label>
+    </div>
+    <button class="btn primary block" id="btn-post-save" disabled>Save check-in</button>
+    <div id="post-result" class="stack"></div>
+  </section>
+
+  <!-- ORG VIEW -->
+  <section class="screen stack" id="scr-org" hidden>
+    <div><div class="eyebrow">Example · not real data</div><h1>What your airline sees</h1>
+      <p class="muted">Only de-identified totals, prepared by a union-managed data steward, from pilots who opted in. Groups smaller than 10 pilots are never reported.</p></div>
+    <div class="card stack">
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Monthly readiness report</h2><span class="demo-tag">Example</span></div>
+      <dl class="kv">
+        <dt>Pilots opted in</dt><dd>412</dd>
+        <dt>Pre-duty checks this month</dt><dd>5,930</dd>
+        <dt>Checks at Caution or lower</dt><dd>14%</dd>
+      </dl>
+      <div class="divider"></div>
+      <h3>Pairings that stand out</h3>
+      <div class="list">
+        <div class="list-item"><div><div>PHX overnight, 3 legs, 23:40 hotel arrival</div><div class="small muted">38 pilots</div></div><span class="pill bad">+40% vs average</span></div>
+        <div class="list-item"><div><div>Early 05:15 report after late arrival</div><div class="small muted">54 pilots</div></div><span class="pill warn">+22% vs average</span></div>
+        <div class="list-item"><div><div>Day trips, 2 legs</div><div class="small muted">121 pilots</div></div><span class="pill ok">Below average</span></div>
+      </div>
+      <p class="small muted" style="margin:0">Useful for fixing schedules and hotels. Individual pilots cannot be identified or checked up on.</p>
+    </div>
+    </section>
+
+  <!-- ME (tab) -->
+  <section class="screen stack" id="scr-settings" hidden>
+    <div class="row" style="flex-wrap:nowrap;gap:14px"><div class="avatar" id="me-avatar"></div><div><h1 style="margin:0" id="me-name"></h1><div class="small muted" id="set-user"></div></div></div>
+    <div class="card menu">
+      <button class="menu-item" id="btn-me-support"><span>Talk to someone</span><span>›</span></button>
+      <button class="menu-item" data-go="method"><span>How ReadyCheck works</span><span>›</span></button>
+      <button class="menu-item" data-go="org"><span>What your airline sees</span><span>›</span></button>
+      <button class="menu-item" id="btn-review-terms"><span>Review the agreement</span><span>›</span></button>
+    </div>
+    <div class="card stack">
+      <div class="row" style="justify-content:space-between"><h3 style="margin:0">Demo mode</h3><span class="demo-tag">For presentations</span></div>
+      <p class="small muted" style="margin:0">Show the app without doing a real 3-minute test.</p>
+      <button class="btn block" id="btn-demo-check">Run a simulated check (tired result)</button>
+      <button class="btn block" id="btn-demo-fill">Load 4 weeks of example history</button>
+    </div>
+    <div class="card stack">
+      <h3 style="margin:0">Your data</h3>
+      <p class="small muted" style="margin:0">Stored in this browser on this device. Each name keeps its own results. Prototype only: there is no password.</p>
+      <button class="btn block" id="btn-signout">Switch person</button>
+      <button class="btn block danger" id="btn-clear">Delete all my results</button>
+    </div>
+  </section>
+
+  <!-- METHOD -->
+  <section class="screen stack" id="scr-method" hidden>
+    <div><div class="eyebrow">Prototype</div><h1>How it works</h1></div>
+    <div class="card stack">
+      <h3>1. Reaction test (primary measure)</h3>
+      <p class="small" style="margin:0">The standard 3-minute brief Psychomotor Vigilance Test (PVT-B; Basner, Mollicone and Dinges, 2011), as used on tablets in daily air medical operations (Mollicone et al., 2023): a millisecond counter appears every 1 to 4 seconds (including 1 second of feedback); responses under 100 ms or with no counter showing are false starts; responses of 355 ms or more are lapses. The test always runs the full 3 minutes. Results are grouped by lapses plus false starts: 6 or fewer, 7 to 16, more than 16 (Basner et al., 2022).</p>
+      <p class="small muted" style="margin:0">Touchscreens add delay. Following NASA's touchscreen PVT validation, 77 ms (the delay measured on an iPad) is subtracted from every touch response. Real phones differ, so a production version would calibrate each device. The 3 practice tries are not scored.</p>
+    </div>
+    <div class="card stack">
+      <h3>2. Eyelids (supporting measure)</h3>
+      <p class="small" style="margin:0">MediaPipe Face Landmarker tracks eyelid landmarks during the reaction test. It records PERCLOS (share of time eyes are at least 80% closed) and long closures of 500 ms or more. In a 2025 study, PERCLOS was the most informative facial feature for predicting PVT performance (Subramaniyan et al., <i>Sleep</i>). Eye signs can raise concern by one level but never lower it.</p>
+      <p class="small muted" style="margin:0">That study filmed at 240 frames per second. Browsers usually give 30, so short blinks and eyelid speed cannot be measured here.</p>
+    </div>
+    <div class="card stack">
+      <h3>3. Your own baseline</h3>
+      <p class="small" style="margin:0">After 5 checks, your median reaction time is compared with your own history. The PVT shows no practice effect, which makes personal baselines practical. Comparing with yourself also cancels out your phone's screen delay.</p>
+    </div>
+    <div class="card stack">
+      <h3>4. Feeling vs measured</h3>
+      <p class="small" style="margin:0">People under ongoing sleep loss often stop noticing how impaired they are (Van Dongen et al., 2003). When your rating and the test disagree, ReadyCheck tells you. It never tells someone who feels exhausted that they are fine.</p>
+    </div>
+    <div class="card flat stack">
+      <h3>Limitations</h3>
+      <ul class="tips small">
+        <li>Not validated. The thresholds come from laboratory studies, mostly of total sleep deprivation.</li>
+        <li>Moderate fatigue, such as one poor night, is harder to detect.</li>
+        <li>PVT-BA was validated after the fact, not in real time.</li>
+        <li>The fatigue forecast is illustrative only. A real product would use a validated model such as SAFTE-FAST.</li>
+        <li>This is a reference for the pilot, not a fit-to-fly decision.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<nav class="tabbar" id="tabbar" hidden aria-label="Main">
+  <button data-go="home" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 13.2 20.5 10.8" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.4h2.5l1.5 1.2 1.5-1.2H16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Today</button>
+  <button data-go="trends" data-tab="trends"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.5 15l3.5-4 3 2.5 5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>History</button>
+  <button data-go="logbook" data-tab="logbook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13.5c-2.6-1.6-5.6-2.2-9-2 1 1.4 2.6 2.4 4.6 2.8-1.2.3-2.2.9-2.8 1.7 2.6.4 5 .1 7.2-1.2zM12 13.5c2.6-1.6 5.6-2.2 9-2-1 1.4-2.6 2.4-4.6 2.8 1.2.3 2.2.9 2.8 1.7-2.6.4-5 .1-7.2-1.2z" fill="currentColor"/><circle cx="12" cy="12.6" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Logbook</button>
+  <button data-go="settings" data-tab="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Me</button>
+</nav>
+
+<video id="mini-video" playsinline muted autoplay></video>
+<div id="sheet-root"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const LS_KEY = 'readycheck_v1';
+const MP_VER = '0.10.14';
+const MP_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}/vision_bundle.mjs`;
+const MP_WASM = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}/wasm`;
+const MP_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+
+const SP = [
+  'Fully alert, wide awake',
+  'Very lively, responsive, but not at peak',
+  'Okay, somewhat fresh',
+  'A little tired, less than fresh',
+  'Moderately tired, let down',
+  'Extremely tired, very difficult to concentrate',
+  'Completely exhausted, unable to function effectively'
+];
+const LEVELS = [
+  {name:'Ready', cls:'ok', color:'var(--ok)', fill:1},
+  {name:'Caution', cls:'warn', color:'var(--warn)', fill:0.62},
+  {name:'Low alertness', cls:'bad', color:'var(--bad)', fill:0.3}
+];
+const LEGEND = `<span><i class="sw" style="background:var(--ok)"></i>Ready</span><span><i class="sw" style="background:var(--warn)"></i>Caution</span><span><i class="sw" style="background:var(--bad)"></i>Low alertness</span>`;
+
+/* ---------- storage: one profile per name on this device ---------- */
+const DB_KEY = 'readycheck_profiles_v1';
+function defaults(){ return {user:null, checks:[], badges:{}, duty:{report:'14:00', hours:9, legs:3, wake:'07:30'}}; }
+function loadDB(){
+  let db = null;
+  try{ const r = localStorage.getItem(DB_KEY); if(r) db = JSON.parse(r); }catch(e){}
+  if(!db || typeof db !== 'object') db = {profiles:{}, active:null};
+  if(!db.profiles) db.profiles = {};
+  try{ // migrate the earlier single-user version
+    const old = localStorage.getItem(LS_KEY);
+    if(old){ const d = Object.assign(defaults(), JSON.parse(old)); if(d.user && d.user.name){ const k = keyOf(d.user.name); if(!db.profiles[k]) db.profiles[k] = d; if(!db.active) db.active = k; } localStorage.removeItem(LS_KEY); }
+  }catch(e){}
+  return db;
+}
+function keyOf(name){ return String(name).trim().toLowerCase().replace(/\s+/g,' '); }
+let DB = loadDB();
+let S = (DB.active && DB.profiles[DB.active]) ? Object.assign(defaults(), DB.profiles[DB.active]) : defaults();
+function save(){ if(S.user && S.user.name){ DB.profiles[keyOf(S.user.name)] = S; } try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){} }
+function switchTo(name){
+  const k = keyOf(name);
+  if(!DB.profiles[k]) DB.profiles[k] = Object.assign(defaults(), {user:{name:String(name).trim(), since:Date.now()}});
+  DB.active = k; S = Object.assign(defaults(), DB.profiles[k]); save();
+}
+
+/* ---------- helpers ---------- */
+const median = a => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y); const m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+const pct = (a,p) => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y); return s[Math.min(s.length-1, Math.max(0, Math.round(p*(s.length-1))))]; };
+const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hm = t => { const [h,m] = String(t||'0:0').split(':').map(Number); return (h||0) + (m||0)/60; };
+const fmtClock = x => { x = ((x%24)+24)%24; let h = Math.floor(x), m = Math.round((x-h)*60); if(m===60){h=(h+1)%24;m=0;} return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); };
+const fmtDate = ts => new Date(ts).toLocaleDateString(undefined,{weekday:'short', month:'short', day:'numeric'});
+const fmtTime = ts => new Date(ts).toLocaleTimeString(undefined,{hour:'2-digit', minute:'2-digit'});
+const sameDay = (a,b) => { const x=new Date(a), y=new Date(b); return x.toDateString()===y.toDateString(); };
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true, 2600); }
+const preChecks = () => S.checks.filter(c=>c.type==='pre').sort((a,b)=>a.ts-b.ts);
+
+/* ---------- navigation ---------- */
+let current = null, lastTab = 'home';
+const renderers = {};
+const TABS = ['home','trends','logbook','settings'];
+const FLOW = {rate:1, duty:2, camera:3};
+const DETAIL = ['results','org','method','post'];
+function go(id){
+  if(current==='camera' && id!=='test') stopCamera();
+  $$('section.screen').forEach(s => s.hidden = (s.id !== 'scr-'+id));
+  current = id;
+  if(TABS.includes(id)) lastTab = id;
+  const inFlow = id in FLOW;
+  $('#tabbar').hidden = !TABS.includes(id) || !S.user;
+  $$('#tabbar [data-tab]').forEach(b => { b.classList.toggle('on', b.dataset.tab === id); b.setAttribute('aria-current', b.dataset.tab === id ? 'page' : 'false'); });
+  $('header.bar').hidden = inFlow;
+  $('#flow-head').hidden = !inFlow;
+  if(inFlow) $$('#flow-prog i').forEach((i,k) => i.classList.toggle('on', k < FLOW[id]));
+  $('#btn-back').hidden = !DETAIL.includes(id);
+  window.scrollTo(0,0);
+  if(renderers[id]) renderers[id]();
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if(b){ e.preventDefault(); go(b.dataset.go); } });
+$('#btn-back').addEventListener('click', () => go(current === 'results' && lastTab === 'settings' ? 'home' : lastTab));
+function leaveCheck(){
+  sheet('Leave the check?', '<p class="small">Nothing from this check will be saved.</p>', 'Leave', () => { clearInterval(demoTimer); stopCamera(); if(T){ T.running = false; clearTimeout(T.timer); clearInterval(T.tick); clearInterval(T.cint); clearTimeout(T.miss); T.stimOn = false; } go('home'); });
+}
+$('#flow-close').addEventListener('click', leaveCheck);
+$('#flow-back').addEventListener('click', () => { if(current === 'rate') leaveCheck(); else if(current === 'duty') go('rate'); else if(current === 'camera') go('duty'); });
+
+/* ---------- welcome ---------- */
+let slide = 0;
+function artSVG(n){
+  if(n === 0) return `<div class="panel" style="width:100%;height:100%;display:grid;place-items:center;border-radius:20px">${gaugeSVG(9, true)}</div>`;
+  if(n === 1) return `<div class="panel" style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;gap:10px;border-radius:20px;padding:22px">
+      <span class="annun ok" style="align-self:flex-start">Ready</span><span class="annun warn" style="align-self:center">Caution</span><span class="annun bad" style="align-self:flex-end">Low alertness</span></div>`;
+  return `<div class="panel" style="width:100%;height:100%;display:grid;place-items:center;border-radius:20px"><svg width="120" height="120" viewBox="0 0 120 120" aria-hidden="true"><rect x="26" y="34" width="68" height="76" rx="14" fill="none" stroke="var(--lit-cyan)" stroke-width="5"/><path d="M38 52v-6a12 12 0 0 1 0 0" /><rect x="44" y="52" width="32" height="40" rx="10" fill="#0b1220" stroke="var(--lit-cyan)" stroke-width="4"/><circle cx="60" cy="68" r="5" fill="var(--lit-ok)"/><path d="M60 73v8" stroke="var(--lit-ok)" stroke-width="4" stroke-linecap="round"/><path d="M42 34v-8a18 18 0 0 1 36 0v8" fill="none" stroke="var(--lit-cyan)" stroke-width="5"/></svg></div>`;
+}
+renderers.welcome = () => { slide = 0; showSlide(); };
+function showSlide(){
+  $$('#slides .slide').forEach((el,i) => el.hidden = i !== slide);
+  $$('#slide-dots i').forEach((el,i) => el.classList.toggle('on', i === slide));
+  $('#art-'+(slide+1)).innerHTML = artSVG(slide);
+  const n = $('#art-1 .needle'); if(n) requestAnimationFrame(() => requestAnimationFrame(() => n.style.transform = `rotate(${n.dataset.deg}deg)`));
+  $('#btn-slide-next').textContent = slide === 2 ? 'Get started' : 'Next';
+}
+function endWelcome(){ try{ localStorage.setItem('readycheck_welcomed','1'); }catch(e){} go('signin'); }
+$('#btn-slide-next').addEventListener('click', () => { if(slide < 2){ slide++; showSlide(); } else endWelcome(); });
+$('#btn-slide-skip').addEventListener('click', endWelcome);
+
+/* ---------- sign in ---------- */
+function doSignIn(){
+  const name = $('#si-name').value.trim();
+  if(!name){ $('#si-name').focus(); toast('Enter your name to sign in.'); return; }
+  switchTo(name); $('#si-name').value = ''; go(S.agreed ? 'home' : 'consent');
+}
+$('#btn-signin').addEventListener('click', doSignIn);
+$('#si-name').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); doSignIn(); } });
+$('#signin-form').addEventListener('submit', e => { e.preventDefault(); doSignIn(); });
+
+renderers.signin = () => {
+  $('#signin-scene').innerHTML = heroScene(new Date().getHours());
+  const names = Object.values(DB.profiles).filter(p=>p.user&&p.user.name);
+  $('#profiles-box').hidden = !names.length;
+  $('#profiles-list').innerHTML = names.map(p=>`<div class="list-item"><div><div>${esc(p.user.name)}</div><div class="small muted">${(p.checks||[]).length} checks</div></div><button class="btn" data-profile="${esc(keyOf(p.user.name))}">Continue as ${esc(p.user.name.split(' ')[0])}</button></div>`).join('');
+  $$('#profiles-list [data-profile]').forEach(b => b.onclick = () => { const p = DB.profiles[b.dataset.profile]; if(p){ switchTo(p.user.name); go(S.agreed ? 'home' : 'consent'); } });
+};
+
+renderers.consent = () => { const seen = !!S.agreed; $('#consent-check').checked = seen; $('#btn-consent').disabled = !seen; $('#btn-consent').textContent = seen ? 'Done' : 'Agree and continue'; $('#btn-consent-back').hidden = seen; };
+$('#consent-check').addEventListener('change', e => { $('#btn-consent').disabled = !e.target.checked; });
+$('#btn-consent').addEventListener('click', () => { const back = !!S.agreed; if(!S.agreed){ S.agreed = Date.now(); save(); } go(back ? 'settings' : 'home'); });
+$('#btn-consent-back').addEventListener('click', () => { DB.active = null; S = defaults(); save(); go('signin'); });
+
+/* ---------- ring ---------- */
+function ring(level, size=96){
+  const r = size/2 - 9, c = 2*Math.PI*r;
+  if(level==null){
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="9"/></svg>`;
+  }
+  const L = LEVELS[level], dash = c*L.fill;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${L.name}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="9"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${L.color}" stroke-width="9" stroke-linecap="round"
+      stroke-dasharray="${dash} ${c}" transform="rotate(-90 ${size/2} ${size/2})"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r-16}" fill="none" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 4"/>
+  </svg>`;
+}
+
+/* ---------- today ---------- */
+renderers.home = () => {
+  const now = new Date(), h = now.getHours();
+  $('#home-date').textContent = now.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+  const first = (S.user?.name||'').split(' ')[0];
+  $('#home-greet').textContent = (h<12?'Good morning':h<18?'Good afternoon':'Good evening') + (first?', '+first:'');
+  const pre = preChecks(); const today = pre.filter(c=>sameDay(c.ts, Date.now())).pop();
+  { const rk = rankOf(pre.length), wb = wornBadge(); $('#home-uni').innerHTML = uniformSVG(S.user && S.user.name, wb, rk.bars, true); $('#home-rank').textContent = rk.name + (wb ? ' · ' + wb.name + ' wings' : ''); }
+  const firstTime = !pre.length;
+  const hero = $('#home-hero');
+  if(today){
+    const L = LEVELS[today.level];
+    hero.innerHTML = `<div class="panel screws gauge-wrap" style="gap:8px">
+      <div class="eyebrow" style="margin:0">Today's check · ${fmtTime(today.ts)}${today.simulated?' · demo':''}</div>
+      ${gaugeSVG(today.pvt.lpfs3)}
+      <span class="annun ${L.cls}">${L.name}</span>
+      <div class="headline">${HEAD[today.level]}</div>
+      <button class="btn amber block big" id="btn-open-today" style="margin-top:6px">See full result</button>
+      <button class="btn ghost block" data-go="rate" style="color:var(--panel-muted)">Check again</button></div>`;
+    $('#btn-open-today').onclick = () => { lastCheckId = today.id; go('results'); };
+    const n = hero.querySelector('.needle'); requestAnimationFrame(() => requestAnimationFrame(() => n.style.transform = `rotate(${n.dataset.deg}deg)`));
+  } else {
+    hero.innerHTML = `<div class="card hero has-scene">${heroScene(new Date().getHours())}
+      <div><div class="eyebrow" style="margin:0">Pre-duty check · about 4 min</div><h2 style="margin:4px 0 0">${firstTime ? 'Take your first check' : 'Check your alertness before you fly'}</h2></div>
+      <div class="small muted" style="margin-bottom:-6px">What happens when you tap Start:</div>
+      <div class="route"><div style="--d:0s">${STEP_ICONS.feel}<span>Rate how you feel</span><em>10 s</em></div><i></i><div style="--d:1.6s">${STEP_ICONS.duty}<span>Enter today's duty</span><em>20 s</em></div><i></i><div style="--d:3.2s">${STEP_ICONS.test}<span>Tap-speed test</span><em>3 min</em></div></div>
+      <button class="btn amber block big pulse" data-go="rate">Start check <span class="go-arrow">›</span></button>
+      <p class="small muted" style="margin:0;text-align:center">${firstTime ? 'First time? You can do a short practice before the test.' : 'Best done about an hour before report time.'}</p></div>`;
+  }
+  $('#home-post').innerHTML = (today && !today.post) ? `<div class="card row" style="justify-content:space-between;flex-wrap:nowrap">
+      <div><div class="eyebrow" style="margin:0">After your duty</div><b>Post-duty check-in</b><div class="small muted">30 seconds. Plans your recovery sleep.</div></div>
+      <button class="btn" data-go="post">Start</button></div>`
+    : (today && today.post) ? `<div class="card small muted">✓ Post-duty check-in done. Rest well.</div>` : '';
+  const ws = weekStart(Date.now()), days = ['M','T','W','T','F','S','S'];
+  const dots = days.map((d,i) => { const t0 = ws + i*86400000; const on = pre.some(c => c.ts >= t0 && c.ts < t0 + 86400000);
+    return `<span class="${on?'on':''} ${sameDay(t0, Date.now())?'today':''}"><i></i>${d}</span>`; }).join('');
+  const nu = nextUnlock(pre);
+  $('#home-week').innerHTML = `<div class="row" style="justify-content:space-between"><h2 style="margin:0">This week</h2><button class="btn ghost" data-go="logbook">Logbook ›</button></div>
+    <div class="week">${dots}</div>
+    <div class="small muted">${weekStreak(pre)}-week streak · ${pre.length} checks logged · ${Object.keys(S.badges||{}).length} of ${BADGES.length} badges</div>
+    ${nu ? `<div class="stack" style="gap:6px"><div class="small"><b>Next:</b> ${esc(nu.label)}</div><div class="prog"><i style="width:${Math.round(nu.p*100)}%"></i></div></div>` : ''}`;
+  $('#home-fact').innerHTML = factCard();
+};
+function spark(list){
+  if(!list.length) return `<p class="small muted" style="margin:0">Your checks will appear here.</p>`;
+  const W=420, H=70, n=list.length, gap=W/14; // fixed slots so 1 or 2 checks don't become giant blocks
+  const bars = list.map((c,i)=>{ const L=LEVELS[c.level]; const hgt = 18 + (2-c.level)*22; const x=i*gap+gap*0.2, w=gap*0.6;
+    return `<rect x="${x.toFixed(1)}" y="${(H-hgt).toFixed(1)}" width="${w.toFixed(1)}" height="${hgt}" rx="3" fill="${L.color}"/>`; }).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Recent check levels">${bars}</svg>
+    <div class="legend">${LEGEND}</div>`;
+}
+
+/* ---------- self rating ---------- */
+let draft = null;
+function buildSP(form, name){
+  form.innerHTML = SP.map((t,i)=>`<label class="opt"><input type="radio" name="${name}" value="${i+1}"><span class="opt-num">${i+1}</span><span>${t}</span></label>`).join('');
+}
+buildSP($('#sp-form'), 'sp');
+renderers.rate = () => {
+  draft = {type:'pre', ts:null, sp:null, late:false, wake:S.duty.wake};
+  $$('#sp-form input').forEach(i=>i.checked=false);
+};
+$('#sp-form').addEventListener('change', () => {
+  const v = $('#sp-form input:checked'); if(!v) return;
+  draft.sp = Number(v.value);
+  clearTimeout(renderers.rate._t); renderers.rate._t = setTimeout(() => { if(current === 'rate') go('duty'); }, 280);
+});
+
+/* ---------- step 2: duty ---------- */
+renderers.duty = () => {
+  $('#d-report').value = S.duty.report; $('#d-hours').value = S.duty.hours; $('#d-legs').value = S.duty.legs; $('#d-wake').value = S.duty.wake;
+  $$('input[name=late]').forEach(i => i.checked = i.value === (draft && draft.late ? 'yes' : 'no'));
+};
+$('#btn-duty-next').addEventListener('click', () => {
+  S.duty = {report: $('#d-report').value || S.duty.report, hours: Number($('#d-hours').value) || S.duty.hours, legs: Number($('#d-legs').value) || S.duty.legs, wake: $('#d-wake').value || S.duty.wake};
+  draft.wake = S.duty.wake; draft.late = ($('input[name=late]:checked')||{}).value === 'yes';
+  save(); go('camera');
+});
+
+/* ---------- camera + MediaPipe ---------- */
+let stream = null, landmarker = null, landmarkerPromise = null, eyeRunning = false, eyeToken = 0, lastVT = -1, onEye = null;
+const vid = $('#cam');
+let calib = {ears:[], openEAR:null, faceSince:0, faceOK:false, brightness:null, bTimer:null};
+function setStatus(id, cls, label, text){ const el=$('#'+id); el.innerHTML = `<span class="pill ${cls}"><span class="dot"></span>${label}</span><span class="small muted">${esc(text)}</span>`; }
+function loadLandmarker(){
+  if(landmarkerPromise) return landmarkerPromise;
+  landmarkerPromise = (async () => {
+    const vision = await import(MP_URL);
+    const fs = await vision.FilesetResolver.forVisionTasks(MP_WASM);
+    const opts = d => ({baseOptions:{modelAssetPath:MP_MODEL, delegate:d}, outputFaceBlendshapes:true, runningMode:'VIDEO', numFaces:1});
+    try { landmarker = await vision.FaceLandmarker.createFromOptions(fs, opts('GPU')); }
+    catch(e){ landmarker = await vision.FaceLandmarker.createFromOptions(fs, opts('CPU')); }
+    return landmarker;
+  })();
+  landmarkerPromise.catch(()=>{ landmarkerPromise = null; });
+  return landmarkerPromise;
+}
+async function startCamera(){
+  if(stream) return stream;
+  stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:'user', width:{ideal:640}, height:{ideal:480}, frameRate:{ideal:60}}});
+  vid.srcObject = stream; $('#mini-video').srcObject = stream;
+  try{ await vid.play(); }catch(e){}
+  try{ await $('#mini-video').play(); }catch(e){}
+  return stream;
+}
+function stopCamera(){
+  eyeRunning = false;
+  if(calib.bTimer){ clearInterval(calib.bTimer); calib.bTimer=null; }
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
+  vid.srcObject = null; $('#mini-video').srcObject = null;
+}
+const EYE_L = [33,160,158,133,153,144], EYE_R = [362,385,387,263,373,380];
+function earOf(lm, idx, w, h){
+  const p = i => [lm[i].x*w, lm[i].y*h];
+  const d = (a,b) => Math.hypot(a[0]-b[0], a[1]-b[1]);
+  const [p1,p2,p3,p4,p5,p6] = idx.map(p);
+  const den = 2*d(p1,p4); return den>0 ? (d(p2,p6)+d(p3,p5))/den : 0;
+}
+function readFrame(res, v){
+  if(!res || !res.faceLandmarks || !res.faceLandmarks.length) return null;
+  const lm = res.faceLandmarks[0], w = v.videoWidth||640, h = v.videoHeight||480;
+  const ear = (earOf(lm,EYE_L,w,h) + earOf(lm,EYE_R,w,h)) / 2;
+  let blink = null;
+  const bs = res.faceBlendshapes && res.faceBlendshapes[0];
+  if(bs && bs.categories){ const g = n => { const x = bs.categories.find(k=>k.categoryName===n); return x ? x.score : 0; }; blink = (g('eyeBlinkLeft') + g('eyeBlinkRight')) / 2; }
+  return {ear, blink};
+}
+function startEyeLoop(v){ eyeRunning = true; lastVT = -1; const tok = ++eyeToken; eyeLoop(v, tok); }
+function eyeLoop(v, tok){
+  if(!eyeRunning || tok !== eyeToken) return;
+  if(landmarker && v.readyState >= 2 && v.currentTime !== lastVT){
+    lastVT = v.currentTime;
+    const t = performance.now();
+    let res = null; try{ res = landmarker.detectForVideo(v, t); }catch(e){}
+    if(onEye) onEye(readFrame(res, v), t);
+  }
+  requestAnimationFrame(() => eyeLoop(v, tok));
+}
+function brightness(){
+  if(!vid.videoWidth) return null;
+  const c = brightness.c || (brightness.c = document.createElement('canvas')); c.width = 32; c.height = 24;
+  const x = c.getContext('2d', {willReadFrequently:true}); x.drawImage(vid, 0, 0, 32, 24);
+  const d = x.getImageData(0,0,32,24).data; let s = 0; for(let i=0;i<d.length;i+=4) s += 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+  return s/(d.length/4);
+}
+function updateCamButton(){
+  $('#btn-cam-go').disabled = !(landmarker && calib.faceOK && calib.openEAR);
+}
+renderers.camera = async () => {
+  calib = {ears:[], openEAR:null, faceSince:0, faceOK:false, brightness:null, bTimer:null};
+  $('#face-guide').classList.remove('ok');
+  setStatus('st-cam','neutral','Camera','Starting…'); setStatus('st-model','neutral','Eye analysis','Loading…');
+  setStatus('st-face','neutral','Face','Waiting…'); setStatus('st-light','neutral','Lighting','Waiting…');
+  $('#btn-cam-go').disabled = true;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    setStatus('st-cam','bad','Camera','Not available in this browser. Open the page over https or use "Test without camera".'); return;
+  }
+  try { await startCamera(); setStatus('st-cam','ok','Camera','On. Video stays on this device.'); }
+  catch(e){ setStatus('st-cam','bad','Camera', e && e.name==='NotAllowedError' ? 'Permission denied. Allow camera access, or test without camera.' : 'Could not start the camera.'); return; }
+  calib.bTimer = setInterval(() => {
+    const b = brightness(); if(b==null) return; calib.brightness = b;
+    if(b < 45) setStatus('st-light','warn','Lighting','Too dark. Face a light source.');
+    else if(b > 225) setStatus('st-light','warn','Lighting','Very bright. Avoid light behind you.');
+    else setStatus('st-light','ok','Lighting','Good');
+  }, 600);
+  try { await loadLandmarker(); setStatus('st-model','ok','Eye analysis','Ready'); }
+  catch(e){ setStatus('st-model','bad','Eye analysis','Could not load. Check your connection, or test without camera.'); return; }
+  onEye = (f, t) => {
+    if(current !== 'camera') return;
+    if(!f){ calib.faceSince = 0; if(calib.faceOK){ calib.faceOK = false; $('#face-guide').classList.remove('ok'); } setStatus('st-face','warn','Face','Move your face into the oval.'); updateCamButton(); return; }
+    if(!calib.faceSince) calib.faceSince = t;
+    if(f.blink === null || f.blink < 0.3) calib.ears.push(f.ear);
+    if(calib.ears.length > 240) calib.ears.shift();
+    if(calib.ears.length >= 30) calib.openEAR = pct(calib.ears, 0.75);
+    const ok = t - calib.faceSince > 1200;
+    if(ok !== calib.faceOK){ calib.faceOK = ok; $('#face-guide').classList.toggle('ok', ok); }
+    setStatus('st-face', ok ? 'ok' : 'neutral', 'Face', ok ? (calib.openEAR ? 'Found and calibrated' : 'Found. Calibrating, keep eyes open…') : 'Hold still…');
+    updateCamButton();
+  };
+  startEyeLoop(vid);
+};
+$('#btn-cam-go').addEventListener('click', () => { draft.useCamera = true; draft.openEAR = calib.openEAR; draft.brightness = calib.brightness; if(calib.bTimer){clearInterval(calib.bTimer);calib.bTimer=null;} go('test'); });
+$('#btn-cam-skip').addEventListener('click', () => { draft.useCamera = false; stopCamera(); go('test'); });
+
+/* ---------- reaction test (PVT-B style) ---------- */
+const T = {};
+function resetTest(){
+  Object.assign(T, {running:false, t0:0, stimOn:false, stimStart:0, timer:null, raf:null, tick:null, trials:[], seq:[], fs:0, device:'touch', done:false});
+}
+renderers.test = () => {
+  resetTest(); startDemoStim();
+  $('#test-intro').hidden = false; $('#test-run').hidden = true;
+  // New users see practice first; after 3 real checks, starting straight away becomes the main button.
+  const seasoned = preChecks().filter(c => !c.simulated).length >= 3;
+  const p = $('#btn-test-start'), s = $('#btn-test-skip'), box = $('#test-start-btns');
+  if(seasoned){ box.prepend(s); s.className = 'btn amber block'; s.removeAttribute('style'); p.className = 'btn block'; p.setAttribute('style','background:#121a28;color:#e8eef6;border-color:#2a3549'); }
+  else { box.prepend(p); p.className = 'btn amber block'; p.removeAttribute('style'); s.className = 'btn block'; s.setAttribute('style','background:#121a28;color:#e8eef6;border-color:#2a3549'); }
+  $('#eye-ind').classList.toggle('off', !draft.useCamera);
+  $('#eye-ind-text').textContent = draft.useCamera ? 'Eye analysis on' : 'Camera off';
+};
+$('#btn-test-cancel').addEventListener('click', leaveCheck);
+$('#btn-test-start').addEventListener('click', () => {
+  clearInterval(demoTimer);
+  $('#test-intro').hidden = true; $('#test-run').hidden = false;
+  $('#stim').innerHTML = '<div class="fix"></div>';
+  T.practice = true; T.practiceLeft = 3; T.running = true; T.t0 = performance.now();
+  $('#test-time').textContent = 'Practice';
+  $('#test-hint').textContent = 'Practice: wait for the yellow number, then tap';
+  $('#test-msg').textContent = '';
+  scheduleNext();
+});
+$('#btn-test-skip').addEventListener('click', () => {
+  clearInterval(demoTimer);
+  $('#test-intro').hidden = true; $('#test-run').hidden = false;
+  T.practice = false; beginRealTest(true);
+});
+function beginRealTest(skipped){
+  T.practice = false; T.running = false; T.trials = []; T.seq = []; T.fs = 0;
+  $('#test-hint').textContent = '';
+  $('#test-time').textContent = '0:00 / 3:00';
+  $('#stim').innerHTML = skipped ? '<div class="feedback"><b>Get ready</b>Tap when the yellow number appears</div>' : '<div class="feedback"><b>Practice done</b>The real test starts now</div>';
+  T.eye = {frames:0, face:0, lastT:null, time:0, closed80:0, inClose:false, closeStart:0, longClose:0, blinks:0, ears:[], openEAR:draft.openEAR||null, calib:[]};
+  if(draft.useCamera && landmarker){
+    onEye = (f, t) => { if(!T.running || T.practice) return; eyeFrame(f, t); };
+    startEyeLoop($('#mini-video'));
+  }
+  setTimeout(() => { $('#stim').innerHTML = '<div class="fix"></div>'; T.running = true; T.t0 = performance.now(); scheduleNext(); T.tick = setInterval(tickTest, 250); }, 1800);
+}
+let demoTimer = null;
+function startDemoStim(){
+  clearInterval(demoTimer); const el = $('#demo-box'); if(!el) return; let on = false;
+  let t0 = 0;
+  const tick = () => { const now = performance.now();
+    if(now - t0 > 1400){ on = !on; t0 = now; el.innerHTML = on ? '<div class="counter" style="font-size:2.6rem">000</div>' : '<div class="fix"></div>'; }
+    if(on){ const c = el.firstChild; if(c) c.textContent = String(Math.floor(now - t0)).padStart(3,'0'); } };
+  tick(); demoTimer = setInterval(tick, 30);
+}
+function eyeFrame(f, t){
+  const E = T.eye; E.frames++;
+  const dt = E.lastT == null ? 0 : Math.min(t - E.lastT, 200); E.lastT = t;
+  if(!f){ $('#eye-ind').classList.add('off'); return; }
+  $('#eye-ind').classList.remove('off');
+  E.face++;
+  if(!E.openEAR){ if(f.blink===null || f.blink<0.3) E.calib.push(f.ear); if(E.calib.length >= 30) E.openEAR = pct(E.calib, 0.75); return; }
+  E.time += dt; E.ears.push(f.ear);
+  const cEar = clamp((E.openEAR - f.ear) / (E.openEAR*0.7), 0, 1);
+  const closure = f.blink === null ? cEar : 0.5*f.blink + 0.5*cEar;
+  if(closure >= 0.8) E.closed80 += dt;
+  const closed = closure >= 0.5;
+  // A closure only ends once the eye has stayed open for 80 ms, so one blink that flickers is not counted twice.
+  if(closed){
+    if(!E.inClose){ E.inClose = true; E.closeStart = t; E.blinks++; }
+    E.openSince = null;
+  } else if(E.inClose){
+    if(E.openSince == null) E.openSince = t;
+    if(t - E.openSince >= 80){ E.inClose = false; if(E.openSince - E.closeStart >= 500) E.longClose++; E.openSince = null; }
+  }
+}
+function scheduleNext(){
+  const isi = 1000 + Math.random()*3000;
+  T.timer = setTimeout(showStim, isi);
+}
+function showStim(){
+  if(!T.running) return;
+  T.stimOn = true; T.stimStart = performance.now();
+  if(T.practice) $('#test-hint').textContent = 'Tap now!';
+  const el = $('#stim'); el.innerHTML = '<div class="counter">000</div>'; const c = el.firstChild;
+  const update = () => { if(!T.stimOn) return; const ms = Math.floor(performance.now() - T.stimStart); c.textContent = String(Math.min(ms,9999)).padStart(3,'0'); };
+  T.cint = setInterval(update, 16);
+  const loop = () => { if(!T.stimOn) return; update(); T.raf = requestAnimationFrame(loop); };
+  T.raf = requestAnimationFrame(loop);
+  T.miss = setTimeout(() => { if(T.stimOn) respond(30000, true); }, 30000);
+}
+function respond(rt, timedOut, early){
+  T.stimOn = false; cancelAnimationFrame(T.raf); clearInterval(T.cint); clearTimeout(T.miss);
+  $('#stim').innerHTML = timedOut
+    ? '<div class="feedback"><b>Missed</b>tap as soon as you see the number</div>'
+    : early ? '<div class="feedback"><b>Too early</b>wait for the number</div>'
+    : `<div class="feedback"><b>${Math.round(rt)} ms</b>your reaction</div>`;
+  if(T.practice){
+    if(!early) T.practiceLeft--;
+    $('#test-hint').textContent = T.practiceLeft > 0 ? `Practice: ${T.practiceLeft} more` : '';
+    if(T.practiceLeft <= 0){ T.running = false; setTimeout(beginRealTest, 1000); return; }
+    T.timer = setTimeout(() => { if(!T.running) return; $('#stim').innerHTML = '<div class="fix"></div>'; $('#test-hint').textContent = 'Practice: wait for the yellow number'; T.timer = setTimeout(showStim, 800 + Math.random()*2200); }, 1000);
+    return;
+  }
+  // PVT rule: a response under 100 ms (raw, before removing touch delay) is an anticipation, i.e. a false start.
+  if(early){ T.fs++; T.seq.push([Math.round(rt), 'fs', Math.round(performance.now()-T.t0)]); }
+  else { T.trials.push(rt); T.seq.push([Math.round(rt), timedOut ? 'miss' : (rt >= lapseThreshold() ? 'lapse' : 'ok'), Math.round(performance.now()-T.t0)]); }
+  if(checkStop()) return;
+  // PVT-B: 1 to 4 s including about 1 s of feedback
+  T.timer = setTimeout(() => { if(!T.running) return; $('#stim').innerHTML = '<div class="fix"></div>'; T.timer = setTimeout(showStim, Math.random()*3000); }, 1000);
+}
+function onTap(kind){
+  if(!T.running) return;
+  T.device = kind;
+  const now = performance.now();
+  if(T.stimOn){ const raw = now - T.stimStart; respond(raw < 100 ? raw : Math.max(0, raw - latencyOf(kind)), false, raw < 100); return; }
+  $('#test-msg').textContent = 'Too early. Wait for the yellow number.'; clearTimeout(onTap._m); onTap._m = setTimeout(()=>$('#test-msg').textContent='', 900);
+  if(T.practice) return;
+  T.fs++; T.seq.push([0, 'fs', Math.round(now - T.t0)]); checkStop();
+}
+$('#test-pad').addEventListener('pointerdown', e => { e.preventDefault(); onTap(e.pointerType === 'touch' || e.pointerType === 'pen' ? 'touch' : 'mouse'); });
+document.addEventListener('keydown', e => { if(current==='test' && T.running && (e.code==='Space' || e.code==='Enter')){ e.preventDefault(); onTap('keyboard'); } });
+// NASA touchscreen PVT validation subtracted measured device latency (about 77 ms on iPad) from every trial.
+function latencyOf(kind){ return kind === 'touch' ? 77 : 0; }
+function lapseThreshold(){ return 355; }
+function tally(){
+  const thr = lapseThreshold();
+  const lapses = T.trials.filter(rt => rt >= thr).length;
+  return {lapses, lpfs: lapses + T.fs};
+}
+function checkStop(){
+  const t = (performance.now() - T.t0)/1000;
+  const {lpfs} = tally();
+  const proj = t > 0 ? lpfs*180/t : 0;
+  if(t >= 180) return finishTest('full');
+  return false;
+}
+function tickTest(){
+  if(!T.running) return;
+  const t = (performance.now() - T.t0)/1000;
+  const m = Math.floor(t/60), s = Math.floor(t%60);
+  $('#test-time').textContent = `${m}:${String(s).padStart(2,'0')} / 3:00`;
+  if(t >= 180 && !T.stimOn){ finishTest('full'); return; }
+  $('#test-bar').style.width = clamp(t/180*100, 0, 100) + '%';
+  if(t >= 180 && !T.stimOn) finishTest('full');
+}
+$('#btn-test-stop').addEventListener('click', () => { if(T.practice){ T.running = false; clearTimeout(T.timer); clearInterval(T.cint); clearTimeout(T.miss); T.stimOn = false; stopCamera(); go('home'); return; } finishTest('stopped'); });
+function finishTest(reason){
+  if(T.done) return true; T.done = true; T.running = false;
+  clearTimeout(T.timer); clearInterval(T.tick); cancelAnimationFrame(T.raf); clearInterval(T.cint); clearTimeout(T.miss); T.stimOn = false;
+  const dur = (performance.now() - T.t0)/1000;
+  const {lapses, lpfs} = tally();
+  const pvt = {duration: Math.round(dur), trials: T.trials.length, medianRT: Math.round(median(T.trials) || 0), lapses, fs: T.fs, lpfs,
+    lpfs3: dur >= 175 ? lpfs : Math.round(lpfs*180/Math.max(dur,1)), threshold: lapseThreshold(), latency: latencyOf(T.device), device: T.device, end: reason,
+    fastest: T.trials.length ? Math.round(Math.min(...T.trials)) : null, seq: T.seq.slice(0, 200)};
+  let eye = null;
+  if(draft.useCamera && T.eye){
+    const E = T.eye;
+    if(E.inClose && (E.openSince != null ? E.openSince : E.lastT) - E.closeStart >= 500) E.longClose++;
+    const fps = E.frames / Math.max(dur, 1);
+    eye = {fps: Math.round(fps), facePct: E.frames ? E.face/E.frames : 0, seconds: Math.round(E.time/1000),
+      perclos: E.time ? E.closed80/E.time : 0, longClose: E.longClose, blinkRate: E.time ? Math.round(E.blinks/(E.time/60000)) : 0,
+      medEAR: median(E.ears)};
+    eye.valid = eye.facePct >= 0.85 && fps >= 12 && E.time >= 30000;
+  }
+  stopCamera();
+  const check = {id: 'c'+Date.now(), type:'pre', ts: Date.now(), sp: draft.sp, late: draft.late, wake: draft.wake,
+    duty: {...S.duty}, pvt, eye, simulated:false};
+  if(reason === 'stopped' && pvt.trials < 10){ toast('Test stopped early. Not enough responses to give a result.'); go('home'); return true; }
+  evaluate(check);
+  S.checks.push(check); check.newBadges = awardBadges(); save();
+  lastCheckId = check.id; go('results');
+  return true;
+}
+
+/* ---------- evaluation ---------- */
+function evaluate(check){
+  const reasons = [];
+  const L3 = check.pvt.lpfs3;
+  let level = L3 <= 6 ? 0 : (L3 <= 16 ? 1 : 2);
+  reasons.push({k:'pvt', text: `${L3} lapses and false starts (3-minute equivalent). ${level===0?'Within the high-performance range (6 or fewer).':level===1?'Medium range (7 to 16).':'Low range (more than 16).'}`});
+  if(check.pvt.end === 'stopped') reasons.push({k:'note', text:'You stopped the test early, so this result is less reliable.'});
+  const base = preChecks().filter(c => c.id !== check.id && c.pvt && c.pvt.trials >= 10).slice(-20);
+  if(base.length >= 5){
+    const rts = base.map(c=>c.pvt.medianRT), med = median(rts), mad = median(rts.map(x=>Math.abs(x-med)));
+    const z = (check.pvt.medianRT - med) / (1.4826*mad + 10);
+    check.personal = {n: base.length, med: Math.round(med), z: Math.round(z*10)/10};
+    if(z >= 2 && level < 1){ level = 1; reasons.push({k:'base', text:`Median reaction ${check.pvt.medianRT} ms vs your usual ${Math.round(med)} ms.`}); }
+  } else check.personal = {n: base.length};
+  if(check.eye && check.eye.valid){
+    const e = check.eye;
+    if((e.longClose >= 2 || e.perclos >= 0.15) && level < 2){ level++; reasons.push({k:'eye', text:`Eye signs of drowsiness: ${e.longClose} long eye closures, eyes mostly closed ${(e.perclos*100).toFixed(1)}% of the time.`}); }
+  }
+  check.level = level; check.reasons = reasons;
+  // feeling vs measured
+  if(check.sp <= 3 && level >= 1) check.mismatch = 'feel-ok';
+  else if(check.sp >= 5 && level === 0) check.mismatch = 'feel-tired';
+  else check.mismatch = null;
+  return check;
+}
+
+/* ---------- forecast (illustrative) ---------- */
+function forecast(level, duty, wake){
+  const start = hm(duty.report), hours = clamp(Number(duty.hours)||8, 1, 16);
+  let awake0 = start - hm(wake||duty.wake); if(awake0 < 0) awake0 += 24;
+  const pts = [];
+  for(let i = 0; i <= hours*2; i++){
+    const clock = start + i/2, c = ((clock%24)+24)%24, awake = awake0 + i/2;
+    let r = level*0.8 + Math.max(0, awake-10)/5;
+    if(c >= 2 && c < 6) r += 1.2; else if((c >= 0 && c < 2) || (c >= 6 && c < 7)) r += 0.6; else if(c >= 14 && c < 16) r += 0.35;
+    pts.push({clock, r, awake});
+  }
+  const peak = pts.reduce((a,b) => b.r > a.r ? b : a, pts[0]);
+  return {pts, peak, start, hours};
+}
+function bandOf(r){ return r < 1 ? 0 : (r < 2 ? 1 : 2); }
+function timelineSVG(fc){
+  const W = 420, H = 46, n = fc.pts.length, w = W/n;
+  const bars = fc.pts.map((p,i) => { const b = bandOf(p.r); const col = ['var(--ok)','var(--warn)','var(--bad)'][b];
+    const hgt = 14 + Math.min(p.r, 3)/3*28;
+    return `<rect x="${(i*w+1).toFixed(1)}" y="${(H-hgt).toFixed(1)}" width="${Math.max(w-2,1).toFixed(1)}" height="${hgt.toFixed(1)}" rx="2" fill="${col}" opacity="${p===fc.peak?1:0.75}"/>`; }).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Estimated fatigue risk across today's duty">${bars}</svg>
+    <div class="timeline-labels"><span>${fmtClock(fc.start)} report</span><span>${fmtClock(fc.start + fc.hours/2)}</span><span>${fmtClock(fc.start + fc.hours)} end</span></div>`;
+}
+
+/* ---------- suggestions ---------- */
+function suggestions(c, fc){
+  const out = [], peakT = fmtClock(fc.peak.clock), endT = fmtClock(fc.start + fc.hours);
+  const bandPeak = bandOf(fc.peak.r);
+  if(c.level === 2) out.push('Consider whether you are fit to fly today. Calling in fatigued is designed to be protected under your airline\'s fatigue policy.');
+  if(bandPeak >= 1) out.push(`Fatigue is most likely around ${peakT}. Plan extra cross-checks for that part of the duty.`);
+  const hoursToPeak = ((fc.peak.clock - fc.start) % 24 + 24) % 24;
+  if(c.level >= 1 && hoursToPeak >= 1) out.push(`If you use caffeine, take it about 30 to 60 minutes before ${peakT}, and not within 6 hours of your planned sleep.`);
+  if(c.level >= 1 && Number(c.duty.legs) >= 2) out.push('Use your longest ground time between legs for a short rest. Keep naps to about 20 minutes to avoid grogginess.');
+  if(c.late) out.push('Late check-ins show up in your pattern. Protect tonight\'s sleep window.');
+  if(c.level === 0 && !out.length) out.push(`You're ready. Your duty ends at ${endT}; expect a natural dip around ${peakT}.`);
+  if(c.level === 0 && out.length && bandPeak === 0) out.push('No action needed now.');
+  return out.slice(0,3);
+}
+
+/* ---------- logbook, streaks, badges ---------- */
+const BADGES = [
+  {id:'first',   code:'WUP', metal:'Bronze', name:'Wheels Up',       tag:'Every logbook starts somewhere.', desc:'Log your very first check.'},
+  {id:'calib',   code:'TRM', metal:'Silver', name:'Trimmed',         tag:'The app now knows your normal.', desc:'Log 5 checks. Your personal baseline unlocks.'},
+  {id:'night',   code:'RED', metal:'Ruby',   name:'Red-Eye',         tag:'Owls only.', desc:'Check in between 20:00 and 05:00, when your body clock is working against you.'},
+  {id:'steady',  code:'BTR', metal:'Gold',   name:'Butter Landing',  tag:'Smooth. No jumping the gun.', desc:'3 checks in a row with 2 or fewer early taps.'},
+  {id:'pattern', code:'BOX', metal:'Orange', name:'Black Box',       tag:'You cracked your own flight data.', desc:'Log checks after late hotel nights and after normal nights, so your own pattern shows up.'},
+  {id:'honest',  code:'WGM', metal:'Platinum', name:'Wingman',       tag:'Nobody flies solo.', desc:'Reach out to a peer-support pilot or a confidential counselor. Any day, for any reason.'},
+  {id:'week4',   code:'4WK', metal:'Jade',   name:'Long Haul',       tag:'A month without missing a week.', desc:'Check in at least once a week, 4 weeks in a row.'},
+  {id:'log25',   code:'25X', metal:'Midnight', name:'Ace',           tag:'25 entries. Captain material.', desc:'Log 25 checks.'}
+];
+const METALS = {Bronze:['#f3c19a','#c47a45','#7a4219'], Silver:['#ffffff','#c3ccd8','#6c7a8c'], Ruby:['#ffb3b3','#e0414a','#7a1018'], Gold:['#ffe08a','#f0b23a','#8a5a00'],
+  Orange:['#ffd1a1','#ff8a1f','#8a3d00'], Platinum:['#ffffff','#dfe9f5','#7f93ad'], Jade:['#bff5dc','#2fbf86','#0d5c3d'], Midnight:['#a9c4ff','#3b5bdb','#14245e']};
+function metalOf(code){ const b = BADGES.find(x => x.code === code); return (b && b.metal) || 'Gold'; }
+function weekStart(ts){ const d = new Date(ts); d.setHours(0,0,0,0); const k = (d.getDay()+6)%7; d.setDate(d.getDate()-k); return d.getTime(); }
+function weekStreak(list, now){
+  const weeks = new Set(list.map(c => weekStart(c.ts)));
+  let w = weekStart(now || Date.now()), n = 0;
+  if(!weeks.has(w)) w -= 7*86400000; // this week is still open, so it doesn't break the streak yet
+  while(weeks.has(w)){ n++; w = weekStart(w - 3*86400000); }
+  return n;
+}
+function earnedNow(list, now){
+  const e = new Set();
+  if(list.length >= 1) e.add('first');
+  if(list.length >= 5) e.add('calib');
+  if(list.length >= 25) e.add('log25');
+  if(list.some(c => { const h = new Date(c.ts).getHours(); return h >= 20 || h < 5; })) e.add('night');
+  if(list.filter(c=>c.late).length >= 2 && list.filter(c=>!c.late).length >= 2) e.add('pattern');
+  for(let i = 2; i < list.length; i++) if([0,1,2].every(k => list[i-k].pvt && list[i-k].pvt.fs <= 2)){ e.add('steady'); break; }
+  if(S.honest) e.add('honest');
+  if(weekStreak(list, now) >= 4) e.add('week4');
+  return e;
+}
+function awardBadges(ts){
+  if(!S.badges) S.badges = {};
+  const list = preChecks().filter(c => ts == null || c.ts <= ts);
+  const fresh = [];
+  earnedNow(list, ts).forEach(id => { if(!S.badges[id]){ S.badges[id] = ts || Date.now(); fresh.push(id); } });
+  return fresh;
+}
+function wings(code, earned){
+  const mt = metalOf(code), M = METALS[mt];
+  const fill = earned ? `url(#wg${mt})` : 'var(--lock-fill)', stroke = earned ? M[2] : 'var(--lock-line)', feather = earned ? M[2] : 'var(--lock-line)';
+  const wing = `<path d="M44 22 C30 14 16 12 3 13 C8 16 10 17 13 18 C9 19 7 20 6 21 C11 22 14 23 17 23 C14 24 12 25 11 26 C18 27 28 28 44 31 Z" fill="${fill}" stroke="${stroke}" stroke-width="1.4" stroke-linejoin="round"/>`
+    + `<path d="M40 23 C30 19 20 17 9 16 M38 26 C29 24 21 23 13 22 M38 29 C30 28 23 27 16 27" fill="none" stroke="${feather}" stroke-width=".9" opacity=".6"/>`;
+  const lock = earned ? '' : `<g transform="translate(76 40) scale(.8)"><circle r="9" fill="var(--surface)" stroke="var(--lock-line)" stroke-width="1.2"/><rect x="-4" y="-1.5" width="8" height="6.5" rx="1.5" fill="var(--muted)"/><path d="M-2.6 -1.5v-2a2.6 2.6 0 0 1 5.2 0v2" fill="none" stroke="var(--muted)" stroke-width="1.5"/></g>`;
+  return `<svg class="seal" viewBox="0 0 120 52" aria-hidden="true">${wing}<g transform="translate(120 0) scale(-1 1)">${wing}</g>
+    <circle cx="60" cy="26" r="18" fill="${earned ? '#0f1b2d' : 'var(--lock-fill)'}" stroke="${earned ? `url(#wg${mt})` : 'var(--lock-line)'}" stroke-width="3"/>
+    <text x="60" y="30.5" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="600" letter-spacing=".5" fill="${earned ? M[0] : 'var(--muted)'}">${code}</text>${lock}</svg>`;
+}
+/* ---------- rank stripes and the uniform you wear ---------- */
+const RANKS = [{n:1, name:'Cadet', bars:1}, {n:5, name:'Second Officer', bars:2}, {n:15, name:'First Officer', bars:3}, {n:25, name:'Captain', bars:4}];
+function rankOf(count){ let r = {n:0, name:'Trainee', bars:0}; RANKS.forEach(x => { if(count >= x.n) r = x; }); const next = RANKS.find(x => count < x.n) || null; return {...r, next}; }
+function wornBadge(){
+  const got = Object.keys(S.badges||{});
+  if(S.worn && got.includes(S.worn)) return BADGES.find(b => b.id === S.worn);
+  const latest = got.sort((a,b) => S.badges[b] - S.badges[a])[0];
+  return latest ? BADGES.find(b => b.id === latest) : null;
+}
+function uniformSVG(name, badge, bars, small){
+  const u = 'j' + (++SVGID);
+  const stripes = side => Array.from({length:4},(_,i) => `<rect x="${side==='L'?34:226}" y="${16+i*8}" width="60" height="4.5" rx="1" fill="${i < bars ? '#f0b23a' : 'rgba(255,255,255,.07)'}" transform="rotate(${side==='L'?12:-12} ${side==='L'?64:256} 30)"/>`).join('');
+  const w = badge ? `<g transform="translate(176 92) scale(.95)">${wings(badge.code, true).replace(/<svg[^>]*>/,'').replace('</svg>','')}</g>`
+    : `<g transform="translate(176 92) scale(.95)" opacity=".5"><rect x="0" y="6" width="120" height="40" rx="10" fill="none" stroke="#5a6b88" stroke-dasharray="4 4"/><text x="60" y="31" text-anchor="middle" font-size="10" fill="#8e9bb0" font-family="IBM Plex Mono,monospace">YOUR WINGS</text></g>`;
+  const nm = esc((name||'Pilot').split(' ')[0].toUpperCase()).slice(0,10);
+  return `<svg class="uniform${small?' sm':''}" viewBox="0 0 320 210" role="img" aria-label="Your uniform with ${badge ? esc(badge.name)+' wings' : 'no wings yet'} and ${bars} stripe${bars===1?'':'s'}">
+    <defs><linearGradient id="${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e3050"/><stop offset="1" stop-color="#0f1a2e"/></linearGradient></defs>
+    <path d="M0 210 L0 70 Q4 32 70 18 L118 6 L202 6 L250 18 Q316 32 320 70 L320 210 Z" fill="url(#${u})"/>
+    ${stripes('L')}${stripes('R')}
+    <path d="M118 6 L160 96 L202 6 Z" fill="#f4f7fb"/>
+    <path d="M150 28 L170 28 L166 40 L174 120 L160 136 L146 120 L154 40 Z" fill="#14213a"/><path d="M152 28 L168 28 L165 38 L155 38 Z" fill="#0b1426"/>
+    <path d="M118 6 L104 14 L150 128 L160 96 Z" fill="#162641"/><path d="M202 6 L216 14 L170 128 L160 96 Z" fill="#162641"/>
+    <path d="M104 14 L150 128 M216 14 L170 128" stroke="#2a4066" stroke-width="2"/>
+    ${[150,180].map(y=>`<circle cx="160" cy="${y}" r="6" fill="#f0b23a" stroke="#8a5a00"/>`).join('')}
+    <g transform="translate(32 108)"><rect width="96" height="24" rx="4" fill="url(#wgGold)" stroke="#8a5a00"/><text x="48" y="16.5" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600" fill="#2a1a00" letter-spacing="1">${nm}</text></g>
+    ${w}
+  </svg>`;
+}
+function badgeProgress(id, list){
+  const n = list.length, late = list.filter(c=>c.late).length, norm = n - late;
+  let run = 0, best = 0; list.forEach(c => { run = (c.pvt && c.pvt.fs <= 2) ? run+1 : 0; best = Math.max(best, run); });
+  const m = {first:[n,1,'check'], calib:[n,5,'checks'], log25:[n,25,'checks'], night:[list.some(c=>{const h=new Date(c.ts).getHours();return h>=20||h<5;})?1:0,1,'night check'],
+    pattern:[Math.min(late,2)+Math.min(norm,2),4,'of the right checks'], steady:[best,3,'in a row'], honest:[S.honest?1:0,1,'time'], week4:[weekStreak(list),4,'weeks']}[id];
+  return {have: Math.min(m[0], m[1]), need: m[1], unit: m[2]};
+}
+function badgeHTML(b, earned){
+  return `<div class="badge ${earned?'earned':'locked'}">${wings(b.code, earned)}<div>${esc(b.name)}</div></div>`;
+}
+function nextUnlock(list){
+  const n = list.length;
+  if(n < 5) return {label:`Personal baseline unlocks in ${5-n} more check${5-n===1?'':'s'}`, sub:'Then results compare you with your own usual, not with everyone.', p:n/5};
+  const late = list.filter(c=>c.late).length, norm = n - late;
+  if(!(S.badges||{}).pattern) return {label:'Black Box wings', sub:'Log at least 2 checks after a late check-in and 2 after a normal night.', p:(Math.min(late,2)+Math.min(norm,2))/4};
+  if(n < 25) return {label:`${25-n} checks to Ace wings`, sub:'Every entry makes your pattern clearer.', p:n/25};
+  return null;
+}
+function renderLogbook(el, full){
+  const list = preChecks(), now = Date.now();
+  const streak = weekStreak(list, now), earned = Object.keys(S.badges||{}).length;
+  const ws = weekStart(now), days = ['M','T','W','T','F','S','S'];
+  const dots = days.map((d,i) => { const t0 = ws + i*86400000; const on = list.some(c => c.ts >= t0 && c.ts < t0 + 86400000);
+    const today = sameDay(t0, now); return `<span class="${on?'on':''} ${today?'today':''}"><i></i>${d}</span>`; }).join('');
+  const nu = nextUnlock(list);
+  const shown = BADGES.filter(b => (S.badges||{})[b.id]).slice(-4);
+  el.innerHTML = `
+    <div class="row" style="justify-content:space-between"><div class="logo-row"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="4" y="3" width="17" height="20" rx="2" fill="var(--ink)"/><rect x="7" y="3" width="1.5" height="20" fill="var(--accent)"/><path d="M11 9h7M11 13h7M11 17h5" stroke="var(--bg)" stroke-width="1.4" stroke-linecap="round"/></svg><h2 style="margin:0">Readiness logbook</h2></div><span class="small muted mono">${list.length ? 'Entry #'+list.length : 'No entries yet'}</span></div>
+    <div class="stat3"><div><div class="v">${list.length}</div><div class="k">checks logged</div></div>
+      <div><div class="v">${streak}</div><div class="k">week streak</div></div>
+      <div><div class="v">${earned}/${BADGES.length}</div><div class="k">badges</div></div></div>
+    <div><div class="small muted" style="margin-bottom:6px">This week</div><div class="week">${dots}</div></div>
+    ${nu ? `<div class="stack" style="gap:6px"><div class="small"><b>Next:</b> ${esc(nu.label)}</div><div class="prog"><i style="width:${Math.round(nu.p*100)}%"></i></div><div class="small muted">${esc(nu.sub)}</div></div>` : ''}
+    ${!full && shown.length ? `<div class="badge-grid">${shown.map(b=>badgeHTML(b,true)).join('')}</div>` : ''}
+    ${full ? '' : '<button class="btn block" id="btn-badges">See all badges</button>'}
+    <p class="small muted" style="margin:0">Streaks count weeks, not days, so a day off never breaks them. Badges reward checking in and speaking up, never a high score.</p>`;
+  if(!full) el.querySelector('#btn-badges').onclick = () => sheet('Badges', `<div class="stack">${BADGES.map(b => { const got = (S.badges||{})[b.id];
+      return `<div class="row" style="flex-wrap:nowrap;align-items:center"><div class="badge ${got?'earned':'locked'}" style="width:84px;flex:none">${wings(b.code, !!got)}</div><div><div><b>${esc(b.name)}</b>${got?` <span class="small muted">· ${fmtDate(got)}</span>`:''}</div><div class="small muted">${esc(b.desc)}</div></div></div>`; }).join('')}</div>`, 'Close', () => {});
+}
+
+
+/* ---------- illustrations (hand-drawn SVG, no downloads) ---------- */
+const PLANE = `<g>
+  <path d="M8 22 C8 18 14 16 26 16 L92 16 C104 16 112 19 116 22 C112 25 104 27 92 27 L26 27 C14 27 8 25 8 22 Z" fill="#f4f7fb"/>
+  <path d="M10 22 C10 19.5 15 18.3 26 18.3 L104 18.3" fill="none" stroke="#c9d3e0" stroke-width="1"/>
+  <path d="M100 20.5 C104 19.6 108 20 111 21.4" fill="none" stroke="#1d2b44" stroke-width="2.2" stroke-linecap="round"/>
+  <g fill="#1d2b44">${Array.from({length:12},(_,i)=>`<rect x="${32+i*5.6}" y="19.4" width="2.4" height="2.2" rx="1"/>`).join('')}</g>
+  <path d="M14 16 L4 2 L12 2 L30 16 Z" fill="#e8eef6"/><path d="M4 2 L12 2 L16 7 L8 7 Z" fill="#ffb52e"/>
+  <path d="M12 21 L1 15 L5 15 L20 20 Z" fill="#dfe6ef"/>
+  <path d="M50 24 L74 24 L58 42 L48 42 Z" fill="#dfe6ef"/>
+  <rect x="56" y="27" width="15" height="6" rx="3" fill="#c9d3e0"/>
+  <circle cx="113" cy="23" r="1.3" fill="#ff5a4a"/>
+</g>`;
+function sky(h){
+  // morning, day, evening, night palettes
+  if(h >= 5 && h < 10) return {top:'#5b8fd6', mid:'#f2b49b', low:'#ffe2b8', sun:'#ffd27a', stars:false, ground:'#2a3550'};
+  if(h >= 10 && h < 17) return {top:'#2f7fd1', mid:'#6fb2ee', low:'#cfe7fb', sun:'#fff3c4', stars:false, ground:'#2b3a52'};
+  if(h >= 17 && h < 20) return {top:'#2b2f6b', mid:'#c25b7a', low:'#ffb36b', sun:'#ffcf6b', stars:false, ground:'#1c2236'};
+  return {top:'#050b1a', mid:'#0f1d3d', low:'#24365f', sun:'#e8eef6', stars:true, ground:'#070c18'};
+}
+let SVGID = 0;
+function heroScene(h){
+  const u = 'g' + (++SVGID);
+  const c = sky(h), night = c.stars;
+  const stars = night ? Array.from({length:26},(_,i)=>{ const x=(i*73)%400, y=(i*37)%70+6; return `<circle class="tw" style="animation-delay:${(i%7)*0.45}s" cx="${x}" cy="${y}" r="${i%5?0.9:1.5}" fill="#fff" opacity="${0.4+(i%3)*0.2}"/>`; }).join('') : '';
+  const sunY = night ? 34 : (h < 12 ? 70 : 60), sunX = h < 12 ? 300 : 90;
+  const lights = Array.from({length:9},(_,i)=>{ const t=i/8, y=150+t*28, xl=190-t*120, xr=210+t*120, r=0.8+t*1.8;
+    const d = `style="animation-delay:${((8-i)*0.11).toFixed(2)}s"`; return `<circle class="rl" ${d} cx="${xl}" cy="${y}" r="${r}" fill="#ffd27a"/><circle class="rl" ${d} cx="${xr}" cy="${y}" r="${r}" fill="#ffd27a"/>`; }).join('');
+  const centre = Array.from({length:6},(_,i)=>{ const t=i/6, y=152+t*26, w=1+t*3; return `<rect x="${200-w/2}" y="${y}" width="${w}" height="${2+t*4}" fill="#fff" opacity=".8"/>`; }).join('');
+  return `<svg class="scene" viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Aircraft climbing out over a runway">
+    <defs><linearGradient id="sky${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.top}"/><stop offset=".65" stop-color="${c.mid}"/><stop offset="1" stop-color="${c.low}"/></linearGradient>
+      <radialGradient id="sun${u}"><stop offset="0" stop-color="${c.sun}"/><stop offset="1" stop-color="${c.sun}" stop-opacity="0"/></radialGradient></defs>
+    <rect width="400" height="180" fill="url(#sky${u})"/>${stars}
+    <circle cx="${sunX}" cy="${sunY}" r="46" fill="url(#sun${u})" opacity=".7"/>
+    ${night ? `<circle cx="${sunX}" cy="${sunY}" r="11" fill="#e8eef6"/><circle cx="${sunX+5}" cy="${sunY-3}" r="10" fill="${c.top}"/>` : `<circle cx="${sunX}" cy="${sunY}" r="14" fill="${c.sun}"/>`}
+    <path d="M0 140 Q60 128 120 136 T250 132 T400 138 V180 H0 Z" fill="${c.ground}" opacity=".75"/>
+    <path d="M0 150 H400 V180 H0 Z" fill="${c.ground}"/>
+    <path d="M186 150 L214 150 L340 180 L60 180 Z" fill="#3a4660" opacity=".9"/>
+    ${centre}${lights}
+    <path class="trail" d="M232 92 Q200 112 150 128" stroke="#fff" stroke-opacity=".3" stroke-width="1.4" fill="none" stroke-dasharray="2 5"/>
+    <g class="fly"><g transform="translate(232 54) rotate(-14) scale(1.05)">${PLANE}</g></g>
+  </svg>`;
+}
+const STEP_ICONS = {
+  feel: `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><circle cx="11.5" cy="13.5" r="1.6" fill="var(--accent-ink)"/><circle cx="20.5" cy="13.5" r="1.6" fill="var(--accent-ink)"/><path d="M10.5 19.5c3 2.6 8 2.6 11 0" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/></svg>`,
+  duty: `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="22" height="20" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><path d="M5 12h22" stroke="var(--accent)" stroke-width="2"/><path d="M11 4v5M21 4v5" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><path d="M10 19l4 0 2-3 3 6 2-3h2" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  test: `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="18" r="10.5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><path d="M13 4h6M16 4v3.5" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><path d="M16 18l4.5-4.5" stroke="var(--accent-ink)" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="18" r="1.8" fill="var(--accent-ink)"/></svg>`
+};
+const FACT_ICONS = [
+  `<path d="M16 10h16l-3 14a5 5 0 0 1-5 4h0a5 5 0 0 1-5-4z" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M24 28v8M18 38h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="34" cy="13" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M34 10v3l2 1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>`,
+  `<path d="M24 12c-6 0-10 4-10 9 0 3 1.5 5 3 6.5V33h14v-5.5c1.5-1.5 3-3.5 3-6.5 0-5-4-9-10-9z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M19 37h10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 22h3l2 3 2-6 2 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
+  `<path d="M30 14a11 11 0 1 0 6 18 9 9 0 0 1-6-18z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M33 8h5l-5 6h5M38 16h3l-3 4h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
+  `<circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M24 15v9l6 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M14 10l-4-3M34 10l4-3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>`,
+  `<path d="M10 30h28" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M16 30a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M24 12v5M13 17l3 3M35 17l-3 3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M14 36h20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 4"/>`,
+  `<circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="24" cy="24" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="24" cy="24" r="2" fill="currentColor"/><path d="M33 15l6-6M36 9h3v3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>`,
+  `<path d="M8 34 Q16 14 24 26 T40 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="24" cy="26" r="3" fill="currentColor"/><path d="M8 38h32" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>`,
+  `<path d="M10 26h20c4 0 7-2 7-5s-3-5-7-5H18l-4 5h-4z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M8 12h28M22 12v4M37 21l4-4v10z" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 26l-2 6h18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>`
+];
+
+/* ---------- facts (one per day) ---------- */
+const FACTS = [
+  {t:'Staying awake for 17 to 19 hours can slow reactions about as much as a 0.05% blood alcohol level.', s:'Williamson & Feyer, 2000, Occupational and Environmental Medicine'},
+  {t:'After several short nights, people stop feeling sleepier, but their reaction test keeps getting worse. That is why ReadyCheck measures instead of just asking.', s:'Van Dongen et al., 2003, Sleep'},
+  {t:'In NASA\'s long-haul study, crews given a 40-minute cockpit rest slept about 26 minutes and showed about 34% better reaction performance and 54% better physiological alertness late in the flight.', s:'Rosekind et al., 1994, NASA Technical Memorandum 108839'},
+  {t:'The body clock\'s low point is roughly 02:00 to 06:00. Alertness dips there even after a good sleep.', s:'Circadian research summarized by ICAO Fatigue Management Guide'},
+  {t:'Grogginess right after waking, called sleep inertia, usually fades within about 15 to 30 minutes. Keep naps short to avoid it.', s:'Tassi & Muzet, 2000, Sleep Medicine Reviews'},
+  {t:'The 3-minute reaction test shows little to no learning effect, so your results reflect how alert you are, not how much you\'ve practiced.', s:'Basner et al., 2011, Aviation, Space, and Environmental Medicine'},
+  {t:'A dip in alertness in the early afternoon, around 14:00 to 16:00, is part of the normal body clock, not just lunch.', s:'Monk, 2005, Clinics in Sports Medicine'},
+  {t:'A US helicopter air ambulance operator uses this same 3-minute test before shifts and has logged more than 95,000 of them.', s:'Mollicone et al., 2023'}
+];
+function factFor(seed){ return FACTS[((seed % FACTS.length) + FACTS.length) % FACTS.length]; }
+function factCard(f){
+  f = f || factFor(Math.floor(Date.now()/86400000));
+  const k = FACTS.indexOf(f);
+  return `<div class="fact-row"><div class="fact-ic"><svg viewBox="0 0 48 48" aria-hidden="true">${FACT_ICONS[k] || FACT_ICONS[3]}</svg></div><div class="stack" style="gap:6px">
+    <div class="eyebrow" style="margin:0"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 9l12-6-4 11-2.5-4.2z" fill="var(--accent)"/></svg>Crew briefing</div><p style="margin:0">${esc(f.t)}</p><p class="src">Source: ${esc(f.s)}</p></div></div>`;
+}
+
+/* ---------- results helpers ---------- */
+function gaugeSVG(value){
+  const cx = 140, cy = 140, r = 108, max = 24;
+  const pt = v => { const a = Math.PI + (clamp(v,0,max)/max)*Math.PI; return [cx + r*Math.cos(a), cy + r*Math.sin(a)]; };
+  const arc = (a, b, col) => { const [x1,y1] = pt(a), [x2,y2] = pt(b); return `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)}" fill="none" stroke="${col}" stroke-width="18" stroke-linecap="butt"/>`; };
+  const ticks = Array.from({length:13}, (_,i) => { const v = i*2, a = Math.PI + (v/max)*Math.PI;
+    const r1 = r-16, r2 = r-(i%3===0?26:21);
+    return `<line x1="${(cx+r1*Math.cos(a)).toFixed(1)}" y1="${(cy+r1*Math.sin(a)).toFixed(1)}" x2="${(cx+r2*Math.cos(a)).toFixed(1)}" y2="${(cy+r2*Math.sin(a)).toFixed(1)}" stroke="var(--panel-muted)" stroke-width="1.5"/>`; }).join('');
+  const deg = clamp(value,0,max)/max*180;
+  return `<svg viewBox="0 0 280 158" role="img" aria-label="Readiness gauge">
+    <path d="M${cx-r-14},${cy} A${r+14},${r+14} 0 0 1 ${cx+r+14},${cy}" fill="none" stroke="#1c2940" stroke-width="3"/>${arc(0,6.5,'var(--lit-ok)')}${arc(6.5,16.5,'var(--lit-warn)')}${arc(16.5,24,'var(--lit-bad)')}${ticks}
+    <text x="26" y="156" font-size="11" fill="var(--lit-ok)" letter-spacing="1.5" font-family="IBM Plex Mono,monospace">READY</text>
+    <text x="254" y="156" font-size="11" fill="var(--lit-bad)" letter-spacing="1.5" text-anchor="end" font-family="IBM Plex Mono,monospace">LOW</text>
+    <g class="needle" data-deg="${deg.toFixed(1)}" style="transform:rotate(0deg)">
+      <path d="M${cx},${cy-4} L${cx-r+26},${cy} L${cx},${cy+4} Z" fill="#fff"/><line x1="${cx}" y1="${cy}" x2="${cx+18}" y2="${cy}" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <circle cx="${cx}" cy="${cy}" r="10" fill="#1c2940" stroke="#fff" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="3" fill="#fff"/>
+  </svg>`;
+}
+function plainWhy(c){
+  const p = c.pvt, n = p.trials, slow = p.lapses, early = p.fs;
+  const oneIn = slow ? Math.max(1, Math.round(n/slow)) : 0;
+  const slowTxt = slow ? `${slow} slow reaction${slow===1?'':'s'} (about 1 in ${oneIn})` : 'no slow reactions';
+  const earlyTxt = early ? `${early} early tap${early===1?'':'s'}` : 'no early taps';
+  const eyeR = c.reasons.find(r => r.k === 'eye'), baseR = c.reasons.find(r => r.k === 'base');
+  let s;
+  if(c.level === 0) s = `In 3 minutes you had ${slowTxt} and ${earlyTxt}. That's what a rested brain looks like.`;
+  else if(early > slow) s = `Mostly from ${earlyTxt}, which often happens when you push to stay quick while tired, plus ${slowTxt}.`;
+  else s = `Mostly from ${slowTxt}: moments when your attention drifted. Plus ${earlyTxt}.`;
+  if(eyeR) s += ` Your eyes also stayed shut longer than a normal blink ${c.eye.longClose} time${c.eye.longClose===1?'':'s'}.`;
+  if(baseR) s += ` You were also slower than your own usual.`;
+  if(p.end === 'stopped') s += ' You stopped early, so treat this as a rough read.';
+  return s;
+}
+const HEAD = ["You're sharp. Good to go.", 'Your alertness is slipping a little.', 'Your alertness is low right now.'];
+function signalCards(c){
+  const p = c.pvt, sec = ms => (ms/1000).toFixed(2) + ' s';
+  const hasBase = c.personal && c.personal.n >= 5;
+  const speedCls = hasBase ? (c.personal.z >= 2 ? 'warn' : 'ok') : (p.medianRT < 355 ? 'ok' : 'warn');
+  const speedD = hasBase ? `Your usual is ${sec(c.personal.med)}. ${c.personal.z >= 2 ? 'Slower than normal for you.' : 'Right where you normally are.'}` : `Your usual unlocks after 5 checks (${(c.personal&&c.personal.n)||0} so far).`;
+  const slowCls = p.lapses <= 4 ? 'ok' : p.lapses <= 10 ? 'warn' : 'bad';
+  const slowD = p.lapses ? `About 1 in ${Math.max(1, Math.round(p.trials/p.lapses))} took longer than a third of a second.` : 'Every reaction came in under a third of a second.';
+  const fsCls = p.fs <= 2 ? 'ok' : p.fs <= 6 ? 'warn' : 'bad';
+  const fsD = p.fs ? 'Taps before the number appeared. Common when pushing hard while tired.' : 'No jumping the gun.';
+  let eyeV, eyeD, eyeCls;
+  if(!c.eye){ eyeV = 'Off'; eyeD = 'Camera was off for this check.'; eyeCls = 'neutral'; }
+  else if(!c.eye.valid){ eyeV = 'Not used'; eyeD = 'Your face was not in view enough. The result uses the reaction test only.'; eyeCls = 'neutral'; }
+  else { const e = c.eye; eyeCls = (e.longClose >= 2 || e.perclos >= 0.15) ? 'bad' : e.longClose === 1 ? 'warn' : 'ok';
+    eyeV = e.longClose === 0 ? 'Steady' : `${e.longClose} long`;
+    eyeD = e.longClose === 0 ? `No closures longer than a blink. Eyes shut ${(e.perclos*100).toFixed(1)}% of the time.` : `Eyes stayed shut half a second or more ${e.longClose} time${e.longClose===1?'':'s'}. Eyes shut ${(e.perclos*100).toFixed(1)}% of the time.`; }
+  const card = (cls, k, v, d) => `<div class="sig ${cls}"><div class="k"><span class="dot"></span>${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
+  return `<div class="signals">
+    ${card(speedCls, 'Reaction speed', sec(p.medianRT), speedD)}
+    ${card(slowCls, 'Slow reactions', `${p.lapses} <span class="small muted">of ${p.trials}</span>`, slowD)}
+    ${card(fsCls, 'Early taps', String(p.fs), fsD)}
+    ${card(eyeCls, 'Eyes', eyeV, eyeD)}
+  </div>`;
+}
+function stripSVG(seq){
+  const W = 420, H = 96, base = H - 18, top = 6, maxRT = 800, thr = 355;
+  const y = rt => base - (Math.min(rt, maxRT)/maxRT)*(base - top);
+  const bars = seq.map(([rt, k, t]) => { const x = 4 + (clamp(t,0,180000)/180000)*(W-12);
+    if(k === 'fs') return `<circle cx="${x.toFixed(1)}" cy="${base+7}" r="2.6" fill="var(--bad)"/>`;
+    const col = k === 'ok' ? 'var(--ok)' : k === 'lapse' ? 'var(--warn)' : 'var(--bad)';
+    const hy = k === 'miss' ? top : y(rt);
+    return `<rect x="${(x-1.6).toFixed(1)}" y="${hy.toFixed(1)}" width="3.2" height="${(base-hy).toFixed(1)}" rx="1" fill="${col}"/>`; }).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Each reaction across the 3-minute test">
+    <line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="var(--line)"/>
+    <line x1="0" x2="${W}" y1="${y(thr).toFixed(1)}" y2="${y(thr).toFixed(1)}" stroke="var(--muted)" stroke-dasharray="3 4" stroke-width="1"/>
+    <text x="2" y="${(y(thr)-4).toFixed(1)}" font-size="10" text-anchor="start" fill="var(--muted)" font-family="IBM Plex Mono,monospace">slow line</text>
+    ${bars}</svg>
+    <div class="timeline-labels"><span>start</span><span>1 min</span><span>2 min</span><span>3 min</span></div>
+    <div class="legend"><span><i class="sw" style="background:var(--ok)"></i>Quick</span><span><i class="sw" style="background:var(--warn)"></i>Slow</span><span><i class="sw" style="background:var(--bad);border-radius:50%"></i>Early tap or missed</span></div>`;
+}
+function driftLine(seq){
+  const r = seq.filter(s => s[1] !== 'fs');
+  const a = r.filter(s => s[2] < 60000).map(s=>s[0]), b = r.filter(s => s[2] >= 120000).map(s=>s[0]);
+  if(a.length < 5 || b.length < 5) return '';
+  const d = median(b) - median(a);
+  if(d > 25) return `You got slower toward the end (about ${Math.round(d)} ms slower in the last minute than the first). Losing focus over a few minutes is a classic sign of tired attention.`;
+  if(d < -25) return 'You got quicker as you went. You settled in well.';
+  return 'You held your speed steady from start to finish.';
+}
+function simSeq(p){
+  const out = [], n = p.trials, lap = p.lapses;
+  const lapIdx = new Set(); while(lapIdx.size < Math.min(lap, n)) lapIdx.add(Math.floor(n*0.25 + Math.random()*n*0.75));
+  for(let i = 0; i < n; i++){
+    const t = Math.round((i+0.5)/n*178000);
+    const rt = lapIdx.has(i) ? 360 + Math.random()*340 : Math.min(350, Math.max(180, Math.min(p.medianRT, 330) - 50 + Math.random()*80 + i*0.3));
+    out.push([Math.round(rt), rt >= 355 ? 'lapse' : 'ok', t]);
+  }
+  for(let j = 0; j < p.fs; j++) out.push([0, 'fs', Math.round(Math.random()*178000)]);
+  return out.sort((x,y)=>x[2]-y[2]);
+}
+function weatherBlocks(fc){
+  const segs = [];
+  fc.pts.forEach(p => { const b = bandOf(p.r); const last = segs[segs.length-1];
+    if(last && last.b === b) last.to = p.clock; else segs.push({b, from:p.clock, to:p.clock}); });
+  segs.forEach((s,i) => { if(segs[i+1]) s.to = segs[i+1].from; });
+  const icon = b => b === 0
+    ? `<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="6" fill="var(--ok)"/>${[0,45,90,135,180,225,270,315].map(a=>{const r=a*Math.PI/180;return `<line x1="${(15+9*Math.cos(r)).toFixed(1)}" y1="${(15+9*Math.sin(r)).toFixed(1)}" x2="${(15+12*Math.cos(r)).toFixed(1)}" y2="${(15+12*Math.sin(r)).toFixed(1)}" stroke="var(--ok)" stroke-width="2" stroke-linecap="round"/>`;}).join('')}</svg>`
+    : b === 1
+    ? `<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 22h14a5 5 0 0 0 0-10 7 7 0 0 0-13.4 1.6A4.3 4.3 0 0 0 8 22z" fill="var(--warn)"/></svg>`
+    : `<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 18h14a5 5 0 0 0 0-10 7 7 0 0 0-13.4 1.6A4.3 4.3 0 0 0 8 18z" fill="var(--bad)"/><path d="M15 19l-3 6h3l-1 4 5-7h-3l2-3z" fill="var(--bad)"/></svg>`;
+  const lab = ['Clear', 'Turbulence possible', 'Rough air'];
+  const tip = ['Good alertness expected.', 'Plan extra cross-checks here.', 'Highest fatigue risk. Plan your rest or caffeine before this.'];
+  return `<div class="wx">${segs.filter(s => s.to > s.from).map(s => `<div class="wx-row">${icon(s.b)}<span class="t">${fmtClock(s.from)} to ${fmtClock(s.to)}</span><div><b>${lab[s.b]}</b><div class="small muted">${tip[s.b]}</div></div></div>`).join('')}</div>`;
+}
+
+/* ---------- support (peer pilot or confidential counselor) ---------- */
+function reachedOut(){ if(!S.honest){ S.honest = Date.now(); const f = awardBadges(); save(); if(f.includes('honest')) setTimeout(() => toast('Wings unlocked: Wingman'), 1400); } }
+function openSupport(){
+  sheet('Talk to someone', `<p class="small">Two confidential options. Your airline does not see that you reached out, and your check results are never attached.</p>
+    <div class="sup-opt"><div class="sup-ic"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="11" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="22" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 26c1-5 4-7.5 8-7.5s7 2.5 8 7.5M18 19.5c1-.6 2.4-1 4-1 3.2 0 5.6 2 6.4 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <div><b>Peer-support pilot</b><div class="small muted">A trained fellow pilot who has been there. Free, through your union's peer support program.</div></div></div>
+    <div class="sup-opt"><div class="sup-ic"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8h20v13H14l-6 5v-5H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 11.5c-1.2-1.6-4-1-4 1 0 2 4 4 4 4s4-2 4-4c0-2-2.8-2.6-4-1z" fill="currentColor"/></svg></div>
+      <div><b>Confidential counselor</b><div class="small muted">A licensed counselor who knows aviation, for stress, sleep, family or work pressure. Short video or text sessions, before things become a medical issue. Example partner: a pilot-focused service such as Listenr.</div></div></div>
+    <p class="small muted" style="margin:0">Prototype: buttons don't connect to anyone yet.</p>`,
+    'Connect me', () => { toast('Demo only. Would open peer support or a counselor.'); reachedOut(); if(current === 'logbook') renderers.logbook(); });
+}
+
+/* ---------- results ---------- */
+let lastCheckId = null;
+renderers.results = () => {
+  const c = S.checks.find(x => x.id === lastCheckId) || preChecks().pop();
+  const el = $('#scr-results');
+  if(!c){ el.innerHTML = '<p>No result yet.</p>'; return; }
+  if(c.pvt && !c.pvt.seq && c.simulated){ c.pvt.seq = simSeq(c.pvt); save(); }
+  const L = LEVELS[c.level], fc = forecast(c.level, c.duty || S.duty, c.wake);
+  const sugg = suggestions(c, fc);
+  const list = preChecks(), entry = list.findIndex(x => x.id === c.id) + 1;
+  const prevBest = list.filter(x => x.id !== c.id && x.ts < c.ts && x.pvt && x.pvt.fastest).map(x => x.pvt.fastest);
+  const pb = c.pvt.fastest && prevBest.length && c.pvt.fastest < Math.min(...prevBest);
+  let mismatch = '';
+  if(c.mismatch === 'feel-ok') mismatch = `<div class="notice warn"><b>Your feeling and the test disagree.</b> You felt ${esc(SP[c.sp-1].toLowerCase())} (${c.sp} of 7), but the test says ${L.name}. When short on sleep, people are often the last to notice. Trust the test today.</div>`;
+  if(c.mismatch === 'feel-tired') mismatch = `<div class="notice info"><b>The test looks fine, but you feel tired</b> (${c.sp} of 7). Your feeling counts too. Treat today as a lower-energy day.</div>`;
+  const nb = (c.newBadges || []).map(id => BADGES.find(b => b.id === id)).filter(Boolean);
+  const celebrate = nb.length ? `<div class="card stack celebrate"><div class="eyebrow" style="margin:0;color:var(--accent-ink)">New badge${nb.length>1?'s':''} unlocked</div>
+      <div class="row" style="gap:16px">${nb.map(b => `<div class="row" style="flex-wrap:nowrap;gap:10px"><div class="badge earned" style="width:96px;flex:none">${wings(b.code, true)}</div><div><div class="bname"><b>${esc(b.name)}</b><span class="metal m-${b.metal}">${b.metal}</span></div><div class="tagline">${esc(b.tag)}</div><button class="btn" style="margin-top:6px" data-wear-now="${b.id}">Wear these wings</button></div></div>`).join('')}</div></div>` : '';
+  const fact = c.mismatch === 'feel-ok' ? FACTS[1] : c.level >= 1 ? FACTS[2] : factFor(Math.floor(c.ts/86400000));
+  const drift = c.pvt.seq && c.pvt.seq.length ? driftLine(c.pvt.seq) : '';
+  const base = c.personal && c.personal.n >= 5
+    ? `<dt>Your usual median</dt><dd>${c.personal.med} ms</dd>`
+    : `<dt>Personal baseline</dt><dd>${(c.personal && c.personal.n) || 0} of 5 checks</dd>`;
+  const eyeBlock = !c.eye ? `<p class="small muted" style="margin:0">Camera was off for this check.</p>`
+    : `<dl class="kv"><dt>Long eye closures (500 ms+)</dt><dd>${c.eye.longClose}</dd><dt>PERCLOS (eyes 80%+ closed)</dt><dd>${(c.eye.perclos*100).toFixed(1)}%</dd><dt>Blinks per minute</dt><dd>${c.eye.blinkRate}</dd><dt>Face in view</dt><dd>${Math.round(c.eye.facePct*100)}%</dd><dt>Frames per second</dt><dd>${c.eye.fps}</dd><dt>Eye data used</dt><dd>${c.eye.valid?'yes':'no'}</dd></dl>`;
+  el.innerHTML = `
+    <div><div class="eyebrow">${c.simulated ? 'Demo check · simulated' : 'Pre-duty check'} · ${fmtDate(c.ts)} ${fmtTime(c.ts)}</div><h1>Your readiness</h1></div>
+    ${celebrate}
+    <div class="panel screws gauge-wrap">
+      <div class="eyebrow" style="margin:0">Alertness</div>
+      ${gaugeSVG(c.pvt.lpfs3)}
+      <span class="annun ${L.cls}">${L.name}</span>
+      <div class="headline">${HEAD[c.level]}</div>
+      <p class="muted" style="margin:0">${esc(plainWhy(c))}</p>
+      <div class="small muted" style="margin-top:6px;font-family:var(--font-mono)">You felt: ${c.sp} of 7 · ${esc(SP[c.sp-1])}</div>
+    </div>
+    ${mismatch}
+    <div class="panel stack" style="gap:12px"><div class="eyebrow" style="margin:0">What the test saw</div>${signalCards(c)}</div>
+    ${c.pvt.seq && c.pvt.seq.length ? `<div class="card stack"><h2 style="margin:0">Your 3 minutes, tap by tap</h2>
+      <p class="small muted" style="margin:0">Each bar is one reaction. Taller means slower.</p>
+      ${stripSVG(c.pvt.seq)}
+      ${drift ? `<p class="small" style="margin:0">${esc(drift)}</p>` : ''}
+      ${c.pvt.fastest ? `<p class="small" style="margin:0">Quickest reaction: <b class="mono">${(c.pvt.fastest/1000).toFixed(2)} s</b>${pb ? ' <span class="pill ok">personal best</span>' : ''}</p>` : ''}</div>` : ''}
+    <div class="card stack"><h2 style="margin:0">Today's fatigue forecast</h2>
+      ${weatherBlocks(fc)}
+      <p class="small muted" style="margin:0">Illustrative estimate from today's result, hours awake and the body-clock low (02:00 to 06:00). Not a validated model.</p></div>
+    <div class="card stack"><h2>What you can do</h2><ul class="tips">${sugg.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>
+    <div class="card stack fact">${factCard(fact)}</div>
+    <div class="card stack"><h2>Your choices</h2>
+      <p class="small muted" style="margin:0">All optional. Nothing is sent unless you tap it.</p>
+      <button class="btn block" id="act-crew">${c.shared && c.shared.crew ? '✓ Crew told' : 'Tell my crew'}</button>
+      <button class="btn block" id="act-cockpit">${c.shared && c.shared.cockpit ? '✓ Cockpit monitoring on' : 'Turn on cockpit monitoring boost'}</button>
+      <button class="btn block" id="act-peer">Talk to someone (peer pilot or counselor)</button>
+      ${c.level >= 1 ? `<button class="btn block" id="act-fatigue">Open my airline's fatigue call</button>` : ''}
+      <button class="btn ghost block" data-go="home">Keep it to myself</button></div>
+    <div class="card row" style="justify-content:space-between"><div><div class="eyebrow" style="margin:0">Logbook</div><b>Entry #${entry} logged</b></div><div class="small muted">${weekStreak(list)}-week streak · ${Object.keys(S.badges||{}).length}/${BADGES.length} badges</div></div>
+    <details class="card"><summary>Details for the curious</summary>
+      <div class="stack" style="margin-top:6px">
+        <h3>Reaction test (PVT-B)</h3>
+        <dl class="kv"><dt>Duration</dt><dd>${c.pvt.duration} s${c.pvt.end==='stopped'?' (stopped early)':''}</dd>
+          <dt>Responses</dt><dd>${c.pvt.trials}</dd><dt>Median reaction</dt><dd>${c.pvt.medianRT} ms</dd>
+          <dt>Lapses (≥${c.pvt.threshold} ms)</dt><dd>${c.pvt.lapses}</dd>${c.pvt.latency ? `<dt>Touch delay removed</dt><dd>${c.pvt.latency} ms</dd>` : ''}<dt>False starts</dt><dd>${c.pvt.fs}</dd>
+          <dt>Lapses + false starts, 3-min equivalent</dt><dd>${c.pvt.lpfs3}</dd>${base}</dl>
+        <p class="small muted" style="margin:0">Gauge: 6 or fewer lapses plus false starts is Ready, 7 to 16 is Caution, more than 16 is Low alertness (PVT-B ranges, Basner 2022).</p>
+        <h3 style="margin-top:6px">Eyelids</h3>${eyeBlock}
+        <h3 style="margin-top:6px">Why this result</h3><ul class="tips small">${c.reasons.map(r=>`<li>${esc(r.text)}</li>`).join('')}</ul>
+      </div></details>
+    <button class="btn primary block" data-go="home">Done</button>`;
+  requestAnimationFrame(() => requestAnimationFrame(() => { const n = el.querySelector('.needle'); if(n) n.style.transform = `rotate(${n.dataset.deg}deg)`; }));
+  $$('#scr-results [data-wear-now]').forEach(btn => btn.onclick = () => { S.worn = btn.dataset.wearNow; save(); toast('Wings pinned to your uniform.'); btn.textContent = '✓ Wearing'; btn.disabled = true; });
+  const honest = () => {};
+  $('#act-crew').onclick = () => sheet('Tell my crew', `<p class="small muted">Your captain and first officer on today's pairing receive only this:</p><div class="msg-preview">${esc(S.user?.name||'Your crew member')} reports <b>elevated fatigue today</b>.</div><p class="small muted">No scores, no eye data.</p>`, 'Send to crew', () => { c.shared = {...(c.shared||{}), crew:true}; save(); toast('Demo only. Nothing was sent.'); honest(); renderers.results(); });
+  $('#act-cockpit').onclick = () => sheet('Cockpit monitoring boost', `<p class="small">With your permission, one flag goes to Honeywell's cockpit pilot state monitoring for this duty:</p><div class="msg-preview"><b>Elevated pre-duty fatigue risk.</b> Watch window around ${fmtClock(fc.peak.clock)}.</div><ul class="tips small"><li>The camera alerts a little earlier than usual today.</li><li>It pays closer attention around your likely low point.</li><li>Alerts stay in the cockpit. Your airline and dispatch are not told.</li></ul><p class="small muted">Concept only. Pilot state monitoring is still being tested and does not accept outside inputs today.</p>`, 'Turn on for this duty', () => { c.shared = {...(c.shared||{}), cockpit:true}; save(); toast('Demo only. Cockpit link is a concept.'); renderers.results(); });
+  $('#act-peer').onclick = openSupport;
+  const fb = $('#act-fatigue'); if(fb) fb.onclick = () => sheet("Airline fatigue call", `<p class="small">This opens your airline's existing non-punitive fatigue call. ReadyCheck doesn't create a new process; it puts the existing one one tap away.</p><p class="small muted">Your result is not attached unless you choose to mention it.</p>`, 'Open fatigue call', () => { toast('Demo only. Would open your airline\'s process.'); honest(); });
+};
+
+/* ---------- sheet ---------- */
+function sheet(title, body, actionLabel, onAction){
+  const root = $('#sheet-root');
+  root.innerHTML = `<div class="sheet-back" id="sb"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><h2 style="margin:0">${esc(title)}</h2>${body}
+    <button class="btn primary block" id="sh-act">${esc(actionLabel)}</button><button class="btn block" id="sh-cancel">Cancel</button></div></div>`;
+  const close = () => root.innerHTML = '';
+  $('#sh-cancel').onclick = close; $('#sb').onclick = e => { if(e.target.id==='sb') close(); };
+  $('#sh-act').onclick = () => { close(); onAction(); };
+  $('#sh-act').focus();
+}
+
+/* ---------- trends ---------- */
+renderers.trends = () => {
+  const list = preChecks(), el = $('#scr-trends');
+  if(!list.length){ el.innerHTML = `<div><h1>History</h1><p class="muted">Your checks and patterns will show up here after your first check.</p></div><button class="btn amber block big" data-go="rate">Start a check</button><p class="small muted" style="margin:0">Presenting? Load example history from Me › Demo mode.</p>`; return; }
+  const rts = list.map(c=>c.pvt.medianRT).filter(Boolean);
+  const W = 420, H = 150, pad = 26, minR = Math.min(...rts, 220) - 20, maxR = Math.max(...rts, 420) + 20;
+  const x = i => pad + (W-pad-8) * (list.length===1 ? 0.5 : i/(list.length-1));
+  const y = v => 8 + (H-8-pad) * (1 - (v-minR)/(maxR-minR));
+  const ticks = [minR, (minR+maxR)/2, maxR].map(v=>Math.round(v/10)*10);
+  const path = list.map((c,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(c.pvt.medianRT).toFixed(1)}`).join('');
+  const dots = list.map((c,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(c.pvt.medianRT).toFixed(1)}" r="4.5" fill="${LEVELS[c.level].color}"/>`).join('');
+  const grid = ticks.map(v=>`<line x1="${pad}" x2="${W-4}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="var(--line)" stroke-width="1"/><text x="0" y="${(y(v)+4).toFixed(1)}" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${v}</text>`).join('');
+  // pattern: late check-in
+  const lateY = list.filter(c=>c.late), lateN = list.filter(c=>!c.late);
+  const bad = a => a.filter(c=>c.level>=1).length;
+  let pattern = '<p class="small muted" style="margin:0">Patterns appear once you have checks both after late check-ins and after normal nights.</p>';
+  if(lateY.length >= 2 && lateN.length >= 2){
+    const pY = Math.round(bad(lateY)/lateY.length*100), pN = Math.round(bad(lateN)/lateN.length*100);
+    pattern = `<p style="margin:0">After a late hotel check-in, you came out Caution or lower in <b>${bad(lateY)} of ${lateY.length}</b> checks (${pY}%), compared with <b>${bad(lateN)} of ${lateN.length}</b> (${pN}%) after normal nights.</p>
+      <p class="small muted" style="margin:0">Something specific to raise when you bid your schedule or file a fatigue report.</p>`;
+  }
+  const counts = [0,1,2].map(l=>list.filter(c=>c.level===l).length);
+  el.innerHTML = `
+    <div><div class="eyebrow">Only you can see this</div><h1>History</h1></div>
+    <div class="card stack"><h2>Median reaction time</h2>
+      <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Median reaction time across checks">${grid}<path d="${path}" fill="none" stroke="var(--muted)" stroke-width="1.5"/>${dots}</svg>
+      <div class="legend"><span>ms, lower is better</span>${LEGEND}</div></div>
+    <div class="card stack"><h2>Pattern found</h2>${pattern}</div>
+    <div class="card stack"><h2>${list.length} checks</h2>
+      <dl class="kv"><dt>Ready</dt><dd>${counts[0]}</dd><dt>Caution</dt><dd>${counts[1]}</dd><dt>Low alertness</dt><dd>${counts[2]}</dd></dl>
+      <div class="list">${list.slice().reverse().slice(0,12).map(c=>`<div class="list-item tap" data-open="${c.id}" role="button" tabindex="0"><div><div>${fmtDate(c.ts)}</div><div class="small muted">${c.pvt.medianRT} ms · felt ${c.sp}/7${c.late?' · late check-in':''}${c.simulated?' · demo':''}</div></div><span class="pill ${LEVELS[c.level].cls}">${LEVELS[c.level].name} ›</span></div>`).join('')}</div></div>`;
+  $$('#scr-trends [data-open]').forEach(r => r.onclick = () => { lastCheckId = r.dataset.open; go('results'); });
+};
+
+/* ---------- post duty ---------- */
+buildSP($('#post-sp-form'), 'psp');
+renderers.post = () => {
+  $$('#post-sp-form input, #post-events input').forEach(i=>i.checked=false);
+  $('#post-next').value = S.duty.report; $('#post-result').innerHTML = ''; $('#btn-post-save').disabled = true;
+};
+$('#post-sp-form').addEventListener('change', () => { $('#btn-post-save').disabled = !$('#post-sp-form input:checked'); });
+$('#btn-post-save').addEventListener('click', () => {
+  const today = preChecks().filter(c=>sameDay(c.ts, Date.now())).pop();
+  const sp = Number($('#post-sp-form input:checked').value);
+  const events = $$('#post-events input:checked').map(i=>i.value);
+  const next = $('#post-next').value || S.duty.report;
+  const wakeBy = hm(next) - 1.5, sleepBy = wakeBy - 8;
+  if(today){ today.post = {ts:Date.now(), sp, events, next}; save(); }
+  const support = (events.length || sp >= 6) ? `<div class="card stack"><h2>Want to talk it through?</h2>
+      <p class="small" style="margin:0">${events.length ? 'Today included: '+esc(events.join(', ').toLowerCase())+'. ' : ''}Support is optional and nobody is notified either way.</p>
+      <button class="btn block" id="sup-peer">Peer support pilot</button><button class="btn block" id="sup-conf">Confidential counseling service</button></div>` : '';
+  $('#post-result').innerHTML = `<div class="card stack"><h2>Recovery for your next duty</h2>
+    <p style="margin:0">You report at <b class="mono">${fmtClock(hm(next))}</b>. To get 8 hours of sleep and wake by <b class="mono">${fmtClock(wakeBy)}</b>, aim to be asleep by <b class="mono">${fmtClock(sleepBy)}</b>.</p>
+    <p class="small muted" style="margin:0">Wind down with something low-effort. Avoid caffeine from now on if your sleep starts within 6 hours.</p></div>${support}
+    <button class="btn primary block" data-go="home">Done</button>`;
+  const sp1 = $('#sup-peer'), sp2 = $('#sup-conf');
+  if(sp1) sp1.onclick = openSupport;
+  if(sp2) sp2.onclick = openSupport;
+});
+
+/* ---------- demo ---------- */
+function simulatedCheck(ts, opts){
+  const tired = opts.tired;
+  const trials = tired ? 52 : 60;
+  const med = opts.med || (tired ? 405 : 300);
+  const lapses = opts.lapses != null ? opts.lapses : (tired ? 14 : 2), fs = opts.fs != null ? opts.fs : (tired ? 3 : 1);
+  const c = {id:'d'+ts+Math.floor(Math.random()*1000), type:'pre', ts, sp: opts.sp || (tired ? 3 : 2), late: !!opts.late, wake: S.duty.wake, duty:{...S.duty},
+    pvt:{duration: 180, trials, medianRT: med, lapses, fs, lpfs: lapses+fs, lpfs3: lapses+fs, threshold: 355, latency: 77, device:'touch', end: 'full'},
+    eye:{fps:30, facePct:0.96, seconds: tired?172:108, perclos: opts.perclos != null ? opts.perclos : (tired ? 0.12 : 0.02), longClose: opts.longClose != null ? opts.longClose : (tired ? 3 : 0), blinkRate: tired ? 22 : 15, medEAR: 0.27, valid:true},
+    simulated:true};
+  c.pvt.seq = simSeq(c.pvt); c.pvt.fastest = Math.min(...c.pvt.seq.filter(x=>x[1]!=='fs').map(x=>x[0]));
+  return c;
+}
+$('#btn-demo-check').addEventListener('click', () => {
+  const c = simulatedCheck(Date.now(), {tired:true, sp:3, late:true});
+  evaluate(c); S.checks.push(c); c.newBadges = awardBadges(); save(); lastCheckId = c.id; go('results');
+});
+$('#btn-demo-fill').addEventListener('click', () => {
+  const now = Date.now(), day = 86400000, list = [];
+  for(let i = 27; i >= 1; i -= (i % 3 === 0 ? 2 : 1)){
+    const late = (i % 4 === 0) || (i % 7 === 2);
+    const jitter = Math.round((Math.random()-0.5)*30);
+    const tiredish = late && Math.random() < 0.75;
+    const opts = tiredish
+      ? {tired:false, med: 345 + jitter, lapses: 7 + Math.floor(Math.random()*5), fs: 1, sp: 2 + Math.floor(Math.random()*3), late:true, perclos:0.05, longClose: 1}
+      : {tired:false, med: 292 + jitter, lapses: Math.floor(Math.random()*4), fs: Math.floor(Math.random()*2), sp: 1 + Math.floor(Math.random()*3), late};
+    const c = simulatedCheck(now - i*day + 7*3600000, opts);
+    list.push(c);
+  }
+  S.checks = []; S.badges = {};
+  list.forEach(c => { S.checks.push(c); evaluate(c); awardBadges(c.ts); });
+  save(); toast(`Loaded ${list.length} demo checks.`); go('trends');
+});
+$('#btn-clear').addEventListener('click', () => sheet('Delete all results?', '<p class="small">This removes every check from this device. It cannot be undone.</p>', 'Delete everything', () => { S.checks = []; S.badges = {}; S.honest = null; save(); toast('All results deleted.'); go('home'); }));
+$('#btn-signout').addEventListener('click', () => { save(); DB.active = null; S = defaults(); save(); go('signin'); });
+renderers.settings = () => {
+  const nm = S.user ? S.user.name : '';
+  $('#me-name').textContent = nm; $('#me-avatar').innerHTML = uniformSVG(nm, wornBadge(), rankOf(preChecks().length).bars, true);
+  $('#set-user').textContent = `${preChecks().length} checks logged on this phone`;
+};
+$('#btn-review-terms').addEventListener('click', () => go('consent'));
+$('#btn-me-support').addEventListener('click', openSupport);
+$('#home-support').addEventListener('click', openSupport);
+
+/* ---------- logbook tab ---------- */
+renderers.logbook = () => {
+  const list = preChecks(), rk = rankOf(list.length), worn = wornBadge();
+  $('#lb-uniform').innerHTML = `${uniformSVG(S.user && S.user.name, worn, rk.bars)}
+    <div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:10px">
+      <div><div class="eyebrow" style="margin:0">Rank</div><b style="font-size:1.15rem">${rk.name}</b></div>
+      <div style="text-align:right"><div class="eyebrow" style="margin:0">Wearing</div><b>${worn ? esc(worn.name)+' wings' : 'No wings yet'}</b></div></div>
+    ${rk.next ? `<div class="stack" style="gap:6px"><div class="small">${rk.next.n - list.length} more check${rk.next.n - list.length===1?'':'s'} to <b>${rk.next.name}</b> (${rk.next.bars} stripe${rk.next.bars===1?'':'s'})</div><div class="prog"><i style="width:${Math.round(list.length/rk.next.n*100)}%"></i></div></div>` : '<div class="small">Top rank. Four stripes, Captain.</div>'}`;
+  renderLogbook($('#lb-card'), true);
+  const got = BADGES.filter(b => (S.badges||{})[b.id]), locked = BADGES.filter(b => !(S.badges||{})[b.id]);
+  $('#lb-badges').innerHTML = `
+    <div class="small muted">${got.length} of ${BADGES.length} collected. Tap <b>Wear</b> to pin wings on your uniform.</div>
+    ${got.map(b => `<div class="bdg-row earned ${worn && worn.id===b.id ? 'worn' : ''}"><div class="badge earned">${wings(b.code, true)}</div>
+      <div style="flex:1;min-width:0"><div class="bname"><b>${esc(b.name)}</b><span class="metal m-${b.metal}">${b.metal}</span></div><div class="tagline">${esc(b.tag)}</div><div class="small muted">Earned ${fmtDate(S.badges[b.id])}</div></div>
+      ${worn && worn.id===b.id ? '<span class="pill ok">Wearing</span>' : `<button class="btn" data-wear="${b.id}">Wear</button>`}</div>`).join('')}
+    ${locked.length ? `<h3 style="margin:8px 0 0">Still to earn</h3>` : ''}
+    ${locked.map(b => { const pr = badgeProgress(b.id, list); return `<div class="bdg-row"><div class="badge locked">${wings(b.code, false)}</div>
+      <div style="flex:1;min-width:0"><div class="bname"><b>${esc(b.name)}</b><span class="metal locked">${b.metal}</span></div><div class="small muted">${esc(b.desc)}</div>
+      <div class="row" style="gap:8px;flex-wrap:nowrap;margin-top:6px"><div class="prog" style="flex:1"><i style="width:${Math.round(pr.have/pr.need*100)}%"></i></div><span class="small mono">${pr.have}/${pr.need}</span></div></div></div>`; }).join('')}`;
+  $$('#lb-badges [data-wear]').forEach(btn => btn.onclick = () => { S.worn = btn.dataset.wear; save(); toast('Wings pinned to your uniform.'); renderers.logbook(); window.scrollTo({top:0, behavior:'smooth'}); });
+};
+
+/* ---------- start ---------- */
+let welcomed = false; try{ welcomed = !!localStorage.getItem('readycheck_welcomed'); }catch(e){}
+go(S.user ? (S.agreed ? 'home' : 'consent') : (welcomed || Object.keys(DB.profiles).length ? 'signin' : 'welcome'));
+})();
+</script>
+</body>
+</html>
