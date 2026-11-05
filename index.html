@@ -321,6 +321,13 @@ details[open] summary{margin-bottom:8px}
 .heat .c.l1{background:color-mix(in srgb,var(--warn) 32%,var(--surface));border-color:var(--warn);color:var(--ink)}
 .heat .c.l2{background:color-mix(in srgb,var(--bad) 32%,var(--surface));border-color:var(--bad);color:var(--ink)}
 .heat .c[data-open]{cursor:pointer}
+.roster .c{appearance:none;font:inherit;font-family:var(--font-mono);font-size:.78rem;text-align:left;cursor:pointer;color:var(--ink)}
+.roster .c.duty{background:var(--accent-soft);border-color:var(--accent);border-width:2px;color:var(--accent-ink)}
+.roster .c.duty svg{width:16px;height:16px;color:var(--accent-ink)}
+.roster .c.past{opacity:.6}
+.roster .c:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.month-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.month-nav .btn{min-width:44px}
 .heat .c.today{outline:2px solid var(--accent);outline-offset:1px}
 .heat .c svg{position:absolute;right:3px;bottom:3px;width:13px;height:13px;color:var(--ink)}
 /* Employer view */
@@ -413,6 +420,7 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
   <section class="screen stack" id="scr-fly" hidden>
     <div><div class="eyebrow">Step 1 of 5 · 5 seconds</div><h1>Flying today?</h1>
       <p class="muted">Checks on days off count too. They build the picture of how you are really doing.</p></div>
+    <div id="fly-hint"></div>
     <div class="fly-opts">
       <button class="fly-opt" id="fly-yes" data-fly="yes"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--accent-soft)"/><g transform="translate(9 15) scale(.25)" fill="var(--accent-ink)"><path d="M8 22 C8 18 14 16 26 16 L92 16 C104 16 112 19 116 22 C112 25 104 27 92 27 L26 27 C14 27 8 25 8 22 Z"/><path d="M14 16 L4 2 L12 2 L30 16 Z"/><path d="M50 24 L74 24 L58 42 L48 42 Z"/><path d="M50 19 L74 19 L58 1 L48 1 Z"/></g></svg>
         <span><b>Yes, I have a flight duty today</b><span class="small muted">We'll ask about report time and duty length.</span></span></button>
@@ -537,11 +545,15 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
   <!-- ORG VIEW -->
   <section class="screen stack" id="scr-org" hidden></section>
 
+  <!-- DUTY CALENDAR -->
+  <section class="screen stack" id="scr-roster" hidden></section>
+
   <!-- ME (tab) -->
   <section class="screen stack" id="scr-settings" hidden>
     <div class="row" style="flex-wrap:nowrap;gap:14px"><div class="avatar" id="me-avatar"></div><div><h1 style="margin:0" id="me-name"></h1><div class="small muted" id="set-user"></div></div></div>
     <div class="card menu">
       <button class="menu-item" data-go="method"><span>How ReadyCheck works</span><span>›</span></button>
+      <button class="menu-item" data-go="roster"><span>My duty calendar</span><span>›</span></button>
       <button class="menu-item" data-go="org"><span>Employer view (example)</span><span>›</span></button>
       <button class="menu-item" id="btn-review-terms"><span>Review the agreement</span><span>›</span></button>
     </div>
@@ -915,7 +927,7 @@ let current = null, lastTab = 'home';
 const renderers = {};
 const TABS = ['home','trends','logbook','settings'];
 const FLOW = {fly:1, rate:2, duty:3, camera:4};
-const DETAIL = ['results','org','method','post'];
+const DETAIL = ['results','org','method','post','roster'];
 function go(id){
   if(current==='camera' && id!=='test') stopCamera();
   $$('section.screen').forEach(s => s.hidden = (s.id !== 'scr-'+id));
@@ -1043,9 +1055,14 @@ buildSP($('#sp-form'), 'sp');
 renderers.fly = () => {
   draft = {type:'pre', ts:null, sp:null, late:false, wake:S.duty.wake, flyingToday:null};
   $$('.fly-opt').forEach(b => b.classList.remove('on'));
+  const onRoster = (S.roster || []).includes(ymd(Date.now()));
+  $('#fly-hint').innerHTML = onRoster ? '<div class="notice info">Your duty calendar shows a flight duty today.</div>' : '';
+  $('#fly-yes').classList.toggle('on', onRoster);
 };
 $$('.fly-opt').forEach(b => b.addEventListener('click', () => {
   draft.flyingToday = b.dataset.fly === 'yes';
+  const t = ymd(Date.now()); S.roster = S.roster || [];
+  if(draft.flyingToday && !S.roster.includes(t)){ S.roster.push(t); save(); }
   $$('.fly-opt').forEach(x => x.classList.toggle('on', x === b));
   clearTimeout(renderers.fly._t); renderers.fly._t = setTimeout(() => { if(current === 'fly') go('rate'); }, 220);
 }));
@@ -1892,7 +1909,7 @@ renderers.trends = () => {
   const lt = longTerm(list, now), ids = new Map(list.map(c => [dayStart(c.ts), c.id]));
   el.innerHTML = `
     <div><div class="eyebrow">Only you can see this</div><h1>History</h1></div>
-    <div class="card stack"><h2 style="margin:0">Calendar</h2>
+    <div class="card stack"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Calendar</h2><button class="btn ghost" data-go="roster" style="min-height:32px;padding:4px 8px">Edit duty days ›</button></div>
       <p class="small muted" style="margin:0">Last 28 days. Tap a day to see that check.</p>
       ${heatmap28(lt.days, S.roster, now, ids)}</div>
     <div class="card stack"><h2 style="margin:0">Trend</h2>
@@ -1900,6 +1917,38 @@ renderers.trends = () => {
       ${rollingChart(lt.days, list, now)}</div>
     ${planCard(carePlan(list, lt, now))}`;
   $$('#scr-trends [data-open]').forEach(r => { const open = () => { lastCheckId = r.dataset.open; go('results'); }; r.onclick = open; r.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); } }; });
+};
+
+/* ---------- duty calendar: tap a day to add or remove a flight duty ---------- */
+let rosterMonth = null;
+renderers.roster = () => {
+  const now = new Date(); if(!rosterMonth) rosterMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const m = new Date(rosterMonth), y = m.getFullYear(), mo = m.getMonth(), first = m.getTime(), last = new Date(y, mo + 1, 0).getTime();
+  const today = dayStart(Date.now()), set = new Set(S.roster || []), checked = new Set(preChecks().map(c => dayStart(c.ts)));
+  const cells = ['M','T','W','T','F','S','S'].map(d => `<div class="hd">${d}</div>`);
+  for(let t = weekStart(first); t <= addDays(weekStart(last), 6); t = addDays(t, 1)){
+    if(t < first || t > last){ cells.push('<div class="c out" aria-hidden="true"></div>'); continue; }
+    const k = ymd(t), duty = set.has(k), lab = `${fmtDate(t)}: ${duty ? 'flight duty' : 'no duty'}${checked.has(t) ? ', checked' : ''}`;
+    cells.push(`<button class="c ${duty ? 'duty' : ''} ${t === today ? 'today' : ''} ${t < today ? 'past' : ''}" data-day="${k}" aria-pressed="${duty}" aria-label="${esc(lab)}">${new Date(t).getDate()}${duty ? PLANE_MINI : ''}</button>`);
+  }
+  const n = [...set].filter(k => k.startsWith(ymd(first).slice(0, 7))).length;
+  $('#scr-roster').innerHTML = `
+    <div><h1>My duty calendar</h1><p class="muted">Tap a day to mark a flight duty. Tap it again to remove it.</p></div>
+    <div class="card stack">
+      <div class="month-nav"><button class="btn ghost" id="ro-prev" aria-label="Previous month">‹</button><h2 style="margin:0">${esc(m.toLocaleDateString(undefined, {month:'long', year:'numeric'}))}</h2><button class="btn ghost" id="ro-next" aria-label="Next month">›</button></div>
+      <div class="heat roster">${cells.join('')}</div>
+      <div class="legend"><span><i class="sw" style="background:var(--accent-soft);border:2px solid var(--accent)"></i>Flight duty</span><span>${plural(n, 'duty day')} this month</span></div>
+    </div>
+    <p class="small muted" style="margin:0">Stays on this phone. Used to remind you to check in on duty days and for your monthly requirement.</p>
+    <button class="btn primary block" id="ro-done">Done</button>`;
+  const move = d => { rosterMonth = new Date(y, mo + d, 1).getTime(); renderers.roster(); };
+  $('#ro-prev').onclick = () => move(-1); $('#ro-next').onclick = () => move(1);
+  $('#ro-done').onclick = () => { rosterMonth = null; go(lastTab); };
+  $$('#scr-roster [data-day]').forEach(b => b.onclick = () => {
+    const k = b.dataset.day; S.roster = S.roster || [];
+    S.roster = S.roster.includes(k) ? S.roster.filter(x => x !== k) : S.roster.concat(k);
+    save(); renderers.roster(); const again = $(`#scr-roster [data-day="${k}"]`); if(again) again.focus();
+  });
 };
 
 /* ---------- employer view (example): pass / fail and counts only ---------- */
