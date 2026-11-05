@@ -1061,8 +1061,6 @@ renderers.fly = () => {
 };
 $$('.fly-opt').forEach(b => b.addEventListener('click', () => {
   draft.flyingToday = b.dataset.fly === 'yes';
-  const t = ymd(Date.now()); S.roster = S.roster || [];
-  if(draft.flyingToday && !S.roster.includes(t)){ S.roster.push(t); save(); }
   $$('.fly-opt').forEach(x => x.classList.toggle('on', x === b));
   clearTimeout(renderers.fly._t); renderers.fly._t = setTimeout(() => { if(current === 'fly') go('rate'); }, 220);
 }));
@@ -1367,6 +1365,8 @@ function finishTest(reason){
     flyingToday: !!draft.flyingToday, duty: draft.flyingToday ? {...S.duty} : null, pvt, eye, simulated:false};
   if(reason === 'stopped' && pvt.trials < 10){ toast('Test stopped early. Not enough responses to give a result.'); go('home'); return true; }
   evaluate(check);
+  // Your answer today is the latest word: it updates today on the duty calendar.
+  const t = ymd(check.ts); S.roster = (S.roster || []).filter(x => x !== t); if(check.flyingToday) S.roster.push(t);
   S.checks.push(check); check.newBadges = awardBadges(); save();
   lastCheckId = check.id; go('results');
   return true;
