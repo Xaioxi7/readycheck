@@ -313,27 +313,7 @@ details[open] summary{margin-bottom:8px}
 .adv-bad2 h2{color:var(--bad)}
 .adv .lt-note{border-top:1px solid var(--line);padding-top:10px;font-size:.92rem}
 /* Today: state summary */
-.state-big{font-size:1.45rem;font-weight:600;line-height:1.15}
-.st-chip{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:.92rem;padding:4px 12px;border-radius:999px;white-space:nowrap}
-.st-good{background:var(--ok-soft);color:var(--ok)} .st-watch{background:var(--warn-soft);color:var(--warn)} .st-bad{background:var(--bad-soft);color:var(--bad)}
-.st-nodata{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
-.daystrip{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px}
-.daystrip span{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
-.daystrip i{display:block;width:100%;max-width:20px;aspect-ratio:1;border-radius:50%;background:var(--surface-2);border:1.5px solid var(--line)}
-.daystrip i.l0{background:var(--ok);border-color:var(--ok)} .daystrip i.l1{background:var(--warn);border-color:var(--warn)} .daystrip i.l2{background:var(--bad);border-color:var(--bad)}
-.daystrip span.today i{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--accent)}
-.daystrip svg{width:10px;height:10px;color:var(--muted);display:block}
-.daystrip .np{width:10px;height:10px}
-.strip-labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.68rem;color:var(--muted);margin-top:4px}
-.req{appearance:none;border:0;background:none;padding:0;font:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;flex:none;text-align:center}
-.req .small{font-size:.72rem;line-height:1.2;color:var(--muted)}
-.req:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:12px}
 /* Long-term status */
-.lt-word{font-size:1.9rem;font-weight:600;line-height:1.1;display:flex;align-items:center;gap:10px}
-.lt-good{color:var(--ok)} .lt-watch{color:var(--warn)} .lt-bad{color:var(--bad)} .lt-nodata{color:var(--muted);font-size:1.3rem}
-.stline{display:grid;grid-template-columns:repeat(28,minmax(0,1fr));gap:2px}
-.stline i{display:block;height:12px;border-radius:2px;background:var(--surface-2);border:1px solid var(--line)}
-.stline i.s-good{background:var(--ok);border-color:var(--ok)} .stline i.s-watch{background:var(--warn);border-color:var(--warn)} .stline i.s-bad{background:var(--bad);border-color:var(--bad)}
 /* History: 28-day calendar */
 .heat{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
 .heat .hd{font-family:var(--font-mono);font-size:.66rem;color:var(--muted);text-align:center}
@@ -342,6 +322,7 @@ details[open] summary{margin-bottom:8px}
 .heat .c.l0{background:color-mix(in srgb,var(--ok) 30%,var(--surface));border-color:var(--ok);color:var(--ink)}
 .heat .c.l1{background:color-mix(in srgb,var(--warn) 32%,var(--surface));border-color:var(--warn);color:var(--ink)}
 .heat .c.l2{background:color-mix(in srgb,var(--bad) 32%,var(--surface));border-color:var(--bad);color:var(--ink)}
+.heat .c[data-open]{cursor:pointer}
 .heat .c.today{outline:2px solid var(--accent);outline-offset:1px}
 .heat .c svg{position:absolute;right:3px;bottom:3px;width:13px;height:13px;color:var(--ink)}
 /* Employer view */
@@ -351,7 +332,6 @@ details[open] summary{margin-bottom:8px}
 ul.never{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:.92rem}
 ul.never li{display:flex;align-items:center;gap:8px}
 ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted);background:linear-gradient(45deg,transparent 45%,var(--muted) 45%,var(--muted) 55%,transparent 55%)}
-.recap .stat3 .v{font-size:1.25rem}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -430,11 +410,7 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
   <section class="screen stack" id="scr-home" hidden>
     <div class="row" style="flex-wrap:nowrap;justify-content:space-between;gap:12px"><div><div class="eyebrow" id="home-date"></div><h1 id="home-greet">Good morning</h1><div class="small muted" id="home-rank"></div></div>
       <button class="mini-uni" data-go="logbook" id="home-uni" aria-label="Open your logbook and wings"></button></div>
-    <div id="home-state"></div>
     <div id="home-hero"></div>
-    <div id="home-lt"></div>
-    <div id="home-recap"></div>
-    <div id="home-post"></div>
     <div class="card stack" id="home-week"></div>
   </section>
 
@@ -813,10 +789,6 @@ function longTerm(list, now){
   const recovered = s === 'good' && rec && dayDiff(now, rec.t) <= 7 && tl.slice(tl.indexOf(rec)).every(x => x.state === 'good');
   return {s, n7, days, tl, run: last ? last.run : 0, cause: cause && cause.raw, recovered, low7: inWindow(days, now, 7).filter(d => d.low).length};
 }
-function latePattern(list){
-  const late = list.filter(c => c.late), low = late.filter(c => c.level >= 1).length;
-  return late.length >= 2 ? {n:late.length, low} : null;
-}
 
 /* ---------- monthly requirement: the only thing an employer sees ---------- */
 const REQ_CHECKS = 12, REQ_WINDOW = 28;
@@ -835,22 +807,6 @@ function requirement(list, roster, now){
 }
 const reqNow = () => requirement(preChecks(), S.roster, Date.now());
 function reqProgressText(r){ return `${Math.min(r.n28, r.need)} of ${r.need} checks done, ${r.covered} of ${plural(r.flights, 'flight day')} covered`; }
-function reqGentle(r){
-  if(r.met) return `Requirement met for ${r.month}. Nice and steady.`;
-  const parts = [];
-  if(r.n28 < r.need) parts.push(`${plural(r.need - r.n28, 'more check day')} in your 28-day window and you're there.`);
-  if(r.missed) parts.push(`${plural(r.missed, 'flight day')} this month had no check. No stress: check in before your next one.`);
-  return parts.join(' ');
-}
-function reqRing(r, size){
-  size = size || 76; const rad = size/2 - 7, c = 2*Math.PI*rad, p = Math.min(r.n28, r.need)/r.need, col = r.met ? 'var(--ok)' : 'var(--accent)';
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
-    <circle cx="${size/2}" cy="${size/2}" r="${rad}" fill="none" stroke="var(--line)" stroke-width="7"/>
-    <circle cx="${size/2}" cy="${size/2}" r="${rad}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(c*p).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/>
-    <text x="${size/2}" y="${size/2 + 1}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="15" font-weight="600" fill="var(--ink)">${Math.min(r.n28, r.need)}/${r.need}</text>
-    <text x="${size/2}" y="${size/2 + 15}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--muted)">checks</text></svg>`;
-}
-
 /* ---------- today's advice: level x flying today ---------- */
 function todayAdvice(c, lt){
   const fly = !!c.flyingToday, lvl = c.level, fc = fcOf(c), low = fmtClock(fc.peak.clock);
@@ -908,70 +864,8 @@ function ltReason(lt){
   if(lt.run > 0) s += ` ${plural(lt.run, 'normal day')} in a row so far; 3 clears it.`;
   return s;
 }
-function ltActions(lt){
-  if(lt.s === 'nodata') return ['Check in today, flight or not. A check on 3 days this week gives a clear picture.'];
-  if(lt.s === 'good'){ const w = weekStreak(preChecks());
-    return ['Keep a regular sleep window, even on days off.', w ? `${plural(w, 'week')} in a row with a check. Keep the streak going.` : 'A quick check most days keeps your picture sharp.']; }
-  if(lt.s === 'watch'){ const lp = latePattern(preChecks());
-    return ['Keep the same sleep and wake time, even on days off.', 'Protect a sleep opportunity of 7 hours or more before each duty.',
-      lp && lp.low ? `After late hotel check-ins you were low ${lp.low} of ${lp.n} times. Consider raising it when you bid.` : 'Notice which trips or hotels pull you down, and consider raising them when you bid.']; }
-  return ["This has lasted about two weeks. Talking to a peer pilot or counselor can help, and your airline isn't told.",
-    'If you still feel fatigued even after good sleep, consider a check with your aviation medical examiner or doctor.'];
-}
-function statusLine28(lt, now){
-  const cells = []; let k = 0;
-  for(let i = 27; i >= 0; i--){ const t = addDays(now, -i);
-    while(k < lt.tl.length && lt.tl[k].t <= t) k++;
-    const e = k ? lt.tl[k-1] : null;
-    cells.push(`<i class="${e ? 's-' + e.state : ''}" title="${esc(fmtDate(t))}: ${e ? ST[e.state].word : 'no data yet'}"></i>`); }
-  return `<div><div class="small muted" style="margin-bottom:4px">Status over the last 28 days</div><div class="stline" role="img" aria-label="Long-term status for each of the last 28 days">${cells.join('')}</div><div class="strip-labels"><span>4 weeks ago</span><span>Today</span></div></div>`;
-}
-function ltCard(lt, withLine){
-  const st = ST[lt.s], head = lt.s === 'nodata' ? 'Not enough checks this week to judge' : st.word;
-  return `<div class="card stack">
-    <div class="row" style="justify-content:space-between"><div class="eyebrow" style="margin:0">Long-term status · 1 to 2 weeks</div><button class="btn ghost" data-go="method" style="min-height:30px;padding:4px 6px">How?</button></div>
-    <div class="lt-word lt-${st.cls}">${lt.s === 'nodata' ? '' : '<span class="dot" style="width:12px;height:12px"></span>'}${esc(head)}</div>
-    <p style="margin:0">${esc(ltReason(lt))}</p>
-    <ul class="tips small">${ltActions(lt).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
-    ${lt.s === 'bad' ? '<button class="btn amber block" data-act="support">See who can help</button><p class="small muted" style="margin:0">Not a diagnosis. Just a signal that a conversation could help.</p>' : ''}
-    ${lt.s === 'nodata' ? '<button class="btn block" data-go="fly">Check in now</button>' : ''}
-    ${withLine ? statusLine28(lt, Date.now()) : ''}
-  </div>`;
-}
-
-/* ---------- weekly recap (shown on Today on Mondays, always on History) ---------- */
-function weekRecap(list, now){
-  const ws = weekStart(now), from = addDays(ws, -7), all = byDay(list);
-  const days = all.filter(d => d.t >= from && d.t < ws), prev = all.filter(d => d.t >= addDays(ws, -14) && d.t < from);
-  const low = days.filter(d => d.low), best = days.slice().sort((a,b) => a.level - b.level || (a.rt||9999) - (b.rt||9999))[0];
-  let insight;
-  const lowLate = low.filter(d => d.late).length, lowFly = low.filter(d => d.flying).length;
-  const m1 = median(days.map(d => d.rt).filter(Boolean)), m0 = median(prev.map(d => d.rt).filter(Boolean));
-  if(!days.length) insight = 'No checks last week. Three check days this week is enough to see your pattern.';
-  else if(!low.length) insight = 'Every check day was normal. Whatever your routine was, keep it.';
-  else if(lowLate && lowLate === low.length) insight = `${lowLate === 1 ? 'Your low day' : 'All ' + lowLate + ' low days'} came after a late hotel check-in.`;
-  else if(low.length >= 2 && lowFly === low.length) insight = 'All your low days were flight days. Early reports or long duties may be pulling you down.';
-  else if(m1 != null && m0 != null && Math.abs(m1 - m0) >= 15) insight = `Your typical reaction time was ${Math.round(Math.abs(m1 - m0))} ms ${m1 > m0 ? 'slower' : 'quicker'} than the week before.`;
-  else insight = `${plural(low.length, 'low day')}. Protecting sleep before duty is the biggest lever you have.`;
-  return {from, days, low:low.length, best, insight};
-}
-function recapCard(r){
-  return `<div class="card stack recap"><div class="eyebrow" style="margin:0">Weekly recap · ${esc(fmtDate(r.from))} to ${esc(fmtDate(addDays(r.from, 6)))}</div>
-    <div class="stat3"><div><div class="v">${r.days.length}</div><div class="k">check days</div></div><div><div class="v">${r.low}</div><div class="k">low days</div></div>
-      <div><div class="v" style="font-size:1rem;line-height:1.9rem">${r.best ? esc(new Date(r.best.t).toLocaleDateString(undefined,{weekday:'short'})) : '-'}</div><div class="k">best day</div></div></div>
-    <p style="margin:0">${esc(r.insight)}</p></div>`;
-}
-
 /* ---------- small icons and strips ---------- */
 const PLANE_MINI = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M15 8c0-.7-.6-1-1.3-1H10L6.5 1.5H5L6.8 7H3.5L2.2 5H1l.8 3-.8 3h1.2l1.3-2h3.3L5 14.5h1.5L10 9h3.7c.7 0 1.3-.3 1.3-1z" fill="currentColor"/></svg>`;
-function dayStrip(days, roster, now, n){
-  const byT = new Map(days.map(d => [d.t, d])), fl = new Set((roster || []).map(fromYmd));
-  const cells = [];
-  for(let i = n - 1; i >= 0; i--){ const t = addDays(now, -i), d = byT.get(t), fly = (d && d.flying) || fl.has(t);
-    cells.push(`<span class="${i === 0 ? 'today' : ''}" title="${esc(fmtDate(t))}: ${d ? LEVELS[d.level].name : 'no check'}${fly ? ', flight day' : ''}"><i class="${d ? 'l' + d.level : ''}"></i>${fly ? PLANE_MINI : '<span class="np"></span>'}</span>`); }
-  return `<div class="daystrip" role="img" aria-label="Your last ${n} days: colour shows each day's level, grey means no check">${cells.join('')}</div>`;
-}
-
 /* ---------- self-tests: open the console and run runStatusTests() ---------- */
 function runStatusTests(){
   const now = new Date(2026, 10, 20, 12).getTime(); let id = 0;
@@ -1117,23 +1011,7 @@ renderers.home = () => {
   const pre = preChecks(); const today = pre.filter(c=>sameDay(c.ts, Date.now())).pop();
   { const rk = rankOf(pre.length), wb = wornBadge(); $('#home-uni').innerHTML = uniformSVG(S.user && S.user.name, wb, rk.bars, true); $('#home-rank').textContent = rk.name + (wb ? ' · ' + wb.name + ' wings' : ''); }
   const firstTime = !pre.length;
-  const lt = longTerm(pre, Date.now()), req = reqNow(), st = ST[lt.s];
-  const todayDay = lt.days.find(d => d.t === dayStart(Date.now()));
-  const TL = todayDay ? LEVELS[todayDay.level] : null;
-  // State summary, like a readiness app: today, long term, last 14 days, monthly requirement
-  $('#home-state').innerHTML = `<div class="card stack" style="gap:14px">
-    <div class="row" style="flex-wrap:nowrap;justify-content:space-between;align-items:flex-start">
-      <div class="stack" style="gap:12px;min-width:0">
-        <div><div class="eyebrow" style="margin:0">Today</div>
-          <div class="state-big" style="color:${TL ? TL.color : 'var(--ink)'}">${TL ? TL.name : 'Check in today'}</div>
-          <div class="small muted">${today ? (today.flyingToday ? 'Flight day' : 'No flight') + ' · ' + fmtTime(today.ts) : 'About 4 minutes, flight or not'}</div></div>
-        <div><div class="eyebrow" style="margin:0 0 4px">Long term</div><span class="st-chip st-${st.cls}"><span class="dot"></span>${st.word}</span></div>
-      </div>
-      <button class="req" data-go="org" aria-label="Monthly requirement: ${esc(reqProgressText(req))}. ${req.met ? 'Met' : 'Not met yet'}. Opens the employer view.">${reqRing(req)}<span class="small">Monthly<br>requirement</span></button>
-    </div>
-    <div>${dayStrip(lt.days, S.roster, Date.now(), 14)}<div class="strip-labels"><span>2 weeks ago</span><span>Today</span></div></div>
-    <div class="small ${req.met ? '' : 'muted'}">${esc(reqGentle(req))}</div>
-  </div>`;
+  const lt = longTerm(pre, Date.now());
   const hero = $('#home-hero');
   if(today){
     const L = LEVELS[today.level];
@@ -1154,12 +1032,6 @@ renderers.home = () => {
       <button class="btn amber block big pulse" data-go="fly">Start check <span class="go-arrow">›</span></button>
       <p class="small muted" style="margin:0;text-align:center">${firstTime ? 'First time? You can do a short practice before the test.' : 'On a flight day, best done about an hour before report time.'}</p></div>`;
   }
-  $('#home-lt').innerHTML = pre.length ? ltCard(lt, false) : '';
-  $('#home-recap').innerHTML = now.getDay() === 1 && pre.length ? recapCard(weekRecap(pre, Date.now())) : '';
-  $('#home-post').innerHTML = (today && today.flyingToday && !today.post) ? `<div class="card row" style="justify-content:space-between;flex-wrap:nowrap">
-      <div><div class="eyebrow" style="margin:0">After your duty</div><b>Post-duty check-in</b><div class="small muted">30 seconds. Plans your recovery sleep.</div></div>
-      <button class="btn" data-go="post">Start</button></div>`
-    : (today && today.post) ? `<div class="card small muted">✓ Post-duty check-in done. Rest well.</div>` : '';
   const ws = weekStart(Date.now()), days = ['M','T','W','T','F','S','S'];
   const dots = days.map((d,i) => { const t0 = addDays(ws, i); const on = pre.some(c => c.ts >= t0 && c.ts < addDays(t0, 1));
     return `<span class="${on?'on':''} ${sameDay(t0, Date.now())?'today':''}"><i></i>${d}</span>`; }).join('');
@@ -1997,7 +1869,7 @@ function sheet(title, body, actionLabel, onAction){
 }
 
 /* ---------- trends ---------- */
-function heatmap28(days, roster, now){
+function heatmap28(days, roster, now, ids){
   const byT = new Map(days.map(d => [d.t, d])), fl = new Set((roster || []).map(fromYmd));
   const first = addDays(now, -27), today = dayStart(now), g0 = weekStart(first);
   const cells = ['M','T','W','T','F','S','S'].map(d => `<div class="hd">${d}</div>`);
@@ -2005,7 +1877,7 @@ function heatmap28(days, roster, now){
   for(let t = g0; t <= last; t = addDays(t, 1)){
     const out = t < first || t > today, d = byT.get(t), fly = (d && d.flying) || fl.has(t);
     const lab = `${fmtDate(t)}: ${d ? LEVELS[d.level].name : 'no check'}${fly ? ', flight day' : ''}`;
-    cells.push(`<div class="c ${out ? 'out' : ''} ${d && !out ? 'l' + d.level : ''} ${t === today ? 'today' : ''}" ${out ? 'aria-hidden="true"' : `role="img" aria-label="${esc(lab)}" title="${esc(lab)}"`}>${new Date(t).getDate()}${fly && !out ? PLANE_MINI : ''}</div>`);
+    cells.push(`<div class="c ${out ? 'out' : ''} ${d && !out ? 'l' + d.level : ''} ${t === today ? 'today' : ''}" ${out ? 'aria-hidden="true"' : ids && ids.has(t) ? `role="button" tabindex="0" data-open="${ids.get(t)}" aria-label="${esc(lab)}. Open result" title="${esc(lab)}"` : `role="img" aria-label="${esc(lab)}" title="${esc(lab)}"`}>${new Date(t).getDate()}${fly && !out ? PLANE_MINI : ''}</div>`);
   }
   return `<div class="heat">${cells.join('')}</div>
     <div class="legend">${LEGEND}<span><i class="sw" style="background:var(--surface-2);border:1px solid var(--line)"></i>No check</span><span><span style="width:12px;height:12px;display:inline-block;color:var(--ink)">${PLANE_MINI}</span>Flight day</span></div>`;
@@ -2032,31 +1904,17 @@ function rollingChart(days, list, now){
 renderers.trends = () => {
   const list = preChecks(), el = $('#scr-trends'), now = Date.now();
   if(!list.length){ el.innerHTML = `<div><h1>History</h1><p class="muted">Your checks and patterns will show up here after your first check.</p></div><button class="btn amber block big" data-go="fly">Start a check</button><p class="small muted" style="margin:0">Presenting? Load example history from Me › Demo mode.</p>`; return; }
-  const lt = longTerm(list, now);
-  // pattern: late check-in
-  const lateY = list.filter(c=>c.late), lateN = list.filter(c=>!c.late);
-  const bad = a => a.filter(c=>c.level>=1).length;
-  let pattern = '<p class="small muted" style="margin:0">Patterns appear once you have checks both after late check-ins and after normal nights.</p>';
-  if(lateY.length >= 2 && lateN.length >= 2){
-    const pY = Math.round(bad(lateY)/lateY.length*100), pN = Math.round(bad(lateN)/lateN.length*100);
-    pattern = `<p style="margin:0">After a late hotel check-in, you came out Caution or lower in <b>${bad(lateY)} of ${lateY.length}</b> checks (${pY}%), compared with <b>${bad(lateN)} of ${lateN.length}</b> (${pN}%) after normal nights.</p>
-      <p class="small muted" style="margin:0">Something specific to raise when you bid your schedule or file a fatigue report.</p>`;
-  }
-  const counts = [0,1,2].map(l=>list.filter(c=>c.level===l).length);
+  const lt = longTerm(list, now), ids = new Map(list.map(c => [dayStart(c.ts), c.id]));
   el.innerHTML = `
     <div><div class="eyebrow">Only you can see this</div><h1>History</h1></div>
-    ${ltCard(lt, true)}
-    ${planCard(carePlan(list, lt, now))}
-    ${recapCard(weekRecap(list, now))}
-    <div class="card stack"><h2 style="margin:0">Last 28 days</h2>${heatmap28(lt.days, S.roster, now)}</div>
-    <div class="card stack"><h2 style="margin:0">Reaction time trend</h2>
-      <p class="small muted" style="margin:0">Dots are each day's median. The line is the 7-day rolling median, which shrugs off one-off bad days.</p>
+    <div class="card stack"><h2 style="margin:0">Calendar</h2>
+      <p class="small muted" style="margin:0">Last 28 days. Tap a day to see that check.</p>
+      ${heatmap28(lt.days, S.roster, now, ids)}</div>
+    <div class="card stack"><h2 style="margin:0">Trend</h2>
+      <p class="small muted" style="margin:0">Your typical reaction time over the last 28 days. Lower is better.</p>
       ${rollingChart(lt.days, list, now)}</div>
-    <div class="card stack"><h2>Pattern found</h2>${pattern}</div>
-    <div class="card stack"><h2>${list.length} checks</h2>
-      <dl class="kv"><dt>Ready</dt><dd>${counts[0]}</dd><dt>Caution</dt><dd>${counts[1]}</dd><dt>Low alertness</dt><dd>${counts[2]}</dd></dl>
-      <div class="list">${list.slice().reverse().slice(0,12).map(c=>`<div class="list-item tap" data-open="${c.id}" role="button" tabindex="0"><div><div>${fmtDate(c.ts)}</div><div class="small muted">${c.pvt.medianRT} ms · felt ${c.sp}/7 · ${c.flyingToday?'flight day':'no flight'}${c.late?' · late check-in':''}${c.simulated?' · demo':''}</div></div><span class="pill ${LEVELS[c.level].cls}">${LEVELS[c.level].name} ›</span></div>`).join('')}</div></div>`;
-  $$('#scr-trends [data-open]').forEach(r => r.onclick = () => { lastCheckId = r.dataset.open; go('results'); });
+    ${planCard(carePlan(list, lt, now))}`;
+  $$('#scr-trends [data-open]').forEach(r => { const open = () => { lastCheckId = r.dataset.open; go('results'); }; r.onclick = open; r.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); } }; });
 };
 
 /* ---------- employer view (example): pass / fail and counts only ---------- */
