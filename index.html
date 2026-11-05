@@ -411,7 +411,6 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
     <div class="row" style="flex-wrap:nowrap;justify-content:space-between;gap:12px"><div><div class="eyebrow" id="home-date"></div><h1 id="home-greet">Good morning</h1><div class="small muted" id="home-rank"></div></div>
       <button class="mini-uni" data-go="logbook" id="home-uni" aria-label="Open your logbook and wings"></button></div>
     <div id="home-hero"></div>
-    <div class="card stack" id="home-week"></div>
   </section>
 
   <!-- STEP 1: FLYING TODAY? -->
@@ -1032,24 +1031,7 @@ renderers.home = () => {
       <button class="btn amber block big pulse" data-go="fly">Start check <span class="go-arrow">›</span></button>
       <p class="small muted" style="margin:0;text-align:center">${firstTime ? 'First time? You can do a short practice before the test.' : 'On a flight day, best done about an hour before report time.'}</p></div>`;
   }
-  const ws = weekStart(Date.now()), days = ['M','T','W','T','F','S','S'];
-  const dots = days.map((d,i) => { const t0 = addDays(ws, i); const on = pre.some(c => c.ts >= t0 && c.ts < addDays(t0, 1));
-    return `<span class="${on?'on':''} ${sameDay(t0, Date.now())?'today':''}"><i></i>${d}</span>`; }).join('');
-  const nu = nextUnlock(pre);
-  $('#home-week').innerHTML = `<div class="row" style="justify-content:space-between"><h2 style="margin:0">This week</h2><button class="btn ghost" data-go="logbook">Logbook ›</button></div>
-    <div class="week">${dots}</div>
-    <div class="small muted">${weekStreak(pre)}-week streak · ${pre.length} checks logged · ${Object.keys(S.badges||{}).length} of ${BADGES.length} badges</div>
-    ${nu ? `<div class="stack" style="gap:6px"><div class="small"><b>Next:</b> ${esc(nu.label)}</div><div class="prog"><i style="width:${Math.round(nu.p*100)}%"></i></div></div>` : ''}`;
 };
-function spark(list){
-  if(!list.length) return `<p class="small muted" style="margin:0">Your checks will appear here.</p>`;
-  const W=420, H=70, n=list.length, gap=W/14; // fixed slots so 1 or 2 checks don't become giant blocks
-  const bars = list.map((c,i)=>{ const L=LEVELS[c.level]; const hgt = 18 + (2-c.level)*22; const x=i*gap+gap*0.2, w=gap*0.6;
-    return `<rect x="${x.toFixed(1)}" y="${(H-hgt).toFixed(1)}" width="${w.toFixed(1)}" height="${hgt}" rx="3" fill="${L.color}"/>`; }).join('');
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Recent check levels">${bars}</svg>
-    <div class="legend">${LEGEND}</div>`;
-}
-
 /* ---------- self rating ---------- */
 let draft = null;
 function buildSP(form, name){
