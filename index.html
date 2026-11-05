@@ -245,8 +245,6 @@ details[open] summary{margin-bottom:8px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lock-fill:#1d2a40;--lock-line:#3a4b68}}
 :root[data-theme="dark"]{--lock-fill:#1d2a40;--lock-line:#3a4b68}
 .uniform{width:100%;height:auto;display:block;border-radius:12px}
-.mini-uni{appearance:none;flex:none;width:92px;height:62px;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0b1220;cursor:pointer}
-.mini-uni .uniform{border-radius:0}
 .avatar{width:92px;height:62px;border-radius:14px;overflow:hidden;background:#0b1220}
 .bdg-row{display:flex;gap:12px;align-items:center;padding:10px;border-radius:14px;border:1px solid var(--line);background:var(--surface-2)}
 .bdg-row .badge{width:86px;flex:none}
@@ -408,8 +406,6 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
 
   <!-- TODAY (tab) -->
   <section class="screen stack" id="scr-home" hidden>
-    <div class="row" style="flex-wrap:nowrap;justify-content:space-between;gap:12px"><div><div class="eyebrow" id="home-date"></div><h1 id="home-greet">Good morning</h1><div class="small muted" id="home-rank"></div></div>
-      <button class="mini-uni" data-go="logbook" id="home-uni" aria-label="Open your logbook and wings"></button></div>
     <div id="home-hero"></div>
   </section>
 
@@ -1003,12 +999,7 @@ function ring(level, size=96){
 
 /* ---------- today ---------- */
 renderers.home = () => {
-  const now = new Date(), h = now.getHours();
-  $('#home-date').textContent = now.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
-  const first = (S.user?.name||'').split(' ')[0];
-  $('#home-greet').textContent = (h<12?'Good morning':h<18?'Good afternoon':'Good evening') + (first?', '+first:'');
   const pre = preChecks(); const today = pre.filter(c=>sameDay(c.ts, Date.now())).pop();
-  { const rk = rankOf(pre.length), wb = wornBadge(); $('#home-uni').innerHTML = uniformSVG(S.user && S.user.name, wb, rk.bars, true); $('#home-rank').textContent = rk.name + (wb ? ' · ' + wb.name + ' wings' : ''); }
   const firstTime = !pre.length;
   const lt = longTerm(pre, Date.now());
   const hero = $('#home-hero');
@@ -1018,10 +1009,11 @@ renderers.home = () => {
       <div class="eyebrow" style="margin:0">Today's check · ${fmtTime(today.ts)}${today.simulated?' · demo':''}</div>
       ${gaugeSVG(today.pvt.lpfs3)}
       <span class="annun ${L.cls}">${L.name}</span>
-      <div class="headline">${esc(todayAdvice(today, lt).title)}</div>
-      <button class="btn amber block big" id="btn-open-today" style="margin-top:6px">See today's advice</button>
-      <button class="btn ghost block" data-go="fly" style="color:var(--panel-muted)">Check again</button></div>`;
+      <div class="small" style="color:var(--panel-muted)">${today.pvt.lpfs3} lapses and early taps · ${today.pvt.medianRT} ms typical reaction</div></div>
+    ${adviceCard(today, todayAdvice(today, lt), true)}
+    <div class="row" style="flex-wrap:nowrap;gap:8px"><button class="btn block" id="btn-open-today">Full result</button><button class="btn ghost block" data-go="fly">Check again</button></div>`;
     $('#btn-open-today').onclick = () => { lastCheckId = today.id; go('results'); };
+    const af = $('#adv-fatigue'), ac = $('#adv-crew'); if(af) af.onclick = fatigueSheet; if(ac) ac.onclick = () => crewSheet(today);
     const n = hero.querySelector('.needle'); requestAnimationFrame(() => requestAnimationFrame(() => n.style.transform = `rotate(${n.dataset.deg}deg)`));
   } else {
     hero.innerHTML = `<div class="card hero has-scene">${heroScene(new Date().getHours())}
@@ -1765,6 +1757,8 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-act]
   else if(b.dataset.act === 'fatigue') fatigueSheet();
   else if(b.dataset.act === 'contact'){ toast(`Demo only. Would open ${PARTNERS()[Number(b.dataset.p)].name}.`); reachedOut(); } });
 
+function crewSheet(c){ sheet('Tell my crew', `<p class="small muted">Your captain and first officer on today's pairing receive only this:</p><div class="msg-preview">${esc(S.user?.name||'Your crew member')} reports <b>elevated fatigue today</b>.</div><p class="small muted">No scores, no eye data.</p>`, 'Send to crew', () => { c.shared = {...(c.shared||{}), crew:true}; save(); toast('Demo only. Nothing was sent.'); if(renderers[current]) renderers[current](); }); }
+
 /* ---------- results ---------- */
 let lastCheckId = null;
 renderers.results = () => {
@@ -1833,7 +1827,7 @@ renderers.results = () => {
     <button class="btn primary block" data-go="home">Done</button>`;
   requestAnimationFrame(() => requestAnimationFrame(() => { const n = el.querySelector('.needle'); if(n) n.style.transform = `rotate(${n.dataset.deg}deg)`; }));
   $$('#scr-results [data-wear-now]').forEach(btn => btn.onclick = () => { S.worn = btn.dataset.wearNow; save(); toast('Wings pinned to your uniform.'); btn.textContent = '✓ Wearing'; btn.disabled = true; });
-  const crew = () => sheet('Tell my crew', `<p class="small muted">Your captain and first officer on today's pairing receive only this:</p><div class="msg-preview">${esc(S.user?.name||'Your crew member')} reports <b>elevated fatigue today</b>.</div><p class="small muted">No scores, no eye data.</p>`, 'Send to crew', () => { c.shared = {...(c.shared||{}), crew:true}; save(); toast('Demo only. Nothing was sent.'); renderers.results(); });
+  const crew = () => crewSheet(c);
   const fatigue = fatigueSheet;
   [['#act-crew', crew], ['#adv-crew', crew], ['#act-fatigue', fatigue], ['#adv-fatigue', fatigue]].forEach(([sel, fn]) => { const b = $(sel); if(b) b.onclick = fn; });
   const ck = $('#act-cockpit'); if(ck) ck.onclick = () => sheet('Cockpit monitoring boost', `<p class="small">With your permission, one flag goes to Honeywell's cockpit pilot state monitoring for this duty:</p><div class="msg-preview"><b>Elevated pre-duty fatigue risk.</b> Watch window around ${fmtClock(fc.peak.clock)}.</div><ul class="tips small"><li>The camera alerts a little earlier than usual today.</li><li>It pays closer attention around your likely low point.</li><li>Alerts stay in the cockpit. Your airline and dispatch are not told.</li></ul><p class="small muted">Concept only. Pilot state monitoring is still being tested and does not accept outside inputs today.</p>`, 'Turn on for this duty', () => { c.shared = {...(c.shared||{}), cockpit:true}; save(); toast('Demo only. Cockpit link is a concept.'); renderers.results(); });
