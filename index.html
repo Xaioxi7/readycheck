@@ -1946,6 +1946,9 @@ renderers.roster = () => {
   $$('#scr-roster [data-day]').forEach(b => b.onclick = () => {
     const k = b.dataset.day; S.roster = S.roster || [];
     S.roster = S.roster.includes(k) ? S.roster.filter(x => x !== k) : S.roster.concat(k);
+    // Latest change wins: a calendar edit also updates that day's checks (their advice and the monthly requirement follow).
+    const fly = S.roster.includes(k);
+    preChecks().filter(c => ymd(c.ts) === k).forEach(c => { c.flyingToday = fly; c.duty = fly ? (c.duty || {...S.duty}) : null; });
     save(); renderers.roster(); const again = $(`#scr-roster [data-day="${k}"]`); if(again) again.focus();
   });
 };
