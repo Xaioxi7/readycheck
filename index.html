@@ -194,12 +194,9 @@ details[open] summary{margin-bottom:8px}
 .stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
 .stat3 .v{font-family:var(--font-mono);font-size:1.4rem;font-weight:500}
 .stat3 .k{font-size:.74rem;color:var(--muted)}
-.fact{border-left:3px solid var(--accent)}
-.fact .eyebrow{display:flex;align-items:center;gap:6px;color:var(--accent-ink)}
 .wx-row{position:relative}
 .wx-row .t{color:var(--ink)}
 .logo-row{display:flex;align-items:center;gap:10px}
-.fact .src{font-size:.75rem;color:var(--muted);margin:0}
 /* Navigation: bottom tabs like mature phone apps */
 .app{padding-bottom:110px}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;gap:0;background:color-mix(in srgb,var(--surface) 92%,transparent);
@@ -244,9 +241,6 @@ details[open] summary{margin-bottom:8px}
 .has-scene>.scene{margin:0 -18px;width:calc(100% + 36px);max-width:none;border-bottom:1px solid var(--line)}
 .scene-wrap{border-radius:18px;overflow:hidden;border:1px solid var(--line)}
 .steps3 svg{width:30px;height:30px;display:block;margin:0 auto 6px}
-.fact-row{display:flex;gap:14px;align-items:flex-start}
-.fact-ic{flex:none;width:56px;height:56px;border-radius:14px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center}
-.fact-ic svg{width:40px;height:40px}
 :root{--lock-fill:#e3e8ef;--lock-line:#b4bfcd}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lock-fill:#1d2a40;--lock-line:#3a4b68}}
 :root[data-theme="dark"]{--lock-fill:#1d2a40;--lock-line:#3a4b68}
@@ -267,10 +261,11 @@ details[open] summary{margin-bottom:8px}
 .m-Bronze{background:linear-gradient(#f3c19a,#c47a45)} .m-Silver{background:linear-gradient(#fff,#c3ccd8)} .m-Ruby{background:linear-gradient(#ffb3b3,#e0414a);color:#fff}
 .m-Gold{background:linear-gradient(#ffe08a,#f0b23a)} .m-Orange{background:linear-gradient(#ffd1a1,#ff8a1f)} .m-Platinum{background:linear-gradient(#fff,#dfe9f5)}
 .m-Jade{background:linear-gradient(#bff5dc,#2fbf86)} .m-Midnight{background:linear-gradient(#a9c4ff,#3b5bdb);color:#fff}
-.sup-opt{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
-.sup-ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center}
-.sup-ic svg{width:28px;height:28px}
-.sup-card{display:flex;align-items:center;gap:12px;width:100%;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+.plan-item{display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.plan-item.pi-bad{border-color:var(--bad);border-left-width:4px}
+.plan-item.pi-org{border-color:var(--accent);border-left-width:4px}
+.plan-item .btn{margin-top:6px}
+.plan-item .list-item{gap:10px}
 .route{display:flex;align-items:flex-start}
 .route>div{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;font-size:.8rem;line-height:1.25;min-width:0}
 .route svg{width:34px;height:34px;margin-bottom:4px}
@@ -296,6 +291,67 @@ details[open] summary{margin-bottom:8px}
 .go-arrow{display:inline-block;margin-left:6px;animation:nudge 1.6s ease-in-out infinite}
 @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
 .demo-tag{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent-ink)}
+/* Step 1: flying today? */
+.fly-opts{display:flex;flex-direction:column;gap:12px}
+.fly-opt{appearance:none;display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:18px 16px;min-height:92px;cursor:pointer}
+.fly-opt:hover{border-color:var(--muted)}
+.fly-opt.on{border-color:var(--accent);background:var(--accent-soft)}
+.fly-opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fly-opt svg{flex:none;width:46px;height:46px}
+.fly-opt b{display:block;font-size:1.08rem;line-height:1.3}
+/* Today's advice: urgency shown by colour and weight */
+.adv{border-left:6px solid var(--adv);display:flex;flex-direction:column;gap:10px}
+.adv .eyebrow{display:flex;align-items:center;gap:6px;margin:0}
+.adv .eyebrow .dot{color:var(--adv)}
+.adv h2{margin:0;font-size:1.3rem}
+.adv ul.tips{gap:6px}
+.adv-ok{--adv:var(--ok)}
+.adv-warn{--adv:var(--warn)}
+.adv-warn2{--adv:var(--warn);background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.adv-bad{--adv:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+.adv-bad2{--adv:var(--bad);background:var(--bad-soft);border-color:var(--bad)}
+.adv-bad2 h2{color:var(--bad)}
+.adv .lt-note{border-top:1px solid var(--line);padding-top:10px;font-size:.92rem}
+/* Today: state summary */
+.state-big{font-size:1.45rem;font-weight:600;line-height:1.15}
+.st-chip{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:.92rem;padding:4px 12px;border-radius:999px;white-space:nowrap}
+.st-good{background:var(--ok-soft);color:var(--ok)} .st-watch{background:var(--warn-soft);color:var(--warn)} .st-bad{background:var(--bad-soft);color:var(--bad)}
+.st-nodata{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.daystrip{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));gap:4px}
+.daystrip span{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.daystrip i{display:block;width:100%;max-width:20px;aspect-ratio:1;border-radius:50%;background:var(--surface-2);border:1.5px solid var(--line)}
+.daystrip i.l0{background:var(--ok);border-color:var(--ok)} .daystrip i.l1{background:var(--warn);border-color:var(--warn)} .daystrip i.l2{background:var(--bad);border-color:var(--bad)}
+.daystrip span.today i{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--accent)}
+.daystrip svg{width:10px;height:10px;color:var(--muted);display:block}
+.daystrip .np{width:10px;height:10px}
+.strip-labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.68rem;color:var(--muted);margin-top:4px}
+.req{appearance:none;border:0;background:none;padding:0;font:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;flex:none;text-align:center}
+.req .small{font-size:.72rem;line-height:1.2;color:var(--muted)}
+.req:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:12px}
+/* Long-term status */
+.lt-word{font-size:1.9rem;font-weight:600;line-height:1.1;display:flex;align-items:center;gap:10px}
+.lt-good{color:var(--ok)} .lt-watch{color:var(--warn)} .lt-bad{color:var(--bad)} .lt-nodata{color:var(--muted);font-size:1.3rem}
+.stline{display:grid;grid-template-columns:repeat(28,minmax(0,1fr));gap:2px}
+.stline i{display:block;height:12px;border-radius:2px;background:var(--surface-2);border:1px solid var(--line)}
+.stline i.s-good{background:var(--ok);border-color:var(--ok)} .stline i.s-watch{background:var(--warn);border-color:var(--warn)} .stline i.s-bad{background:var(--bad);border-color:var(--bad)}
+/* History: 28-day calendar */
+.heat{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.heat .hd{font-family:var(--font-mono);font-size:.66rem;color:var(--muted);text-align:center}
+.heat .c{position:relative;aspect-ratio:1;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);padding:3px 5px;font-family:var(--font-mono);font-size:.68rem;color:var(--muted);min-width:0;line-height:1.2}
+.heat .c.out{visibility:hidden}
+.heat .c.l0{background:color-mix(in srgb,var(--ok) 30%,var(--surface));border-color:var(--ok);color:var(--ink)}
+.heat .c.l1{background:color-mix(in srgb,var(--warn) 32%,var(--surface));border-color:var(--warn);color:var(--ink)}
+.heat .c.l2{background:color-mix(in srgb,var(--bad) 32%,var(--surface));border-color:var(--bad);color:var(--ink)}
+.heat .c.today{outline:2px solid var(--accent);outline-offset:1px}
+.heat .c svg{position:absolute;right:3px;bottom:3px;width:13px;height:13px;color:var(--ink)}
+/* Employer view */
+.emp-status{display:flex;align-items:center;gap:10px;font-size:1.35rem;font-weight:600;padding:14px;border-radius:12px}
+.emp-status.met{background:var(--ok-soft);color:var(--ok)} .emp-status.notyet{background:var(--warn-soft);color:var(--ink)}
+.emp-status svg{flex:none}
+ul.never{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:.92rem}
+ul.never li{display:flex;align-items:center;gap:8px}
+ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted);background:linear-gradient(45deg,transparent 45%,var(--muted) 45%,var(--muted) 55%,transparent 55%)}
+.recap .stat3 .v{font-size:1.25rem}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -308,7 +364,7 @@ details[open] summary{margin-bottom:8px}
   </header>
   <div class="flow-head" id="flow-head" hidden>
     <button class="flow-x" id="flow-back" aria-label="Back">‹</button>
-    <div class="flow-prog" id="flow-prog"><i></i><i></i><i></i><i></i></div>
+    <div class="flow-prog" id="flow-prog"><i></i><i></i><i></i><i></i><i></i></div>
     <button class="flow-x" id="flow-close" aria-label="Leave the check">✕</button>
   </div>
   </header>
@@ -329,7 +385,7 @@ details[open] summary{margin-bottom:8px}
       <div class="slide" hidden>
         <div class="slide-art" id="art-3"></div>
         <h1>Yours alone.</h1>
-        <p class="muted">Results stay on this phone. Nothing reaches your airline unless you choose to share it.</p>
+        <p class="muted">Results stay on this phone. Your airline only learns whether you did your checks, never how they went.</p>
       </div>
     </div>
     <div class="dots" id="slide-dots"><i class="on"></i><i></i><i></i></div>
@@ -361,7 +417,7 @@ details[open] summary{margin-bottom:8px}
       <h3>Camera</h3>
       <p class="small" style="margin:0">The camera is used only during a check. Video is analysed on this phone and is never recorded, stored or sent.</p>
       <h3>Your results</h3>
-      <p class="small" style="margin:0">Results are saved on this phone. Nothing is shared with anyone unless you choose to share it, and you can delete everything in Settings.</p>
+      <p class="small" style="margin:0">Results are saved on this phone. Your employer only learns whether you met the check requirement each month (a check on every flight day and at least 12 check days in every 28). Never your results, scores, eye data or how you felt. Anything else is shared only if you choose, and you can delete everything in Settings.</p>
       <h3>Prototype</h3>
       <p class="small muted" style="margin:0">This is a student prototype. Sharing buttons are demonstrations and do not send anything.</p>
     </div>
@@ -374,30 +430,42 @@ details[open] summary{margin-bottom:8px}
   <section class="screen stack" id="scr-home" hidden>
     <div class="row" style="flex-wrap:nowrap;justify-content:space-between;gap:12px"><div><div class="eyebrow" id="home-date"></div><h1 id="home-greet">Good morning</h1><div class="small muted" id="home-rank"></div></div>
       <button class="mini-uni" data-go="logbook" id="home-uni" aria-label="Open your logbook and wings"></button></div>
+    <div id="home-state"></div>
     <div id="home-hero"></div>
+    <div id="home-lt"></div>
+    <div id="home-recap"></div>
     <div id="home-post"></div>
     <div class="card stack" id="home-week"></div>
-    <div class="card stack fact" id="home-fact"></div>
-    <button class="card sup-card" id="home-support"><div class="sup-ic"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8h20v13H14l-6 5v-5H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 11.5c-1.2-1.6-4-1-4 1 0 2 4 4 4 4s4-2 4-4c0-2-2.8-2.6-4-1z" fill="currentColor"/></svg></div>
-      <div style="flex:1;text-align:left"><b>Need to talk?</b><div class="small muted">Peer pilot or confidential counselor. Your airline isn't told.</div></div><span class="muted">›</span></button>
   </section>
 
-  <!-- STEP 1: FEELING -->
+  <!-- STEP 1: FLYING TODAY? -->
+  <section class="screen stack" id="scr-fly" hidden>
+    <div><div class="eyebrow">Step 1 of 5 · 5 seconds</div><h1>Flying today?</h1>
+      <p class="muted">Checks on days off count too. They build the picture of how you are really doing.</p></div>
+    <div class="fly-opts">
+      <button class="fly-opt" id="fly-yes" data-fly="yes"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--accent-soft)"/><g transform="translate(9 15) scale(.25)" fill="var(--accent-ink)"><path d="M8 22 C8 18 14 16 26 16 L92 16 C104 16 112 19 116 22 C112 25 104 27 92 27 L26 27 C14 27 8 25 8 22 Z"/><path d="M14 16 L4 2 L12 2 L30 16 Z"/><path d="M50 24 L74 24 L58 42 L48 42 Z"/><path d="M50 19 L74 19 L58 1 L48 1 Z"/></g></svg>
+        <span><b>Yes, I have a flight duty today</b><span class="small muted">We'll ask about report time and duty length.</span></span></button>
+      <button class="fly-opt" id="fly-no" data-fly="no"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--accent-soft)"/><path d="M14 31h20M17 31v-7a7 7 0 0 1 14 0v7" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round"/><path d="M24 12v4M13 17l2.6 2.6M35 17l-2.6 2.6" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <span><b>No flight today</b><span class="small muted">Just two quick questions about last night.</span></span></button>
+    </div>
+  </section>
+
+  <!-- STEP 2: FEELING -->
   <section class="screen stack" id="scr-rate" hidden>
-    <div><div class="eyebrow">Step 1 of 4 · 10 seconds</div><h1>How do you feel right now?</h1>
+    <div><div class="eyebrow">Step 2 of 5 · 10 seconds</div><h1>How do you feel right now?</h1>
       <p class="muted">Tap the one that fits best. Your answer is compared with the test later.</p></div>
     <form class="opts" id="sp-form"></form>
   </section>
 
   <!-- STEP 2: DUTY -->
   <section class="screen stack" id="scr-duty" hidden>
-    <div><div class="eyebrow">Step 2 of 4 · 20 seconds</div><h1>About today</h1>
-      <p class="muted">Used to forecast when you're likely to feel your lowest during duty. We remember these for next time.</p></div>
+    <div><div class="eyebrow" id="duty-eyebrow">Step 3 of 5 · 20 seconds</div><h1 id="duty-title">About today</h1>
+      <p class="muted" id="duty-sub">Used to forecast when you're likely to feel your lowest during duty. We remember these for next time.</p></div>
     <div class="card stack">
       <div class="grid2">
-        <label class="field">Report time<input type="time" id="d-report"></label>
-        <label class="field">Duty length (hours)<input type="number" id="d-hours" min="1" max="16" step="0.5" inputmode="decimal"></label>
-        <label class="field">Number of legs<input type="number" id="d-legs" min="1" max="8" inputmode="numeric"></label>
+        <label class="field duty-fly">Report time<input type="time" id="d-report"></label>
+        <label class="field duty-fly">Duty length (hours)<input type="number" id="d-hours" min="1" max="16" step="0.5" inputmode="decimal"></label>
+        <label class="field duty-fly">Number of legs<input type="number" id="d-legs" min="1" max="8" inputmode="numeric"></label>
         <label class="field">Woke up at<input type="time" id="d-wake"></label>
       </div>
       <div>
@@ -413,7 +481,7 @@ details[open] summary{margin-bottom:8px}
 
   <!-- CAMERA SETUP -->
   <section class="screen stack" id="scr-camera" hidden>
-    <div><div class="eyebrow">Step 3 of 4 · 20 seconds</div><h1>Set up the camera</h1>
+    <div><div class="eyebrow">Step 4 of 5 · 20 seconds</div><h1>Set up the camera</h1>
       <p class="muted">Hold the phone at eye level, about 40 cm away, with your face inside the oval. Analysis runs on this device and the video is never saved.</p></div>
     <div class="video-box"><video id="cam" playsinline muted autoplay></video><div class="overlay"><div class="face-guide" id="face-guide"></div></div></div>
     <div class="card status-list" id="cam-status">
@@ -431,7 +499,7 @@ details[open] summary{margin-bottom:8px}
   <!-- TEST (fixed full-screen) -->
   <section class="screen" id="scr-test" hidden>
     <div id="test-intro" class="test-intro">
-      <div class="eyebrow" style="color:#8e9bb0">Step 4 of 4 · Reaction test · 3 minutes</div>
+      <div class="eyebrow" style="color:#8e9bb0">Step 5 of 5 · Reaction test · 3 minutes</div>
       <h2 style="margin:0">Tap the moment the yellow number appears.</h2>
       <div class="demo-box" id="demo-box"><div class="fix"></div></div>
       <ol class="how">
@@ -496,41 +564,26 @@ details[open] summary{margin-bottom:8px}
   </section>
 
   <!-- ORG VIEW -->
-  <section class="screen stack" id="scr-org" hidden>
-    <div><div class="eyebrow">Example · not real data</div><h1>What your airline sees</h1>
-      <p class="muted">Only de-identified totals, prepared by a union-managed data steward, from pilots who opted in. Groups smaller than 10 pilots are never reported.</p></div>
-    <div class="card stack">
-      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Monthly readiness report</h2><span class="demo-tag">Example</span></div>
-      <dl class="kv">
-        <dt>Pilots opted in</dt><dd>412</dd>
-        <dt>Pre-duty checks this month</dt><dd>5,930</dd>
-        <dt>Checks at Caution or lower</dt><dd>14%</dd>
-      </dl>
-      <div class="divider"></div>
-      <h3>Pairings that stand out</h3>
-      <div class="list">
-        <div class="list-item"><div><div>PHX overnight, 3 legs, 23:40 hotel arrival</div><div class="small muted">38 pilots</div></div><span class="pill bad">+40% vs average</span></div>
-        <div class="list-item"><div><div>Early 05:15 report after late arrival</div><div class="small muted">54 pilots</div></div><span class="pill warn">+22% vs average</span></div>
-        <div class="list-item"><div><div>Day trips, 2 legs</div><div class="small muted">121 pilots</div></div><span class="pill ok">Below average</span></div>
-      </div>
-      <p class="small muted" style="margin:0">Useful for fixing schedules and hotels. Individual pilots cannot be identified or checked up on.</p>
-    </div>
-    </section>
+  <section class="screen stack" id="scr-org" hidden></section>
 
   <!-- ME (tab) -->
   <section class="screen stack" id="scr-settings" hidden>
     <div class="row" style="flex-wrap:nowrap;gap:14px"><div class="avatar" id="me-avatar"></div><div><h1 style="margin:0" id="me-name"></h1><div class="small muted" id="set-user"></div></div></div>
     <div class="card menu">
-      <button class="menu-item" id="btn-me-support"><span>Talk to someone</span><span>›</span></button>
       <button class="menu-item" data-go="method"><span>How ReadyCheck works</span><span>›</span></button>
-      <button class="menu-item" data-go="org"><span>What your airline sees</span><span>›</span></button>
+      <button class="menu-item" data-go="org"><span>Employer view (example)</span><span>›</span></button>
       <button class="menu-item" id="btn-review-terms"><span>Review the agreement</span><span>›</span></button>
     </div>
     <div class="card stack">
       <div class="row" style="justify-content:space-between"><h3 style="margin:0">Demo mode</h3><span class="demo-tag">For presentations</span></div>
       <p class="small muted" style="margin:0">Show the app without doing a real 3-minute test.</p>
-      <button class="btn block" id="btn-demo-check">Run a simulated check (tired result)</button>
+      <button class="btn block" id="btn-demo-check">Simulated check: tired, flight day</button>
+      <button class="btn block" id="btn-demo-check-off">Simulated check: tired, day off</button>
       <button class="btn block" id="btn-demo-fill">Load 4 weeks of example history</button>
+      <button class="btn block" id="btn-demo-met">Employer view: load a compliant month</button>
+      <button class="btn block" id="btn-demo-notmet">Employer view: load a month not met</button>
+      <p class="small muted" style="margin:0">Loading example history replaces this person's results.</p>
+      <button class="btn ghost block" id="btn-selftest">Run status self-tests (results in console)</button>
     </div>
     <div class="card stack">
       <h3 style="margin:0">Your data</h3>
@@ -561,6 +614,33 @@ details[open] summary{margin-bottom:8px}
       <h3>4. Feeling vs measured</h3>
       <p class="small" style="margin:0">People under ongoing sleep loss often stop noticing how impaired they are (Van Dongen et al., 2003). When your rating and the test disagree, ReadyCheck tells you. It never tells someone who feels exhausted that they are fine.</p>
     </div>
+    <div class="card stack">
+      <h3>5. Today's advice</h3>
+      <p class="small" style="margin:0">After every check you get a short message for today, based on your level (Ready, Caution or Low alertness) and whether you are flying. Sleep advice follows the adult recommendation of 7 or more hours (American Academy of Sleep Medicine and Sleep Research Society, 2015). On a flight day at Low alertness, ReadyCheck reminds you that under 14 CFR 117.5 a pilot who is too fatigued must not accept the duty. It never decides for you: that stays with you and your airline's normal process.</p>
+    </div>
+    <div class="card stack">
+      <h3>6. Long-term status</h3>
+      <p class="small" style="margin:0">One word, Good, Watch or Not good, from your own checks over the last 1 to 2 weeks. Only one day counts at a time. A <b>low day</b> is a day with a check at Caution or lower or, once your baseline exists after 5 checks, a median reaction time at least 2 robust standard deviations slower than your own usual.</p>
+      <ul class="tips small">
+        <li><b>Not enough data:</b> fewer than 3 check days in the last 7.</li>
+        <li><b>Watch:</b> 3 or more low days in the last 7, or your 7-day typical reaction time rising (by 5 ms or more) for 3 checks in a row.</li>
+        <li><b>Not good:</b> in the last 14 days, at least 6 check days with low days on more than half of them, or feeling moderately tired or worse (5 or higher on the 7-point Samn-Perelli scale) on more than half.</li>
+        <li><b>Back to Good:</b> 3 normal check days in a row. One bad day followed by recovery never changes your status.</li>
+      </ul>
+      <p class="small" style="margin:0">Why these windows: over the first days of short sleep, performance declines and then levels off at a worse level, and it is not fully restored after 3 nights of recovery sleep (Belenky et al., 2003, <i>Journal of Sleep Research</i>). Two weeks of 6-hour nights produced deficits equal to up to 2 nights without any sleep, while people stopped noticing (Van Dongen et al., 2003, <i>Sleep</i>). Two weeks is also the standard screening window for when to seek help: the PHQ-9 asks about the last 2 weeks (Kroenke et al., 2001).</p>
+      <p class="small muted" style="margin:0">These thresholds are design rules built on that evidence. They are not a diagnosis.</p>
+      <p class="small" style="margin:0"><b>Your plan</b> on History picks up to 4 suggestions from your last 7 days, such as more sleep, a short nap, a steady wake time, water on duty or daylight exercise. Each one shows the data behind it. Contacting a support partner is suggested only when your status is Not good or after a hard duty you report.</p>
+    </div>
+    <div class="card stack">
+      <h3>7. Monthly check requirement</h3>
+      <p class="small" style="margin:0">Your employer learns only one thing: whether you met the requirement this month. It is <b>one check on every flight day</b> and <b>at least 12 check days in every 28 days</b>. Only one check per calendar day counts.</p>
+      <ul class="tips small">
+        <li>A valid weekly picture needs at least 3 valid data points per week (Plews et al., 2014, <i>International Journal of Sports Physiology and Performance</i>). 12 in 28 days is 3 a week.</li>
+        <li>28 days matches the FAA's 672-consecutive-hour cumulative window (14 CFR 117.23).</li>
+        <li>Every flight day matches the fit-for-duty statement each pilot makes before each flight (14 CFR 117.5(d)).</li>
+      </ul>
+      <p class="small muted" style="margin:0">The 12-in-28 number is a design rule derived from these sources. It is not a regulation. In this prototype, flight days come from your answer to "Flying today?". A real version would use the airline roster.</p>
+    </div>
     <div class="card flat stack">
       <h3>Limitations</h3>
       <ul class="tips small">
@@ -568,6 +648,7 @@ details[open] summary{margin-bottom:8px}
         <li>Moderate fatigue, such as one poor night, is harder to detect.</li>
         <li>PVT-BA was validated after the fact, not in real time.</li>
         <li>The fatigue forecast is illustrative only. A real product would use a validated model such as SAFTE-FAST.</li>
+        <li>Long-term status and the monthly requirement are design rules, not validated clinical thresholds.</li>
         <li>This is a reference for the pilot, not a fit-to-fly decision.</li>
       </ul>
     </div>
@@ -614,7 +695,11 @@ const LEGEND = `<span><i class="sw" style="background:var(--ok)"></i>Ready</span
 
 /* ---------- storage: one profile per name on this device ---------- */
 const DB_KEY = 'readycheck_profiles_v1';
-function defaults(){ return {user:null, checks:[], badges:{}, duty:{report:'14:00', hours:9, legs:3, wake:'07:30'}}; }
+function defaults(){ return {user:null, checks:[], badges:{}, roster:[], duty:{report:'14:00', hours:9, legs:3, wake:'07:30'}}; }
+// Second example support partner, shown in Your plan when talking to someone is suggested.
+const SUPPORT_SITE = {name:'Listenr', url:'listenr.io'};
+// Checks saved before the "Flying today?" step were all pre-duty checks, so they count as flight days.
+function migrate(p){ (p.checks||[]).forEach(c => { if(c.flyingToday === undefined) c.flyingToday = true; }); if(!Array.isArray(p.roster)) p.roster = []; return p; }
 function loadDB(){
   let db = null;
   try{ const r = localStorage.getItem(DB_KEY); if(r) db = JSON.parse(r); }catch(e){}
@@ -628,12 +713,12 @@ function loadDB(){
 }
 function keyOf(name){ return String(name).trim().toLowerCase().replace(/\s+/g,' '); }
 let DB = loadDB();
-let S = (DB.active && DB.profiles[DB.active]) ? Object.assign(defaults(), DB.profiles[DB.active]) : defaults();
+let S = (DB.active && DB.profiles[DB.active]) ? migrate(Object.assign(defaults(), DB.profiles[DB.active])) : defaults();
 function save(){ if(S.user && S.user.name){ DB.profiles[keyOf(S.user.name)] = S; } try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){} }
 function switchTo(name){
   const k = keyOf(name);
   if(!DB.profiles[k]) DB.profiles[k] = Object.assign(defaults(), {user:{name:String(name).trim(), since:Date.now()}});
-  DB.active = k; S = Object.assign(defaults(), DB.profiles[k]); save();
+  DB.active = k; S = migrate(Object.assign(defaults(), DB.profiles[k])); save();
 }
 
 /* ---------- helpers ---------- */
@@ -649,11 +734,298 @@ const sameDay = (a,b) => { const x=new Date(a), y=new Date(b); return x.toDateSt
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true, 2600); }
 const preChecks = () => S.checks.filter(c=>c.type==='pre').sort((a,b)=>a.ts-b.ts);
 
+/* ---------- calendar days ---------- */
+const DAY = 86400000;
+const dayStart = ts => { const d = new Date(ts); d.setHours(0,0,0,0); return d.getTime(); };
+const addDays = (ts, n) => { const d = new Date(dayStart(ts)); d.setDate(d.getDate() + n); return d.getTime(); };
+const dayDiff = (a, b) => Math.round((dayStart(a) - dayStart(b)) / DAY);
+const ymd = ts => { const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const fromYmd = s => { const [y,m,d] = String(s).split('-').map(Number); return new Date(y, m-1, d).getTime(); };
+const plural = (n, w, ws) => `${n} ${n === 1 ? w : (ws || w + 's')}`;
+
+/* ---------- long-term status (design rules, see How it works) ---------- */
+const ROLL_STEP = 5; // ms the 7-day rolling median must rise at each step to count as rising
+const ST = {good:{word:'Good', cls:'good'}, watch:{word:'Watch', cls:'watch'}, bad:{word:'Not good', cls:'bad'}, nodata:{word:'Not enough data', cls:'nodata'}};
+// Same personal-baseline rule as evaluate(): up to 20 earlier checks, robust z of the median reaction time.
+function withZ(list){
+  return list.map((c, i) => {
+    const base = list.slice(0, i).filter(x => x.pvt && x.pvt.trials >= 10).slice(-20);
+    let z = null;
+    if(base.length >= 5 && c.pvt && c.pvt.medianRT){ const rts = base.map(x => x.pvt.medianRT), med = median(rts), mad = median(rts.map(x => Math.abs(x - med))); z = (c.pvt.medianRT - med) / (1.4826*mad + 10); }
+    return {c, z};
+  });
+}
+// One entry per calendar day. A day is low if any check that day was Caution or worse, or slow for you (z >= 2).
+function byDay(list){
+  const map = new Map();
+  withZ(list).forEach(({c, z}) => {
+    const t = dayStart(c.ts); let d = map.get(t);
+    if(!d){ d = {t, checks:[], level:0, z:null, sp:0, rts:[], flying:false, late:false}; map.set(t, d); }
+    d.checks.push(c); d.level = Math.max(d.level, c.level || 0); if(z != null) d.z = d.z == null ? z : Math.max(d.z, z);
+    d.sp = Math.max(d.sp, c.sp || 0); if(c.pvt && c.pvt.medianRT) d.rts.push(c.pvt.medianRT);
+    d.flying = d.flying || !!c.flyingToday; d.late = d.late || !!c.late;
+  });
+  return [...map.values()].sort((a,b) => a.t - b.t).map(d => Object.assign(d, {rt: median(d.rts), low: d.level >= 1 || (d.z != null && d.z >= 2)}));
+}
+function rollingAt(days, i){
+  const vals = days.filter((d, j) => j <= i && dayDiff(days[i].t, d.t) <= 6 && d.rt != null).map(d => d.rt);
+  return vals.length >= 3 ? median(vals) : null;
+}
+function inWindow(days, ref, n){ return days.filter(d => { const k = dayDiff(ref, d.t); return k >= 0 && k < n; }); }
+// Status from the windows ending on day `ref`, before any hysteresis.
+function rawStatus(days, ref){
+  const in7 = inWindow(days, ref, 7), in14 = inWindow(days, ref, 14);
+  const low14 = in14.filter(d => d.low).length, tired14 = in14.filter(d => d.sp >= 5).length;
+  if(in14.length >= 6 && low14 > in14.length/2) return {s:'bad', why:'low14', k:low14, n:in14.length};
+  if(in14.length >= 6 && tired14 > in14.length/2) return {s:'bad', why:'tired14', k:tired14, n:in14.length};
+  const low7 = in7.filter(d => d.low).length;
+  if(low7 >= 3) return {s:'watch', why:'low7', k:low7, n:in7.length};
+  const upto = days.filter(d => dayDiff(ref, d.t) >= 0), k = upto.length - 1;
+  if(k >= 3 && dayDiff(ref, upto[k].t) <= 6){
+    const r = [k-3, k-2, k-1, k].map(i => rollingAt(upto, i));
+    if(r.every(v => v != null) && r[1]-r[0] >= ROLL_STEP && r[2]-r[1] >= ROLL_STEP && r[3]-r[2] >= ROLL_STEP) return {s:'watch', why:'rising', k:Math.round(r[3]-r[0])};
+  }
+  return {s:'good', why:'ok', k:in7.length - low7, n:in7.length};
+}
+// Walks check days in order. Status rises as soon as the windows say so, and only returns to Good
+// after 3 normal check days in a row. Recovery is a fresh start: older low days stop counting.
+function statusTimeline(list){
+  const days = byDay(list); let state = 'good', reset = 0, run = 0; const tl = [];
+  days.forEach((d, i) => {
+    run = d.low ? 0 : run + 1;
+    if(state !== 'good' && run >= 3){ state = 'good'; reset = i - 2; tl.push({t:d.t, state, raw:{s:'good', why:'recovered'}, run}); return; }
+    const raw = rawStatus(days.slice(reset, i + 1), d.t);
+    if(raw.s === 'bad') state = 'bad';
+    else if(raw.s === 'watch' && state !== 'bad') state = 'watch';
+    tl.push({t:d.t, state, raw, run});
+  });
+  return {days, tl, reset};
+}
+function longTerm(list, now){
+  now = now == null ? Date.now() : now;
+  list = list.filter(c => dayStart(c.ts) <= dayStart(now));
+  const {days, tl, reset} = statusTimeline(list);
+  const n7 = inWindow(days, now, 7).length, last = tl[tl.length - 1];
+  let s = last ? last.state : 'good';
+  if(n7 < 3 && !(s === 'bad' && rawStatus(days.slice(reset), now).s === 'bad')) s = 'nodata';
+  const cause = s === 'watch' || s === 'bad' ? [...tl].reverse().find(x => x.raw.s === s) : null;
+  const rec = [...tl].reverse().find(x => x.raw.why === 'recovered');
+  const recovered = s === 'good' && rec && dayDiff(now, rec.t) <= 7 && tl.slice(tl.indexOf(rec)).every(x => x.state === 'good');
+  return {s, n7, days, tl, run: last ? last.run : 0, cause: cause && cause.raw, recovered, low7: inWindow(days, now, 7).filter(d => d.low).length};
+}
+function latePattern(list){
+  const late = list.filter(c => c.late), low = late.filter(c => c.level >= 1).length;
+  return late.length >= 2 ? {n:late.length, low} : null;
+}
+
+/* ---------- monthly requirement: the only thing an employer sees ---------- */
+const REQ_CHECKS = 12, REQ_WINDOW = 28;
+function requirement(list, roster, now){
+  now = now == null ? Date.now() : now; const today = dayStart(now);
+  const cd = new Map(); // one entry per calendar day, at most one check counted
+  list.forEach(c => { const t = dayStart(c.ts); if(t > today) return; cd.set(t, (cd.get(t) || false) || !!c.flyingToday); });
+  const from = addDays(today, -(REQ_WINDOW - 1));
+  const n28 = [...cd.keys()].filter(t => t >= from).length;
+  const m = new Date(today); m.setDate(1); const monthStart = m.getTime();
+  const flights = new Set((roster || []).map(fromYmd).filter(t => t >= monthStart && t <= today));
+  cd.forEach((fly, t) => { if(fly && t >= monthStart) flights.add(t); });
+  const covered = [...flights].filter(t => cd.get(t) === true).length;
+  return {month: new Date(today).toLocaleDateString(undefined, {month:'long', year:'numeric'}), n28, need:REQ_CHECKS,
+    flights:flights.size, covered, missed:flights.size - covered, met: n28 >= REQ_CHECKS && covered === flights.size};
+}
+const reqNow = () => requirement(preChecks(), S.roster, Date.now());
+function reqProgressText(r){ return `${Math.min(r.n28, r.need)} of ${r.need} checks done, ${r.covered} of ${plural(r.flights, 'flight day')} covered`; }
+function reqGentle(r){
+  if(r.met) return `Requirement met for ${r.month}. Nice and steady.`;
+  const parts = [];
+  if(r.n28 < r.need) parts.push(`${plural(r.need - r.n28, 'more check day')} in your 28-day window and you're there.`);
+  if(r.missed) parts.push(`${plural(r.missed, 'flight day')} this month had no check. No stress: check in before your next one.`);
+  return parts.join(' ');
+}
+function reqRing(r, size){
+  size = size || 76; const rad = size/2 - 7, c = 2*Math.PI*rad, p = Math.min(r.n28, r.need)/r.need, col = r.met ? 'var(--ok)' : 'var(--accent)';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">
+    <circle cx="${size/2}" cy="${size/2}" r="${rad}" fill="none" stroke="var(--line)" stroke-width="7"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${rad}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(c*p).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/>
+    <text x="${size/2}" y="${size/2 + 1}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="15" font-weight="600" fill="var(--ink)">${Math.min(r.n28, r.need)}/${r.need}</text>
+    <text x="${size/2}" y="${size/2 + 15}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--muted)">checks</text></svg>`;
+}
+
+/* ---------- today's advice: level x flying today ---------- */
+function todayAdvice(c, lt){
+  const fly = !!c.flyingToday, lvl = c.level, fc = fcOf(c), low = fmtClock(fc.peak.clock);
+  const wake = hm(c.wake || S.duty.wake), bed = fmtClock(wake - 8), cut = fmtClock(wake - 14);
+  const rep = fly && c.duty ? fmtClock(hm(c.duty.report)) : null;
+  let a;
+  if(lvl === 0 && !fly) a = {cls:'adv-ok', urg:'All clear', title:"You're in good shape.", body:'No action needed today.',
+    acts:[`To keep it up, aim for your usual bedtime tonight, around ${bed}, so tomorrow starts the same way.`]};
+  else if(lvl === 0) a = {cls:'adv-ok', urg:'All clear', title:'Good to go.', body:`Your likely low point today is around ${low}.`,
+    acts:[`Expect a natural dip around ${low}. Plan your breaks and cross-checks around it.`]};
+  else if(lvl === 1 && !fly) a = {cls:'adv-warn', urg:'Take note', title:'Take it a bit easier today.', body:'Your alertness is a little below your best. Three things help most:',
+    acts:[`Go to bed earlier tonight, around ${bed}, and aim for 7 or more hours of sleep (the adult recommendation from AASM and the Sleep Research Society).`,
+      'If you can, take a 10 to 20 minute nap. Short naps avoid grogginess.',
+      `No caffeine within 6 hours of sleep. For a ${bed} bedtime, that means none after ${cut}.`]};
+  else if(lvl === 1) a = {cls:'adv-warn2', urg:'Act before you report', title:'Fly with a plan today.', body:'Your alertness is slipping and you have a duty today. Before you go:',
+    acts:[`Take a short nap (about 20 minutes) or have caffeine, 30 to 60 minutes before you report at ${rep} or before your likely low point around ${low}.`,
+      'Tell your crew, so they can back you up. One tap below.',
+      `Plan extra cross-checks around ${low}, when fatigue is most likely.`], btns:['crew','fatigue']};
+  else if(!fly) a = {cls:'adv-bad', urg:'Rest first', title:'Make rest the priority today.', body:'Your alertness is low. Today is a good day to recover.',
+    acts:[`Plan a recovery sleep tonight: in bed by ${bed} with 8 or more hours to sleep, and sleep in if you can.`,
+      'If you feel very sleepy, avoid driving long distances today.',
+      'Short naps of 10 to 20 minutes are fine. Keep them before mid-afternoon so they don\'t steal from tonight.']};
+  else a = {cls:'adv-bad2', urg:'Highest concern', title:'You may be too fatigued for this duty.',
+    body:'Under FAA rules (14 CFR 117.5), a pilot who is too fatigued to fly safely must not accept the duty, and should tell the airline. This check is one input to that judgment. The decision stays with you, through your airline\'s normal fatigue process.',
+    acts:["Open your airline's fatigue call. It is designed to be non-punitive.", 'Tell your crew how you are doing.'], btns:['fatigue','crew']};
+  if(lt && lt.s === 'bad' && lvl >= 1) a.lt = "This fits a pattern from the last two weeks. Talking to someone can help, and it stays confidential.";
+  return a;
+}
+function adviceCard(c, a, isToday){
+  const btn = {crew:`<button class="btn block" id="adv-crew">${c.shared && c.shared.crew ? '✓ Crew told' : 'Tell my crew'}</button>`,
+    fatigue:`<button class="btn block ${a.cls === 'adv-bad2' ? 'primary' : ''}" id="adv-fatigue">Open my airline's fatigue call</button>`};
+  return `<div class="card adv ${a.cls}">
+    <div class="eyebrow"><span class="dot"></span>${isToday ? "Today's advice" : 'Advice for ' + esc(fmtDate(c.ts))} · ${c.flyingToday ? 'flight day' : 'no flight'} · ${esc(a.urg)}</div>
+    <h2>${esc(a.title)}</h2>
+    <p style="margin:0">${esc(a.body)}</p>
+    <ul class="tips">${a.acts.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+    ${(a.btns || []).map(b => btn[b]).join('')}
+    ${a.lt ? `<div class="lt-note">${esc(a.lt)} <button class="btn block" data-act="support" style="margin-top:8px">See who can help</button></div>` : ''}
+  </div>`;
+}
+
+/* ---------- long-term card ---------- */
+function ltReason(lt){
+  if(lt.s === 'nodata') return `Only ${plural(lt.n7, 'check day')} in the last 7. Three a week is enough to see how you're really doing.`;
+  if(lt.s === 'good'){
+    if(lt.recovered) return "You're back to normal: 3 normal check days in a row.";
+    const ok = lt.n7 - lt.low7; return ok === lt.n7 ? `All ${plural(lt.n7, 'check day')} this past week were normal.` : `${ok} of your last ${plural(lt.n7, 'check day')} were normal. One off day doesn't change the picture.`;
+  }
+  const c = lt.cause || {}; let s;
+  if(c.why === 'low7') s = `${c.k} of your last ${plural(c.n, 'check day')} were low.`;
+  else if(c.why === 'rising') s = 'Your typical reaction time has crept up over your last 3 checks.';
+  else if(c.why === 'low14') s = `You were low on ${c.k} of ${plural(c.n, 'check day')} over the last two weeks.`;
+  else if(c.why === 'tired14') s = `You rated yourself moderately tired or worse on ${c.k} of ${plural(c.n, 'check day')} over the last two weeks.`;
+  else s = 'Several recent checks were low.';
+  if(lt.run > 0) s += ` ${plural(lt.run, 'normal day')} in a row so far; 3 clears it.`;
+  return s;
+}
+function ltActions(lt){
+  if(lt.s === 'nodata') return ['Check in today, flight or not. A check on 3 days this week gives a clear picture.'];
+  if(lt.s === 'good'){ const w = weekStreak(preChecks());
+    return ['Keep a regular sleep window, even on days off.', w ? `${plural(w, 'week')} in a row with a check. Keep the streak going.` : 'A quick check most days keeps your picture sharp.']; }
+  if(lt.s === 'watch'){ const lp = latePattern(preChecks());
+    return ['Keep the same sleep and wake time, even on days off.', 'Protect a sleep opportunity of 7 hours or more before each duty.',
+      lp && lp.low ? `After late hotel check-ins you were low ${lp.low} of ${lp.n} times. Consider raising it when you bid.` : 'Notice which trips or hotels pull you down, and consider raising them when you bid.']; }
+  return ["This has lasted about two weeks. Talking to a peer pilot or counselor can help, and your airline isn't told.",
+    'If you still feel fatigued even after good sleep, consider a check with your aviation medical examiner or doctor.'];
+}
+function statusLine28(lt, now){
+  const cells = []; let k = 0;
+  for(let i = 27; i >= 0; i--){ const t = addDays(now, -i);
+    while(k < lt.tl.length && lt.tl[k].t <= t) k++;
+    const e = k ? lt.tl[k-1] : null;
+    cells.push(`<i class="${e ? 's-' + e.state : ''}" title="${esc(fmtDate(t))}: ${e ? ST[e.state].word : 'no data yet'}"></i>`); }
+  return `<div><div class="small muted" style="margin-bottom:4px">Status over the last 28 days</div><div class="stline" role="img" aria-label="Long-term status for each of the last 28 days">${cells.join('')}</div><div class="strip-labels"><span>4 weeks ago</span><span>Today</span></div></div>`;
+}
+function ltCard(lt, withLine){
+  const st = ST[lt.s], head = lt.s === 'nodata' ? 'Not enough checks this week to judge' : st.word;
+  return `<div class="card stack">
+    <div class="row" style="justify-content:space-between"><div class="eyebrow" style="margin:0">Long-term status · 1 to 2 weeks</div><button class="btn ghost" data-go="method" style="min-height:30px;padding:4px 6px">How?</button></div>
+    <div class="lt-word lt-${st.cls}">${lt.s === 'nodata' ? '' : '<span class="dot" style="width:12px;height:12px"></span>'}${esc(head)}</div>
+    <p style="margin:0">${esc(ltReason(lt))}</p>
+    <ul class="tips small">${ltActions(lt).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+    ${lt.s === 'bad' ? '<button class="btn amber block" data-act="support">See who can help</button><p class="small muted" style="margin:0">Not a diagnosis. Just a signal that a conversation could help.</p>' : ''}
+    ${lt.s === 'nodata' ? '<button class="btn block" data-go="fly">Check in now</button>' : ''}
+    ${withLine ? statusLine28(lt, Date.now()) : ''}
+  </div>`;
+}
+
+/* ---------- weekly recap (shown on Today on Mondays, always on History) ---------- */
+function weekRecap(list, now){
+  const ws = weekStart(now), from = addDays(ws, -7), all = byDay(list);
+  const days = all.filter(d => d.t >= from && d.t < ws), prev = all.filter(d => d.t >= addDays(ws, -14) && d.t < from);
+  const low = days.filter(d => d.low), best = days.slice().sort((a,b) => a.level - b.level || (a.rt||9999) - (b.rt||9999))[0];
+  let insight;
+  const lowLate = low.filter(d => d.late).length, lowFly = low.filter(d => d.flying).length;
+  const m1 = median(days.map(d => d.rt).filter(Boolean)), m0 = median(prev.map(d => d.rt).filter(Boolean));
+  if(!days.length) insight = 'No checks last week. Three check days this week is enough to see your pattern.';
+  else if(!low.length) insight = 'Every check day was normal. Whatever your routine was, keep it.';
+  else if(lowLate && lowLate === low.length) insight = `${lowLate === 1 ? 'Your low day' : 'All ' + lowLate + ' low days'} came after a late hotel check-in.`;
+  else if(low.length >= 2 && lowFly === low.length) insight = 'All your low days were flight days. Early reports or long duties may be pulling you down.';
+  else if(m1 != null && m0 != null && Math.abs(m1 - m0) >= 15) insight = `Your typical reaction time was ${Math.round(Math.abs(m1 - m0))} ms ${m1 > m0 ? 'slower' : 'quicker'} than the week before.`;
+  else insight = `${plural(low.length, 'low day')}. Protecting sleep before duty is the biggest lever you have.`;
+  return {from, days, low:low.length, best, insight};
+}
+function recapCard(r){
+  return `<div class="card stack recap"><div class="eyebrow" style="margin:0">Weekly recap · ${esc(fmtDate(r.from))} to ${esc(fmtDate(addDays(r.from, 6)))}</div>
+    <div class="stat3"><div><div class="v">${r.days.length}</div><div class="k">check days</div></div><div><div class="v">${r.low}</div><div class="k">low days</div></div>
+      <div><div class="v" style="font-size:1rem;line-height:1.9rem">${r.best ? esc(new Date(r.best.t).toLocaleDateString(undefined,{weekday:'short'})) : '-'}</div><div class="k">best day</div></div></div>
+    <p style="margin:0">${esc(r.insight)}</p></div>`;
+}
+
+/* ---------- small icons and strips ---------- */
+const PLANE_MINI = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M15 8c0-.7-.6-1-1.3-1H10L6.5 1.5H5L6.8 7H3.5L2.2 5H1l.8 3-.8 3h1.2l1.3-2h3.3L5 14.5h1.5L10 9h3.7c.7 0 1.3-.3 1.3-1z" fill="currentColor"/></svg>`;
+function dayStrip(days, roster, now, n){
+  const byT = new Map(days.map(d => [d.t, d])), fl = new Set((roster || []).map(fromYmd));
+  const cells = [];
+  for(let i = n - 1; i >= 0; i--){ const t = addDays(now, -i), d = byT.get(t), fly = (d && d.flying) || fl.has(t);
+    cells.push(`<span class="${i === 0 ? 'today' : ''}" title="${esc(fmtDate(t))}: ${d ? LEVELS[d.level].name : 'no check'}${fly ? ', flight day' : ''}"><i class="${d ? 'l' + d.level : ''}"></i>${fly ? PLANE_MINI : '<span class="np"></span>'}</span>`); }
+  return `<div class="daystrip" role="img" aria-label="Your last ${n} days: colour shows each day's level, grey means no check">${cells.join('')}</div>`;
+}
+
+/* ---------- self-tests: open the console and run runStatusTests() ---------- */
+function runStatusTests(){
+  const now = new Date(2026, 10, 20, 12).getTime(); let id = 0;
+  const mk = (ago, o) => { o = o || {}; return {id:'t' + (id++), type:'pre', ts: addDays(now, -ago) + 9*3600000, level: o.level || 0, sp: o.sp || 2,
+    flyingToday: !!o.fly, late: !!o.late, pvt:{medianRT: o.rt || (o.level ? 360 : 292 + (ago % 3)*4), trials:60}}; };
+  const series = (from, to, f) => { const out = []; for(let a = from; a >= to; a--){ const o = f(a); if(o) out.push(mk(a, o)); } return out; };
+  const res = [];
+  const t = (name, got, want) => { const ok = got === want; res.push(ok); console[ok ? 'log' : 'error'](`[ReadyCheck self-test] ${ok ? 'PASS' : 'FAIL'}: ${name} (got ${got}, expected ${want})`); };
+  let h = series(20, 0, a => a === 4 ? {level:1} : {});
+  t('Single bad day, then recovery = Good', longTerm(h, now).s, 'good');
+  t('Single bad day never raises the status on any day', statusTimeline(h).tl.every(x => x.state === 'good'), true);
+  h = series(20, 0, a => a <= 6 && a % 2 === 1 ? {level:1} : {});
+  t('3 low days in 7 = Watch', longTerm(h, now).s, 'watch');
+  h = series(20, 0, a => ({rt: a > 5 ? 292 + (a % 3)*4 : 300 + (6 - a)*9}));
+  t('Slowing reaction times over a week = Watch', longTerm(h, now).s, 'watch');
+  const rd = Array.from({length:10}, (_, i) => ({t: addDays(now, i - 9), rt: 290 + 6*i, low:false, sp:2}));
+  t('7-day median rising for 3 checks (no low days) = Watch by the rising rule', rawStatus(rd, now).why, 'rising');
+  const fd = rd.map((d, i) => Object.assign({}, d, {rt: i === 6 ? 420 : 292 + (i % 3)*4}));
+  t('One slow day does not count as a rising trend', rawStatus(fd, now).s, 'good');
+  h = series(13, 0, a => a % 3 === 0 ? {} : {level:1});
+  t('2 weeks mostly low = Not good', longTerm(h, now).s, 'bad');
+  h = series(13, 0, a => ({sp: a % 4 === 0 ? 3 : 5}));
+  t('Felt tired (5+) on most checks for 2 weeks = Not good', longTerm(h, now).s, 'bad');
+  h = series(16, 3, a => a % 3 === 0 ? (a === 3 ? {level:1} : {}) : {level:1}).concat([mk(2), mk(1), mk(0)]);
+  t('Before recovery the history is Not good', longTerm(h, addDays(now, -3) + 12*3600000).s, 'bad');
+  t('2 normal after Not good stays Not good', longTerm(h, addDays(now, -1) + 12*3600000).s, 'bad');
+  t('3 normal after Not good = Good', longTerm(h, now).s, 'good');
+  h = series(20, 8, a => a % 2 ? null : {}).concat(series(3, 0, a => a % 2 ? {} : null));
+  t('Under 3 checks in the last 7 days = Not enough data', longTerm(h, now).s, 'nodata');
+  h = series(27, 0, a => a % 2 === 0 ? {fly: a % 4 === 0} : null);
+  t('14 check days in 28, every flight day checked = Met', requirement(h, [], now).met, true);
+  h = series(27, 0, a => a % 3 === 0 ? {fly:true} : null);
+  t('10 check days in 28 = Not met', requirement(h, [], now).met, false);
+  h = series(27, 0, a => a % 2 === 0 ? {} : null);
+  t('Flight day on the roster with no check = Not met', requirement(h, [ymd(addDays(now, -5))], now).met, false);
+  h = series(27, 0, a => a % 2 === 0 ? {} : null); h = h.concat(h.map(c => Object.assign({}, c, {id:c.id + 'b', ts:c.ts + 3600000})));
+  t('Only one check per calendar day counts', requirement(h.filter(c => dayDiff(now, c.ts) < 12), [], now).n28, 6);
+  h = series(20, 0, a => ({}));
+  t('Plan: all normal = no support partner, no duty warning', carePlan(h, longTerm(h, now), now).items.some(x => x.org || x.id === 'noduty'), false);
+  h = series(13, 0, a => a % 3 === 0 ? {} : {level:1});
+  t('Plan: Not good = support partner suggested', carePlan(h, longTerm(h, now), now).items.some(x => x.org), true);
+  h = series(20, 1, a => ({})).concat([mk(0, {level:2, fly:true})]);
+  t('Plan: Low alertness on a flight day = do not go on duty first', carePlan(h, longTerm(h, now), now).items[0].id, 'noduty');
+  const pass = res.filter(Boolean).length;
+  console.log(`[ReadyCheck self-test] ${pass} of ${res.length} passed`);
+  return {pass, total:res.length};
+}
+window.runStatusTests = runStatusTests;
+
 /* ---------- navigation ---------- */
 let current = null, lastTab = 'home';
 const renderers = {};
 const TABS = ['home','trends','logbook','settings'];
-const FLOW = {rate:1, duty:2, camera:3};
+const FLOW = {fly:1, rate:2, duty:3, camera:4};
 const DETAIL = ['results','org','method','post'];
 function go(id){
   if(current==='camera' && id!=='test') stopCamera();
@@ -676,7 +1048,7 @@ function leaveCheck(){
   sheet('Leave the check?', '<p class="small">Nothing from this check will be saved.</p>', 'Leave', () => { clearInterval(demoTimer); stopCamera(); if(T){ T.running = false; clearTimeout(T.timer); clearInterval(T.tick); clearInterval(T.cint); clearTimeout(T.miss); T.stimOn = false; } go('home'); });
 }
 $('#flow-close').addEventListener('click', leaveCheck);
-$('#flow-back').addEventListener('click', () => { if(current === 'rate') leaveCheck(); else if(current === 'duty') go('rate'); else if(current === 'camera') go('duty'); });
+$('#flow-back').addEventListener('click', () => { if(current === 'fly') leaveCheck(); else if(current === 'rate') go('fly'); else if(current === 'duty') go('rate'); else if(current === 'camera') go('duty'); });
 
 /* ---------- welcome ---------- */
 let slide = 0;
@@ -745,6 +1117,23 @@ renderers.home = () => {
   const pre = preChecks(); const today = pre.filter(c=>sameDay(c.ts, Date.now())).pop();
   { const rk = rankOf(pre.length), wb = wornBadge(); $('#home-uni').innerHTML = uniformSVG(S.user && S.user.name, wb, rk.bars, true); $('#home-rank').textContent = rk.name + (wb ? ' · ' + wb.name + ' wings' : ''); }
   const firstTime = !pre.length;
+  const lt = longTerm(pre, Date.now()), req = reqNow(), st = ST[lt.s];
+  const todayDay = lt.days.find(d => d.t === dayStart(Date.now()));
+  const TL = todayDay ? LEVELS[todayDay.level] : null;
+  // State summary, like a readiness app: today, long term, last 14 days, monthly requirement
+  $('#home-state').innerHTML = `<div class="card stack" style="gap:14px">
+    <div class="row" style="flex-wrap:nowrap;justify-content:space-between;align-items:flex-start">
+      <div class="stack" style="gap:12px;min-width:0">
+        <div><div class="eyebrow" style="margin:0">Today</div>
+          <div class="state-big" style="color:${TL ? TL.color : 'var(--ink)'}">${TL ? TL.name : 'Check in today'}</div>
+          <div class="small muted">${today ? (today.flyingToday ? 'Flight day' : 'No flight') + ' · ' + fmtTime(today.ts) : 'About 4 minutes, flight or not'}</div></div>
+        <div><div class="eyebrow" style="margin:0 0 4px">Long term</div><span class="st-chip st-${st.cls}"><span class="dot"></span>${st.word}</span></div>
+      </div>
+      <button class="req" data-go="org" aria-label="Monthly requirement: ${esc(reqProgressText(req))}. ${req.met ? 'Met' : 'Not met yet'}. Opens the employer view.">${reqRing(req)}<span class="small">Monthly<br>requirement</span></button>
+    </div>
+    <div>${dayStrip(lt.days, S.roster, Date.now(), 14)}<div class="strip-labels"><span>2 weeks ago</span><span>Today</span></div></div>
+    <div class="small ${req.met ? '' : 'muted'}">${esc(reqGentle(req))}</div>
+  </div>`;
   const hero = $('#home-hero');
   if(today){
     const L = LEVELS[today.level];
@@ -752,32 +1141,33 @@ renderers.home = () => {
       <div class="eyebrow" style="margin:0">Today's check · ${fmtTime(today.ts)}${today.simulated?' · demo':''}</div>
       ${gaugeSVG(today.pvt.lpfs3)}
       <span class="annun ${L.cls}">${L.name}</span>
-      <div class="headline">${HEAD[today.level]}</div>
-      <button class="btn amber block big" id="btn-open-today" style="margin-top:6px">See full result</button>
-      <button class="btn ghost block" data-go="rate" style="color:var(--panel-muted)">Check again</button></div>`;
+      <div class="headline">${esc(todayAdvice(today, lt).title)}</div>
+      <button class="btn amber block big" id="btn-open-today" style="margin-top:6px">See today's advice</button>
+      <button class="btn ghost block" data-go="fly" style="color:var(--panel-muted)">Check again</button></div>`;
     $('#btn-open-today').onclick = () => { lastCheckId = today.id; go('results'); };
     const n = hero.querySelector('.needle'); requestAnimationFrame(() => requestAnimationFrame(() => n.style.transform = `rotate(${n.dataset.deg}deg)`));
   } else {
     hero.innerHTML = `<div class="card hero has-scene">${heroScene(new Date().getHours())}
-      <div><div class="eyebrow" style="margin:0">Pre-duty check · about 4 min</div><h2 style="margin:4px 0 0">${firstTime ? 'Take your first check' : 'Check your alertness before you fly'}</h2></div>
+      <div><div class="eyebrow" style="margin:0">Daily check · about 4 min</div><h2 style="margin:4px 0 0">${firstTime ? 'Take your first check' : 'How are you really doing today?'}</h2></div>
       <div class="small muted" style="margin-bottom:-6px">What happens when you tap Start:</div>
-      <div class="route"><div style="--d:0s">${STEP_ICONS.feel}<span>Rate how you feel</span><em>10 s</em></div><i></i><div style="--d:1.6s">${STEP_ICONS.duty}<span>Enter today's duty</span><em>20 s</em></div><i></i><div style="--d:3.2s">${STEP_ICONS.test}<span>Tap-speed test</span><em>3 min</em></div></div>
-      <button class="btn amber block big pulse" data-go="rate">Start check <span class="go-arrow">›</span></button>
-      <p class="small muted" style="margin:0;text-align:center">${firstTime ? 'First time? You can do a short practice before the test.' : 'Best done about an hour before report time.'}</p></div>`;
+      <div class="route"><div style="--d:0s">${STEP_ICONS.duty}<span>Flying today?</span><em>5 s</em></div><i></i><div style="--d:1.6s">${STEP_ICONS.feel}<span>Rate how you feel</span><em>10 s</em></div><i></i><div style="--d:3.2s">${STEP_ICONS.test}<span>Tap-speed test</span><em>3 min</em></div></div>
+      <button class="btn amber block big pulse" data-go="fly">Start check <span class="go-arrow">›</span></button>
+      <p class="small muted" style="margin:0;text-align:center">${firstTime ? 'First time? You can do a short practice before the test.' : 'On a flight day, best done about an hour before report time.'}</p></div>`;
   }
-  $('#home-post').innerHTML = (today && !today.post) ? `<div class="card row" style="justify-content:space-between;flex-wrap:nowrap">
+  $('#home-lt').innerHTML = pre.length ? ltCard(lt, false) : '';
+  $('#home-recap').innerHTML = now.getDay() === 1 && pre.length ? recapCard(weekRecap(pre, Date.now())) : '';
+  $('#home-post').innerHTML = (today && today.flyingToday && !today.post) ? `<div class="card row" style="justify-content:space-between;flex-wrap:nowrap">
       <div><div class="eyebrow" style="margin:0">After your duty</div><b>Post-duty check-in</b><div class="small muted">30 seconds. Plans your recovery sleep.</div></div>
       <button class="btn" data-go="post">Start</button></div>`
     : (today && today.post) ? `<div class="card small muted">✓ Post-duty check-in done. Rest well.</div>` : '';
   const ws = weekStart(Date.now()), days = ['M','T','W','T','F','S','S'];
-  const dots = days.map((d,i) => { const t0 = ws + i*86400000; const on = pre.some(c => c.ts >= t0 && c.ts < t0 + 86400000);
+  const dots = days.map((d,i) => { const t0 = addDays(ws, i); const on = pre.some(c => c.ts >= t0 && c.ts < addDays(t0, 1));
     return `<span class="${on?'on':''} ${sameDay(t0, Date.now())?'today':''}"><i></i>${d}</span>`; }).join('');
   const nu = nextUnlock(pre);
   $('#home-week').innerHTML = `<div class="row" style="justify-content:space-between"><h2 style="margin:0">This week</h2><button class="btn ghost" data-go="logbook">Logbook ›</button></div>
     <div class="week">${dots}</div>
     <div class="small muted">${weekStreak(pre)}-week streak · ${pre.length} checks logged · ${Object.keys(S.badges||{}).length} of ${BADGES.length} badges</div>
     ${nu ? `<div class="stack" style="gap:6px"><div class="small"><b>Next:</b> ${esc(nu.label)}</div><div class="prog"><i style="width:${Math.round(nu.p*100)}%"></i></div></div>` : ''}`;
-  $('#home-fact').innerHTML = factCard();
 };
 function spark(list){
   if(!list.length) return `<p class="small muted" style="margin:0">Your checks will appear here.</p>`;
@@ -794,8 +1184,18 @@ function buildSP(form, name){
   form.innerHTML = SP.map((t,i)=>`<label class="opt"><input type="radio" name="${name}" value="${i+1}"><span class="opt-num">${i+1}</span><span>${t}</span></label>`).join('');
 }
 buildSP($('#sp-form'), 'sp');
+/* ---------- step 1: flying today? ---------- */
+renderers.fly = () => {
+  draft = {type:'pre', ts:null, sp:null, late:false, wake:S.duty.wake, flyingToday:null};
+  $$('.fly-opt').forEach(b => b.classList.remove('on'));
+};
+$$('.fly-opt').forEach(b => b.addEventListener('click', () => {
+  draft.flyingToday = b.dataset.fly === 'yes';
+  $$('.fly-opt').forEach(x => x.classList.toggle('on', x === b));
+  clearTimeout(renderers.fly._t); renderers.fly._t = setTimeout(() => { if(current === 'fly') go('rate'); }, 220);
+}));
 renderers.rate = () => {
-  draft = {type:'pre', ts:null, sp:null, late:false, wake:S.duty.wake};
+  if(!draft || draft.flyingToday == null){ go('fly'); return; }
   $$('#sp-form input').forEach(i=>i.checked=false);
 };
 $('#sp-form').addEventListener('change', () => {
@@ -806,11 +1206,18 @@ $('#sp-form').addEventListener('change', () => {
 
 /* ---------- step 2: duty ---------- */
 renderers.duty = () => {
+  if(!draft){ go('fly'); return; }
+  const fly = !!draft.flyingToday;
+  $$('.duty-fly').forEach(el => el.hidden = !fly);
+  $('#duty-eyebrow').textContent = fly ? 'Step 3 of 5 · 20 seconds' : 'Step 3 of 5 · 10 seconds';
+  $('#duty-title').textContent = fly ? 'About today' : 'About last night';
+  $('#duty-sub').textContent = fly ? "Used to forecast when you're likely to feel your lowest during duty. We remember these for next time." : 'Two quick questions. They help explain how you feel today.';
   $('#d-report').value = S.duty.report; $('#d-hours').value = S.duty.hours; $('#d-legs').value = S.duty.legs; $('#d-wake').value = S.duty.wake;
   $$('input[name=late]').forEach(i => i.checked = i.value === (draft && draft.late ? 'yes' : 'no'));
 };
 $('#btn-duty-next').addEventListener('click', () => {
-  S.duty = {report: $('#d-report').value || S.duty.report, hours: Number($('#d-hours').value) || S.duty.hours, legs: Number($('#d-legs').value) || S.duty.legs, wake: $('#d-wake').value || S.duty.wake};
+  if(draft.flyingToday) S.duty = {report: $('#d-report').value || S.duty.report, hours: Number($('#d-hours').value) || S.duty.hours, legs: Number($('#d-legs').value) || S.duty.legs, wake: $('#d-wake').value || S.duty.wake};
+  else S.duty.wake = $('#d-wake').value || S.duty.wake;
   draft.wake = S.duty.wake; draft.late = ($('input[name=late]:checked')||{}).value === 'yes';
   save(); go('camera');
 });
@@ -1085,7 +1492,7 @@ function finishTest(reason){
   }
   stopCamera();
   const check = {id: 'c'+Date.now(), type:'pre', ts: Date.now(), sp: draft.sp, late: draft.late, wake: draft.wake,
-    duty: {...S.duty}, pvt, eye, simulated:false};
+    flyingToday: !!draft.flyingToday, duty: draft.flyingToday ? {...S.duty} : null, pvt, eye, simulated:false};
   if(reason === 'stopped' && pvt.trials < 10){ toast('Test stopped early. Not enough responses to give a result.'); go('home'); return true; }
   evaluate(check);
   S.checks.push(check); check.newBadges = awardBadges(); save();
@@ -1143,19 +1550,20 @@ function timelineSVG(fc){
     <div class="timeline-labels"><span>${fmtClock(fc.start)} report</span><span>${fmtClock(fc.start + fc.hours/2)}</span><span>${fmtClock(fc.start + fc.hours)} end</span></div>`;
 }
 
-/* ---------- suggestions ---------- */
-function suggestions(c, fc){
-  const out = [], peakT = fmtClock(fc.peak.clock), endT = fmtClock(fc.start + fc.hours);
-  const bandPeak = bandOf(fc.peak.r);
-  if(c.level === 2) out.push('Consider whether you are fit to fly today. Calling in fatigued is designed to be protected under your airline\'s fatigue policy.');
-  if(bandPeak >= 1) out.push(`Fatigue is most likely around ${peakT}. Plan extra cross-checks for that part of the duty.`);
-  const hoursToPeak = ((fc.peak.clock - fc.start) % 24 + 24) % 24;
-  if(c.level >= 1 && hoursToPeak >= 1) out.push(`If you use caffeine, take it about 30 to 60 minutes before ${peakT}, and not within 6 hours of your planned sleep.`);
-  if(c.level >= 1 && Number(c.duty.legs) >= 2) out.push('Use your longest ground time between legs for a short rest. Keep naps to about 20 minutes to avoid grogginess.');
-  if(c.late) out.push('Late check-ins show up in your pattern. Protect tonight\'s sleep window.');
-  if(c.level === 0 && !out.length) out.push(`You're ready. Your duty ends at ${endT}; expect a natural dip around ${peakT}.`);
-  if(c.level === 0 && out.length && bandPeak === 0) out.push('No action needed now.');
-  return out.slice(0,3);
+/* No flight: forecast the waking day from the check until about 16 hours after waking. */
+function dayDuty(c){
+  const d = new Date(c.ts), start = d.getHours() + d.getMinutes()/60;
+  let hours = hm(c.wake || S.duty.wake) + 16 - start; if(hours < 0) hours += 24; if(hours > 18) hours = 2;
+  return {report: fmtClock(start), hours: clamp(Math.round(hours*2)/2, 2, 16), legs: 0};
+}
+function fcOf(c){ return forecast(c.level, c.flyingToday && c.duty ? c.duty : dayDuty(c), c.wake); }
+
+/* ---------- extra tips (beyond today's advice) ---------- */
+function extraTips(c){
+  const out = [];
+  if(c.flyingToday && c.level >= 1 && c.duty && Number(c.duty.legs) >= 2) out.push('Use your longest ground time between legs for a short rest. Keep naps to about 20 minutes to avoid grogginess.');
+  if(c.late) out.push("Late check-ins show up in your pattern. Protect tonight's sleep window.");
+  return out;
 }
 
 /* ---------- logbook, streaks, badges ---------- */
@@ -1165,7 +1573,7 @@ const BADGES = [
   {id:'night',   code:'RED', metal:'Ruby',   name:'Red-Eye',         tag:'Owls only.', desc:'Check in between 20:00 and 05:00, when your body clock is working against you.'},
   {id:'steady',  code:'BTR', metal:'Gold',   name:'Butter Landing',  tag:'Smooth. No jumping the gun.', desc:'3 checks in a row with 2 or fewer early taps.'},
   {id:'pattern', code:'BOX', metal:'Orange', name:'Black Box',       tag:'You cracked your own flight data.', desc:'Log checks after late hotel nights and after normal nights, so your own pattern shows up.'},
-  {id:'honest',  code:'WGM', metal:'Platinum', name:'Wingman',       tag:'Nobody flies solo.', desc:'Reach out to a peer-support pilot or a confidential counselor. Any day, for any reason.'},
+  {id:'honest',  code:'WGM', metal:'Platinum', name:'Wingman',       tag:'Nobody flies solo.', desc:'Contact a support partner when your plan suggests it. Asking for help is part of flying safely.'},
   {id:'week4',   code:'4WK', metal:'Jade',   name:'Long Haul',       tag:'A month without missing a week.', desc:'Check in at least once a week, 4 weeks in a row.'},
   {id:'log25',   code:'25X', metal:'Midnight', name:'Ace',           tag:'25 entries. Captain material.', desc:'Log 25 checks.'}
 ];
@@ -1325,36 +1733,6 @@ const STEP_ICONS = {
   duty: `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="22" height="20" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><path d="M5 12h22" stroke="var(--accent)" stroke-width="2"/><path d="M11 4v5M21 4v5" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><path d="M10 19l4 0 2-3 3 6 2-3h2" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   test: `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="18" r="10.5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><path d="M13 4h6M16 4v3.5" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><path d="M16 18l4.5-4.5" stroke="var(--accent-ink)" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="18" r="1.8" fill="var(--accent-ink)"/></svg>`
 };
-const FACT_ICONS = [
-  `<path d="M16 10h16l-3 14a5 5 0 0 1-5 4h0a5 5 0 0 1-5-4z" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M24 28v8M18 38h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="34" cy="13" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M34 10v3l2 1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>`,
-  `<path d="M24 12c-6 0-10 4-10 9 0 3 1.5 5 3 6.5V33h14v-5.5c1.5-1.5 3-3.5 3-6.5 0-5-4-9-10-9z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M19 37h10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 22h3l2 3 2-6 2 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
-  `<path d="M30 14a11 11 0 1 0 6 18 9 9 0 0 1-6-18z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M33 8h5l-5 6h5M38 16h3l-3 4h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
-  `<circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M24 15v9l6 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M14 10l-4-3M34 10l4-3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>`,
-  `<path d="M10 30h28" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M16 30a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M24 12v5M13 17l3 3M35 17l-3 3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M14 36h20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 4"/>`,
-  `<circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="24" cy="24" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="24" cy="24" r="2" fill="currentColor"/><path d="M33 15l6-6M36 9h3v3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>`,
-  `<path d="M8 34 Q16 14 24 26 T40 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="24" cy="26" r="3" fill="currentColor"/><path d="M8 38h32" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".5"/>`,
-  `<path d="M10 26h20c4 0 7-2 7-5s-3-5-7-5H18l-4 5h-4z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M8 12h28M22 12v4M37 21l4-4v10z" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 26l-2 6h18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>`
-];
-
-/* ---------- facts (one per day) ---------- */
-const FACTS = [
-  {t:'Staying awake for 17 to 19 hours can slow reactions about as much as a 0.05% blood alcohol level.', s:'Williamson & Feyer, 2000, Occupational and Environmental Medicine'},
-  {t:'After several short nights, people stop feeling sleepier, but their reaction test keeps getting worse. That is why ReadyCheck measures instead of just asking.', s:'Van Dongen et al., 2003, Sleep'},
-  {t:'In NASA\'s long-haul study, crews given a 40-minute cockpit rest slept about 26 minutes and showed about 34% better reaction performance and 54% better physiological alertness late in the flight.', s:'Rosekind et al., 1994, NASA Technical Memorandum 108839'},
-  {t:'The body clock\'s low point is roughly 02:00 to 06:00. Alertness dips there even after a good sleep.', s:'Circadian research summarized by ICAO Fatigue Management Guide'},
-  {t:'Grogginess right after waking, called sleep inertia, usually fades within about 15 to 30 minutes. Keep naps short to avoid it.', s:'Tassi & Muzet, 2000, Sleep Medicine Reviews'},
-  {t:'The 3-minute reaction test shows little to no learning effect, so your results reflect how alert you are, not how much you\'ve practiced.', s:'Basner et al., 2011, Aviation, Space, and Environmental Medicine'},
-  {t:'A dip in alertness in the early afternoon, around 14:00 to 16:00, is part of the normal body clock, not just lunch.', s:'Monk, 2005, Clinics in Sports Medicine'},
-  {t:'A US helicopter air ambulance operator uses this same 3-minute test before shifts and has logged more than 95,000 of them.', s:'Mollicone et al., 2023'}
-];
-function factFor(seed){ return FACTS[((seed % FACTS.length) + FACTS.length) % FACTS.length]; }
-function factCard(f){
-  f = f || factFor(Math.floor(Date.now()/86400000));
-  const k = FACTS.indexOf(f);
-  return `<div class="fact-row"><div class="fact-ic"><svg viewBox="0 0 48 48" aria-hidden="true">${FACT_ICONS[k] || FACT_ICONS[3]}</svg></div><div class="stack" style="gap:6px">
-    <div class="eyebrow" style="margin:0"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 9l12-6-4 11-2.5-4.2z" fill="var(--accent)"/></svg>Crew briefing</div><p style="margin:0">${esc(f.t)}</p><p class="src">Source: ${esc(f.s)}</p></div></div>`;
-}
-
 /* ---------- results helpers ---------- */
 function gaugeSVG(value){
   const cx = 140, cy = 140, r = 108, max = 24;
@@ -1464,17 +1842,74 @@ function weatherBlocks(fc){
   return `<div class="wx">${segs.filter(s => s.to > s.from).map(s => `<div class="wx-row">${icon(s.b)}<span class="t">${fmtClock(s.from)} to ${fmtClock(s.to)}</span><div><b>${lab[s.b]}</b><div class="small muted">${tip[s.b]}</div></div></div>`).join('')}</div>`;
 }
 
-/* ---------- support (peer pilot or confidential counselor) ---------- */
-function reachedOut(){ if(!S.honest){ S.honest = Date.now(); const f = awardBadges(); save(); if(f.includes('honest')) setTimeout(() => toast('Wings unlocked: Wingman'), 1400); } }
-function openSupport(){
-  sheet('Talk to someone', `<p class="small">Two confidential options. Your airline does not see that you reached out, and your check results are never attached.</p>
-    <div class="sup-opt"><div class="sup-ic"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="11" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="22" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 26c1-5 4-7.5 8-7.5s7 2.5 8 7.5M18 19.5c1-.6 2.4-1 4-1 3.2 0 5.6 2 6.4 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-      <div><b>Peer-support pilot</b><div class="small muted">A trained fellow pilot who has been there. Free, through your union's peer support program.</div></div></div>
-    <div class="sup-opt"><div class="sup-ic"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8h20v13H14l-6 5v-5H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 11.5c-1.2-1.6-4-1-4 1 0 2 4 4 4 4s4-2 4-4c0-2-2.8-2.6-4-1z" fill="currentColor"/></svg></div>
-      <div><b>Confidential counselor</b><div class="small muted">A licensed counselor who knows aviation, for stress, sleep, family or work pressure. Short video or text sessions, before things become a medical issue. Example partner: a pilot-focused service such as Listenr.</div></div></div>
-    <p class="small muted" style="margin:0">Prototype: buttons don't connect to anyone yet.</p>`,
-    'Connect me', () => { toast('Demo only. Would open peer support or a counselor.'); reachedOut(); if(current === 'logbook') renderers.logbook(); });
+/* ---------- your plan: suggestions picked from your own recent data ---------- */
+// Each suggestion needs a reason in the data. Contacting a support partner only appears when it is truly needed:
+// long-term status Not good, or a hard duty reported after the flight.
+function wakeSpread(list){
+  const w = list.map(c => c.wake).filter(Boolean).map(hm).map(v => v < 4 ? v + 24 : v);
+  return w.length >= 3 ? Math.max(...w) - Math.min(...w) : 0;
 }
+function carePlan(list, lt, now){
+  now = now == null ? Date.now() : now;
+  const from7 = addDays(now, -6);
+  const c7 = list.filter(c => c.ts >= from7 && c.ts <= now), d7 = lt.days.filter(d => d.t >= from7 && d.t <= dayStart(now));
+  const today = c7.filter(c => sameDay(c.ts, now)).pop() || null;
+  const low7 = d7.filter(d => d.low).length, fly7 = d7.filter(d => d.flying).length;
+  const sp7 = c7.length ? c7.reduce((s, c) => s + (c.sp || 0), 0) / c7.length : 0;
+  const tiredOk = c7.filter(c => c.mismatch === 'feel-tired').length;
+  const spread = wakeSpread(c7);
+  const hard = list.filter(c => c.ts >= addDays(now, -2) && c.post && ((c.post.events || []).length || c.post.sp >= 6)).pop();
+  const items = [];
+  const add = (id, pri, title, body, why, extra) => items.push(Object.assign({id, pri, title, body, why}, extra || {}));
+  if(today && today.flyingToday && today.level === 2)
+    add('noduty', 100, "Don't go on duty as planned", "Use your airline's fatigue call before you report. Under 14 CFR 117.5 a pilot who is too fatigued must not accept the duty. The decision stays with you.",
+      "Today's check: Low alertness on a flight day.", {btn:'fatigue'});
+  if(lt.s === 'bad' || hard)
+    add('org', 95, 'Talk to someone who gets it', 'A trained peer pilot or an aviation counselor. Confidential: your airline is not told, and your results are never shared.',
+      lt.s === 'bad' ? ltReason(lt) : `Your post-duty check-in: ${hard.post.events.length ? hard.post.events.join(', ').toLowerCase() : 'a very tiring day'}.`, {org:true});
+  if(lt.s === 'bad' || low7 >= 2 || sp7 >= 4.5 || (lt.cause && lt.cause.why === 'rising'))
+    add('sleep', lt.s === 'bad' ? 90 : 80, lt.s === 'good' ? 'Keep protecting your sleep' : 'Sleep more for the next 3 nights',
+      lt.s === 'good' ? 'You are back to normal. Keep 8 hours in bed for a few more nights so it lasts.' : 'Aim for 8 hours in bed so you get 7 or more asleep. One good night is not enough to recover from several short ones.',
+      low7 >= 2 ? `${low7} low ${low7 === 1 ? 'day' : 'days'} in the last 7.` : sp7 >= 4.5 ? `You felt tired on average (${sp7.toFixed(1)} of 7) this week.` : 'Your typical reaction time has been creeping up.');
+  if(today && today.level >= 1 && !(today.flyingToday && today.level === 2))
+    add('nap', 75, 'Take a 10 to 20 minute nap today', today.flyingToday ? 'About 30 to 60 minutes before you report. Short naps avoid grogginess.' : 'Before mid-afternoon, so it does not steal from tonight.',
+      `Today's check: ${LEVELS[today.level].name}.`);
+  if(today && !today.flyingToday && today.level === 2)
+    add('rest', 85, 'Make today a rest day', 'Skip long drives and hard training today. Plan an early night instead.', "Today's check: Low alertness.");
+  if(spread >= 2)
+    add('regular', 60, 'Keep the same wake time every day', 'Within about an hour, even on days off. A steady body clock makes every duty easier.', `Your wake time varied by ${Math.round(spread)} hours this week.`);
+  if(fly7 >= 2 && (low7 >= 1 || sp7 >= 4))
+    add('water', 45, 'Drink water through each duty', 'Cabin air is very dry, and even mild dehydration adds to tiredness and headaches. Keep a bottle in reach and sip every hour.',
+      `${fly7} flight days this week, with some tired checks.`);
+  if((tiredOk >= 1 || lt.s === 'watch' || sp7 >= 4) && !(today && today.level === 2))
+    add('move', 40, 'Move for 20 to 30 minutes in daylight', 'A brisk walk outside, earlier in the day. Daylight steadies your body clock and activity helps you sleep. Finish 2 to 3 hours before bed.',
+      tiredOk ? `You felt tired on ${tiredOk === 1 ? 'a day' : tiredOk + ' days'} when the test was fine.` : 'You have felt more tired than usual this week.');
+  if(!items.length)
+    add('keep', 10, 'Keep doing what you are doing', 'Same sleep window, a little daylight and movement each day, and water on every duty.',
+      lt.s === 'nodata' ? 'Not enough checks yet for a personal plan. Check on 3 days this week.' : `${d7.length - low7} of ${plural(d7.length, 'check day')} this week were normal.`);
+  return {items: items.sort((a, b) => b.pri - a.pri).slice(0, 4), n: c7.length, fly7};
+}
+const PARTNERS = () => [{name:'Talk to a Peer', by:'by MedAire', what:'Aviation peer support'}, {name:SUPPORT_SITE.name, by:'', what:SUPPORT_SITE.url}];
+function planCard(p){
+  return `<div class="card stack" id="care-plan">
+    <div><div class="eyebrow" style="margin:0">Your plan · based on your last 7 days</div><h2 style="margin:0">What to do next</h2>
+      <p class="small muted" style="margin:0">${plural(p.n, 'check')}${p.fly7 ? ', ' + plural(p.fly7, 'flight day') : ''}. Each tip shows the data behind it.</p></div>
+    ${p.items.map(it => `<div class="plan-item ${it.id === 'noduty' ? 'pi-bad' : it.org ? 'pi-org' : ''}" ${it.org ? 'id="care-org"' : ''}>
+      <b>${esc(it.title)}</b><div class="small">${esc(it.body)}</div><div class="small muted">Why: ${esc(it.why)}</div>
+      ${it.btn === 'fatigue' ? '<button class="btn primary block" data-act="fatigue">Open my airline\'s fatigue call</button>' : ''}
+      ${it.org ? PARTNERS().map((x, i) => `<div class="list-item" style="padding:6px 0"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small muted">${esc(x.by)}</span><div class="small muted" style="word-break:break-all">${esc(x.what)}</div><span class="demo-tag" style="white-space:normal">Example partner, prototype does not connect</span></div><button class="btn" data-act="contact" data-p="${i}">Contact</button></div>`).join('') : ''}
+    </div>`).join('')}
+    <p class="small muted" style="margin:0">Suggestions, not medical advice.</p>
+  </div>`;
+}
+function reachedOut(){ if(!S.honest){ S.honest = Date.now(); const f = awardBadges(); save(); if(f.includes('honest')) setTimeout(() => toast('Wings unlocked: Wingman'), 1400); } }
+function fatigueSheet(){ sheet("Airline fatigue call", `<p class="small">This opens your airline's existing non-punitive fatigue call. ReadyCheck doesn't create a new process; it puts the existing one one tap away.</p><p class="small muted">Your result is not attached unless you choose to mention it.</p>`, 'Open fatigue call', () => { toast('Demo only. Would open your airline\'s process.'); }); }
+// "See your plan" buttons go to History and scroll to the plan.
+function openPlan(){ go('trends'); requestAnimationFrame(() => { const el = $('#care-org') || $('#care-plan'); if(el) el.scrollIntoView({block:'start'}); }); }
+document.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if(!b) return;
+  if(b.dataset.act === 'support') openPlan();
+  else if(b.dataset.act === 'fatigue') fatigueSheet();
+  else if(b.dataset.act === 'contact'){ toast(`Demo only. Would open ${PARTNERS()[Number(b.dataset.p)].name}.`); reachedOut(); } });
 
 /* ---------- results ---------- */
 let lastCheckId = null;
@@ -1483,8 +1918,8 @@ renderers.results = () => {
   const el = $('#scr-results');
   if(!c){ el.innerHTML = '<p>No result yet.</p>'; return; }
   if(c.pvt && !c.pvt.seq && c.simulated){ c.pvt.seq = simSeq(c.pvt); save(); }
-  const L = LEVELS[c.level], fc = forecast(c.level, c.duty || S.duty, c.wake);
-  const sugg = suggestions(c, fc);
+  const L = LEVELS[c.level], fc = fcOf(c), fly = !!c.flyingToday;
+  const tips = extraTips(c), adv = todayAdvice(c, longTerm(preChecks(), Date.now()));
   const list = preChecks(), entry = list.findIndex(x => x.id === c.id) + 1;
   const prevBest = list.filter(x => x.id !== c.id && x.ts < c.ts && x.pvt && x.pvt.fastest).map(x => x.pvt.fastest);
   const pb = c.pvt.fastest && prevBest.length && c.pvt.fastest < Math.min(...prevBest);
@@ -1494,7 +1929,6 @@ renderers.results = () => {
   const nb = (c.newBadges || []).map(id => BADGES.find(b => b.id === id)).filter(Boolean);
   const celebrate = nb.length ? `<div class="card stack celebrate"><div class="eyebrow" style="margin:0;color:var(--accent-ink)">New badge${nb.length>1?'s':''} unlocked</div>
       <div class="row" style="gap:16px">${nb.map(b => `<div class="row" style="flex-wrap:nowrap;gap:10px"><div class="badge earned" style="width:96px;flex:none">${wings(b.code, true)}</div><div><div class="bname"><b>${esc(b.name)}</b><span class="metal m-${b.metal}">${b.metal}</span></div><div class="tagline">${esc(b.tag)}</div><button class="btn" style="margin-top:6px" data-wear-now="${b.id}">Wear these wings</button></div></div>`).join('')}</div></div>` : '';
-  const fact = c.mismatch === 'feel-ok' ? FACTS[1] : c.level >= 1 ? FACTS[2] : factFor(Math.floor(c.ts/86400000));
   const drift = c.pvt.seq && c.pvt.seq.length ? driftLine(c.pvt.seq) : '';
   const base = c.personal && c.personal.n >= 5
     ? `<dt>Your usual median</dt><dd>${c.personal.med} ms</dd>`
@@ -1502,7 +1936,8 @@ renderers.results = () => {
   const eyeBlock = !c.eye ? `<p class="small muted" style="margin:0">Camera was off for this check.</p>`
     : `<dl class="kv"><dt>Long eye closures (500 ms+)</dt><dd>${c.eye.longClose}</dd><dt>PERCLOS (eyes 80%+ closed)</dt><dd>${(c.eye.perclos*100).toFixed(1)}%</dd><dt>Blinks per minute</dt><dd>${c.eye.blinkRate}</dd><dt>Face in view</dt><dd>${Math.round(c.eye.facePct*100)}%</dd><dt>Frames per second</dt><dd>${c.eye.fps}</dd><dt>Eye data used</dt><dd>${c.eye.valid?'yes':'no'}</dd></dl>`;
   el.innerHTML = `
-    <div><div class="eyebrow">${c.simulated ? 'Demo check · simulated' : 'Pre-duty check'} · ${fmtDate(c.ts)} ${fmtTime(c.ts)}</div><h1>Your readiness</h1></div>
+    <div><div class="eyebrow">${c.simulated ? 'Demo check · simulated' : fly ? 'Pre-duty check' : 'Daily check'} · ${fmtDate(c.ts)} ${fmtTime(c.ts)}</div><h1>Your readiness</h1></div>
+    ${adviceCard(c, adv, sameDay(c.ts, Date.now()))}
     ${celebrate}
     <div class="panel screws gauge-wrap">
       <div class="eyebrow" style="margin:0">Alertness</div>
@@ -1519,17 +1954,15 @@ renderers.results = () => {
       ${stripSVG(c.pvt.seq)}
       ${drift ? `<p class="small" style="margin:0">${esc(drift)}</p>` : ''}
       ${c.pvt.fastest ? `<p class="small" style="margin:0">Quickest reaction: <b class="mono">${(c.pvt.fastest/1000).toFixed(2)} s</b>${pb ? ' <span class="pill ok">personal best</span>' : ''}</p>` : ''}</div>` : ''}
-    <div class="card stack"><h2 style="margin:0">Today's fatigue forecast</h2>
+    <div class="card stack"><h2 style="margin:0">${fly ? "Today's fatigue forecast" : "Your day's alertness forecast"}</h2>
       ${weatherBlocks(fc)}
       <p class="small muted" style="margin:0">Illustrative estimate from today's result, hours awake and the body-clock low (02:00 to 06:00). Not a validated model.</p></div>
-    <div class="card stack"><h2>What you can do</h2><ul class="tips">${sugg.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>
-    <div class="card stack fact">${factCard(fact)}</div>
+    ${tips.length ? `<div class="card stack"><h2>More for today</h2><ul class="tips">${tips.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
     <div class="card stack"><h2>Your choices</h2>
       <p class="small muted" style="margin:0">All optional. Nothing is sent unless you tap it.</p>
-      <button class="btn block" id="act-crew">${c.shared && c.shared.crew ? '✓ Crew told' : 'Tell my crew'}</button>
-      <button class="btn block" id="act-cockpit">${c.shared && c.shared.cockpit ? '✓ Cockpit monitoring on' : 'Turn on cockpit monitoring boost'}</button>
-      <button class="btn block" id="act-peer">Talk to someone (peer pilot or counselor)</button>
-      ${c.level >= 1 ? `<button class="btn block" id="act-fatigue">Open my airline's fatigue call</button>` : ''}
+      ${fly ? `<button class="btn block" id="act-crew">${c.shared && c.shared.crew ? '✓ Crew told' : 'Tell my crew'}</button>
+      <button class="btn block" id="act-cockpit">${c.shared && c.shared.cockpit ? '✓ Cockpit monitoring on' : 'Turn on cockpit monitoring boost'}</button>` : ''}
+      ${fly && c.level >= 1 ? `<button class="btn block" id="act-fatigue">Open my airline's fatigue call</button>` : ''}
       <button class="btn ghost block" data-go="home">Keep it to myself</button></div>
     <div class="card row" style="justify-content:space-between"><div><div class="eyebrow" style="margin:0">Logbook</div><b>Entry #${entry} logged</b></div><div class="small muted">${weekStreak(list)}-week streak · ${Object.keys(S.badges||{}).length}/${BADGES.length} badges</div></div>
     <details class="card"><summary>Details for the curious</summary>
@@ -1546,11 +1979,10 @@ renderers.results = () => {
     <button class="btn primary block" data-go="home">Done</button>`;
   requestAnimationFrame(() => requestAnimationFrame(() => { const n = el.querySelector('.needle'); if(n) n.style.transform = `rotate(${n.dataset.deg}deg)`; }));
   $$('#scr-results [data-wear-now]').forEach(btn => btn.onclick = () => { S.worn = btn.dataset.wearNow; save(); toast('Wings pinned to your uniform.'); btn.textContent = '✓ Wearing'; btn.disabled = true; });
-  const honest = () => {};
-  $('#act-crew').onclick = () => sheet('Tell my crew', `<p class="small muted">Your captain and first officer on today's pairing receive only this:</p><div class="msg-preview">${esc(S.user?.name||'Your crew member')} reports <b>elevated fatigue today</b>.</div><p class="small muted">No scores, no eye data.</p>`, 'Send to crew', () => { c.shared = {...(c.shared||{}), crew:true}; save(); toast('Demo only. Nothing was sent.'); honest(); renderers.results(); });
-  $('#act-cockpit').onclick = () => sheet('Cockpit monitoring boost', `<p class="small">With your permission, one flag goes to Honeywell's cockpit pilot state monitoring for this duty:</p><div class="msg-preview"><b>Elevated pre-duty fatigue risk.</b> Watch window around ${fmtClock(fc.peak.clock)}.</div><ul class="tips small"><li>The camera alerts a little earlier than usual today.</li><li>It pays closer attention around your likely low point.</li><li>Alerts stay in the cockpit. Your airline and dispatch are not told.</li></ul><p class="small muted">Concept only. Pilot state monitoring is still being tested and does not accept outside inputs today.</p>`, 'Turn on for this duty', () => { c.shared = {...(c.shared||{}), cockpit:true}; save(); toast('Demo only. Cockpit link is a concept.'); renderers.results(); });
-  $('#act-peer').onclick = openSupport;
-  const fb = $('#act-fatigue'); if(fb) fb.onclick = () => sheet("Airline fatigue call", `<p class="small">This opens your airline's existing non-punitive fatigue call. ReadyCheck doesn't create a new process; it puts the existing one one tap away.</p><p class="small muted">Your result is not attached unless you choose to mention it.</p>`, 'Open fatigue call', () => { toast('Demo only. Would open your airline\'s process.'); honest(); });
+  const crew = () => sheet('Tell my crew', `<p class="small muted">Your captain and first officer on today's pairing receive only this:</p><div class="msg-preview">${esc(S.user?.name||'Your crew member')} reports <b>elevated fatigue today</b>.</div><p class="small muted">No scores, no eye data.</p>`, 'Send to crew', () => { c.shared = {...(c.shared||{}), crew:true}; save(); toast('Demo only. Nothing was sent.'); renderers.results(); });
+  const fatigue = fatigueSheet;
+  [['#act-crew', crew], ['#adv-crew', crew], ['#act-fatigue', fatigue], ['#adv-fatigue', fatigue]].forEach(([sel, fn]) => { const b = $(sel); if(b) b.onclick = fn; });
+  const ck = $('#act-cockpit'); if(ck) ck.onclick = () => sheet('Cockpit monitoring boost', `<p class="small">With your permission, one flag goes to Honeywell's cockpit pilot state monitoring for this duty:</p><div class="msg-preview"><b>Elevated pre-duty fatigue risk.</b> Watch window around ${fmtClock(fc.peak.clock)}.</div><ul class="tips small"><li>The camera alerts a little earlier than usual today.</li><li>It pays closer attention around your likely low point.</li><li>Alerts stay in the cockpit. Your airline and dispatch are not told.</li></ul><p class="small muted">Concept only. Pilot state monitoring is still being tested and does not accept outside inputs today.</p>`, 'Turn on for this duty', () => { c.shared = {...(c.shared||{}), cockpit:true}; save(); toast('Demo only. Cockpit link is a concept.'); renderers.results(); });
 };
 
 /* ---------- sheet ---------- */
@@ -1565,17 +1997,42 @@ function sheet(title, body, actionLabel, onAction){
 }
 
 /* ---------- trends ---------- */
+function heatmap28(days, roster, now){
+  const byT = new Map(days.map(d => [d.t, d])), fl = new Set((roster || []).map(fromYmd));
+  const first = addDays(now, -27), today = dayStart(now), g0 = weekStart(first);
+  const cells = ['M','T','W','T','F','S','S'].map(d => `<div class="hd">${d}</div>`);
+  const last = addDays(weekStart(today), 6);
+  for(let t = g0; t <= last; t = addDays(t, 1)){
+    const out = t < first || t > today, d = byT.get(t), fly = (d && d.flying) || fl.has(t);
+    const lab = `${fmtDate(t)}: ${d ? LEVELS[d.level].name : 'no check'}${fly ? ', flight day' : ''}`;
+    cells.push(`<div class="c ${out ? 'out' : ''} ${d && !out ? 'l' + d.level : ''} ${t === today ? 'today' : ''}" ${out ? 'aria-hidden="true"' : `role="img" aria-label="${esc(lab)}" title="${esc(lab)}"`}>${new Date(t).getDate()}${fly && !out ? PLANE_MINI : ''}</div>`);
+  }
+  return `<div class="heat">${cells.join('')}</div>
+    <div class="legend">${LEGEND}<span><i class="sw" style="background:var(--surface-2);border:1px solid var(--line)"></i>No check</span><span><span style="width:12px;height:12px;display:inline-block;color:var(--ink)">${PLANE_MINI}</span>Flight day</span></div>`;
+}
+function rollingChart(days, list, now){
+  const first = addDays(now, -27), idx = days.map((d, i) => ({d, i})).filter(x => x.d.t >= first && x.d.rt != null);
+  if(idx.length < 2) return '<p class="small muted" style="margin:0">Your 7-day trend appears after a few more checks.</p>';
+  const roll = idx.map(x => ({t:x.d.t, v:rollingAt(days, x.i)}));
+  const normals = list.filter(c => c.level === 0 && c.pvt && c.pvt.trials >= 10).slice(-20).map(c => c.pvt.medianRT);
+  let band = null;
+  if(normals.length >= 5){ const med = median(normals), sd = 1.4826*median(normals.map(x => Math.abs(x - med))) + 10; band = {med, lo: med - 2*sd, hi: med + 2*sd}; }
+  const vals = idx.map(x => x.d.rt).concat(roll.map(r => r.v).filter(v => v != null), band ? [band.lo, band.hi] : []);
+  const W = 420, H = 160, pl = 30, pr = 6, pt = 8, pb = 8, minR = Math.min(...vals) - 15, maxR = Math.max(...vals) + 15;
+  const x = t => pl + (W - pl - pr) * (dayDiff(t, first) / 27), y = v => pt + (H - pt - pb) * (1 - (v - minR)/(maxR - minR));
+  const ticks = [minR + 12, (minR + maxR)/2, maxR - 12].map(v => Math.round(v/10)*10);
+  const grid = ticks.map(v => `<line x1="${pl}" x2="${W - pr}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="var(--line)"/><text x="0" y="${(y(v) + 3.5).toFixed(1)}" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${v}</text>`).join('');
+  const bandSVG = band ? `<rect x="${pl}" width="${W - pl - pr}" y="${y(band.hi).toFixed(1)}" height="${(y(band.lo) - y(band.hi)).toFixed(1)}" fill="var(--ok)" opacity=".14"/><line x1="${pl}" x2="${W - pr}" y1="${y(band.med).toFixed(1)}" y2="${y(band.med).toFixed(1)}" stroke="var(--ok)" stroke-dasharray="3 4" opacity=".8"/>` : '';
+  const rp = roll.filter(r => r.v != null), path = rp.map((r, i) => `${i ? 'L' : 'M'}${x(r.t).toFixed(1)},${y(r.v).toFixed(1)}`).join('');
+  const dots = idx.map(({d}) => `<circle cx="${x(d.t).toFixed(1)}" cy="${y(d.rt).toFixed(1)}" r="3.5" fill="${LEVELS[d.level].color}" opacity=".85"/>`).join('');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily median reaction time and 7-day rolling median over the last 28 days${band ? ', with your usual range' : ''}">${grid}${bandSVG}${path ? `<path d="${path}" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>` : ''}${dots}</svg>
+    <div class="timeline-labels"><span>${esc(fmtDate(first))}</span><span>Today</span></div>
+    <div class="legend"><span><i class="sw" style="background:var(--ink);height:3px"></i>7-day median</span>${band ? '<span><i class="sw" style="background:var(--ok);opacity:.35"></i>Your usual range</span>' : '<span>Usual range unlocks after 5 normal checks</span>'}<span>ms, lower is better</span></div>`;
+}
 renderers.trends = () => {
-  const list = preChecks(), el = $('#scr-trends');
-  if(!list.length){ el.innerHTML = `<div><h1>History</h1><p class="muted">Your checks and patterns will show up here after your first check.</p></div><button class="btn amber block big" data-go="rate">Start a check</button><p class="small muted" style="margin:0">Presenting? Load example history from Me › Demo mode.</p>`; return; }
-  const rts = list.map(c=>c.pvt.medianRT).filter(Boolean);
-  const W = 420, H = 150, pad = 26, minR = Math.min(...rts, 220) - 20, maxR = Math.max(...rts, 420) + 20;
-  const x = i => pad + (W-pad-8) * (list.length===1 ? 0.5 : i/(list.length-1));
-  const y = v => 8 + (H-8-pad) * (1 - (v-minR)/(maxR-minR));
-  const ticks = [minR, (minR+maxR)/2, maxR].map(v=>Math.round(v/10)*10);
-  const path = list.map((c,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(c.pvt.medianRT).toFixed(1)}`).join('');
-  const dots = list.map((c,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(c.pvt.medianRT).toFixed(1)}" r="4.5" fill="${LEVELS[c.level].color}"/>`).join('');
-  const grid = ticks.map(v=>`<line x1="${pad}" x2="${W-4}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="var(--line)" stroke-width="1"/><text x="0" y="${(y(v)+4).toFixed(1)}" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${v}</text>`).join('');
+  const list = preChecks(), el = $('#scr-trends'), now = Date.now();
+  if(!list.length){ el.innerHTML = `<div><h1>History</h1><p class="muted">Your checks and patterns will show up here after your first check.</p></div><button class="btn amber block big" data-go="fly">Start a check</button><p class="small muted" style="margin:0">Presenting? Load example history from Me › Demo mode.</p>`; return; }
+  const lt = longTerm(list, now);
   // pattern: late check-in
   const lateY = list.filter(c=>c.late), lateN = list.filter(c=>!c.late);
   const bad = a => a.filter(c=>c.level>=1).length;
@@ -1588,14 +2045,37 @@ renderers.trends = () => {
   const counts = [0,1,2].map(l=>list.filter(c=>c.level===l).length);
   el.innerHTML = `
     <div><div class="eyebrow">Only you can see this</div><h1>History</h1></div>
-    <div class="card stack"><h2>Median reaction time</h2>
-      <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Median reaction time across checks">${grid}<path d="${path}" fill="none" stroke="var(--muted)" stroke-width="1.5"/>${dots}</svg>
-      <div class="legend"><span>ms, lower is better</span>${LEGEND}</div></div>
+    ${ltCard(lt, true)}
+    ${planCard(carePlan(list, lt, now))}
+    ${recapCard(weekRecap(list, now))}
+    <div class="card stack"><h2 style="margin:0">Last 28 days</h2>${heatmap28(lt.days, S.roster, now)}</div>
+    <div class="card stack"><h2 style="margin:0">Reaction time trend</h2>
+      <p class="small muted" style="margin:0">Dots are each day's median. The line is the 7-day rolling median, which shrugs off one-off bad days.</p>
+      ${rollingChart(lt.days, list, now)}</div>
     <div class="card stack"><h2>Pattern found</h2>${pattern}</div>
     <div class="card stack"><h2>${list.length} checks</h2>
       <dl class="kv"><dt>Ready</dt><dd>${counts[0]}</dd><dt>Caution</dt><dd>${counts[1]}</dd><dt>Low alertness</dt><dd>${counts[2]}</dd></dl>
-      <div class="list">${list.slice().reverse().slice(0,12).map(c=>`<div class="list-item tap" data-open="${c.id}" role="button" tabindex="0"><div><div>${fmtDate(c.ts)}</div><div class="small muted">${c.pvt.medianRT} ms · felt ${c.sp}/7${c.late?' · late check-in':''}${c.simulated?' · demo':''}</div></div><span class="pill ${LEVELS[c.level].cls}">${LEVELS[c.level].name} ›</span></div>`).join('')}</div></div>`;
+      <div class="list">${list.slice().reverse().slice(0,12).map(c=>`<div class="list-item tap" data-open="${c.id}" role="button" tabindex="0"><div><div>${fmtDate(c.ts)}</div><div class="small muted">${c.pvt.medianRT} ms · felt ${c.sp}/7 · ${c.flyingToday?'flight day':'no flight'}${c.late?' · late check-in':''}${c.simulated?' · demo':''}</div></div><span class="pill ${LEVELS[c.level].cls}">${LEVELS[c.level].name} ›</span></div>`).join('')}</div></div>`;
   $$('#scr-trends [data-open]').forEach(r => r.onclick = () => { lastCheckId = r.dataset.open; go('results'); });
+};
+
+/* ---------- employer view (example): pass / fail and counts only ---------- */
+renderers.org = () => {
+  const r = reqNow();
+  $('#scr-org').innerHTML = `
+    <div><div class="eyebrow">Example · built from your checks on this phone</div><h1>Employer view (example)</h1>
+      <p class="muted">This is everything your airline would see about you. Nothing more.</p></div>
+    <div class="card stack">
+      <div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div><div class="eyebrow" style="margin:0">ReadyCheck requirement</div><h2 style="margin:0">${esc(r.month)}</h2></div><span class="demo-tag">Example</span></div>
+      <div class="emp-status ${r.met ? 'met' : 'notyet'}">${r.met
+        ? '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="12" fill="var(--ok)"/><path d="M7.5 13.5l3.6 3.6 7.4-8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Requirement met'
+        : '<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="11" fill="none" stroke="var(--warn)" stroke-width="2.4"/><path d="M13 7.5V13l3.5 2.2" fill="none" stroke="var(--warn)" stroke-width="2.4" stroke-linecap="round"/></svg>Not met yet'}</div>
+      <p class="mono" style="margin:0">${esc(reqProgressText(r))}</p>
+    </div>
+    <div class="card stack"><h3 style="margin:0">Your employer never sees</h3>
+      <ul class="never"><li>Results</li><li>Scores</li><li>Reaction times</li><li>Eye data</li><li>How you felt</li><li>Trends</li><li>Advice</li><li>Support use</li><li>Times of day</li></ul></div>
+    <div class="card flat stack"><p class="small" style="margin:0">The requirement is one check on every flight day and at least 12 check days in every 28 days. Only one check per day counts.</p>
+      <button class="btn block" data-go="method">Why these numbers</button></div>`;
 };
 
 /* ---------- post duty ---------- */
@@ -1614,50 +2094,96 @@ $('#btn-post-save').addEventListener('click', () => {
   if(today){ today.post = {ts:Date.now(), sp, events, next}; save(); }
   const support = (events.length || sp >= 6) ? `<div class="card stack"><h2>Want to talk it through?</h2>
       <p class="small" style="margin:0">${events.length ? 'Today included: '+esc(events.join(', ').toLowerCase())+'. ' : ''}Support is optional and nobody is notified either way.</p>
-      <button class="btn block" id="sup-peer">Peer support pilot</button><button class="btn block" id="sup-conf">Confidential counseling service</button></div>` : '';
+      <button class="btn block" data-act="support">See who can help</button></div>` : '';
   $('#post-result').innerHTML = `<div class="card stack"><h2>Recovery for your next duty</h2>
     <p style="margin:0">You report at <b class="mono">${fmtClock(hm(next))}</b>. To get 8 hours of sleep and wake by <b class="mono">${fmtClock(wakeBy)}</b>, aim to be asleep by <b class="mono">${fmtClock(sleepBy)}</b>.</p>
     <p class="small muted" style="margin:0">Wind down with something low-effort. Avoid caffeine from now on if your sleep starts within 6 hours.</p></div>${support}
     <button class="btn primary block" data-go="home">Done</button>`;
-  const sp1 = $('#sup-peer'), sp2 = $('#sup-conf');
-  if(sp1) sp1.onclick = openSupport;
-  if(sp2) sp2.onclick = openSupport;
 });
 
 /* ---------- demo ---------- */
 function simulatedCheck(ts, opts){
-  const tired = opts.tired;
+  const tired = opts.tired, fly = opts.fly !== false;
   const trials = tired ? 52 : 60;
   const med = opts.med || (tired ? 405 : 300);
   const lapses = opts.lapses != null ? opts.lapses : (tired ? 14 : 2), fs = opts.fs != null ? opts.fs : (tired ? 3 : 1);
-  const c = {id:'d'+ts+Math.floor(Math.random()*1000), type:'pre', ts, sp: opts.sp || (tired ? 3 : 2), late: !!opts.late, wake: S.duty.wake, duty:{...S.duty},
+  const c = {id:'d'+ts+Math.floor(Math.random()*1000), type:'pre', ts, sp: opts.sp || (tired ? 3 : 2), late: !!opts.late, wake: S.duty.wake,
+    flyingToday: fly, duty: fly ? {...S.duty} : null,
     pvt:{duration: 180, trials, medianRT: med, lapses, fs, lpfs: lapses+fs, lpfs3: lapses+fs, threshold: 355, latency: 77, device:'touch', end: 'full'},
     eye:{fps:30, facePct:0.96, seconds: tired?172:108, perclos: opts.perclos != null ? opts.perclos : (tired ? 0.12 : 0.02), longClose: opts.longClose != null ? opts.longClose : (tired ? 3 : 0), blinkRate: tired ? 22 : 15, medEAR: 0.27, valid:true},
     simulated:true};
   c.pvt.seq = simSeq(c.pvt); c.pvt.fastest = Math.min(...c.pvt.seq.filter(x=>x[1]!=='fs').map(x=>x[0]));
   return c;
 }
-$('#btn-demo-check').addEventListener('click', () => {
-  const c = simulatedCheck(Date.now(), {tired:true, sp:3, late:true});
+function runDemoCheck(fly){
+  const c = simulatedCheck(Date.now(), {tired:true, sp:3, late:true, fly});
   evaluate(c); S.checks.push(c); c.newBadges = awardBadges(); save(); lastCheckId = c.id; go('results');
-});
-$('#btn-demo-fill').addEventListener('click', () => {
-  const now = Date.now(), day = 86400000, list = [];
-  for(let i = 27; i >= 1; i -= (i % 3 === 0 ? 2 : 1)){
-    const late = (i % 4 === 0) || (i % 7 === 2);
-    const jitter = Math.round((Math.random()-0.5)*30);
-    const tiredish = late && Math.random() < 0.75;
-    const opts = tiredish
-      ? {tired:false, med: 345 + jitter, lapses: 7 + Math.floor(Math.random()*5), fs: 1, sp: 2 + Math.floor(Math.random()*3), late:true, perclos:0.05, longClose: 1}
-      : {tired:false, med: 292 + jitter, lapses: Math.floor(Math.random()*4), fs: Math.floor(Math.random()*2), sp: 1 + Math.floor(Math.random()*3), late};
-    const c = simulatedCheck(now - i*day + 7*3600000, opts);
-    list.push(c);
-  }
-  S.checks = []; S.badges = {};
+}
+$('#btn-demo-check').addEventListener('click', () => runDemoCheck(true));
+$('#btn-demo-check-off').addEventListener('click', () => runDemoCheck(false));
+// Small seeded random so the example story looks the same every time it is loaded.
+function seeded(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function demoOpts(kind, rnd, extra){
+  const j = Math.round((rnd() - 0.5)*20);
+  const base = kind === 'g' ? {med: 288 + j, lapses: Math.floor(rnd()*4), fs: Math.floor(rnd()*2), perclos: 0.02, longClose: 0}
+    : kind === 'c' ? {med: 336 + j, lapses: 8, fs: 1, perclos: 0.05, longClose: 1}
+    : {med: 398 + j, lapses: 14, fs: 3, perclos: 0.09, longClose: 1};
+  return Object.assign({tired:false}, base, extra);
+}
+function loadDemo(items, roster, msg, goTo){
+  const list = items.map(it => simulatedCheck(it.ts, it.opts)).sort((a,b) => a.ts - b.ts);
+  S.checks = []; S.badges = {}; S.roster = roster;
   list.forEach(c => { S.checks.push(c); evaluate(c); awardBadges(c.ts); });
-  save(); toast(`Loaded ${list.length} demo checks.`); go('trends');
+  save(); toast(msg); go(goTo);
+}
+// 4-week story: [days before the end, kind (g good, c caution, l low), flying, late check-in, felt 1 to 7]
+const STORY = [
+  [27,'g',0,0,2],[26,'g',1,0,2],[24,'g',0,0,1],[23,'g',1,1,2],[22,'g',1,0,2],[20,'c',0,1,3],[19,'g',1,0,2],[17,'g',0,0,2],[16,'g',1,0,2],[15,'g',1,0,3],[14,'g',0,0,2],
+  [13,'g',1,0,3],[12,'c',1,1,3],[11,'g',0,0,3],[10,'c',1,1,4],[9,'c',1,0,4],
+  [8,'l',1,1,5],[7,'c',1,0,5],[6,'l',1,0,6],[5,'c',0,0,5],[4,'c',1,0,5],[3,'l',0,1,6],
+  [2,'g',0,0,3],[1,'g',1,0,3],[0,'g',0,0,2]
+];
+function loadStory(stopAt, label){
+  const rnd = seeded(498), end = addDays(Date.now(), -1), items = [], roster = [];
+  STORY.forEach(([k, kind, fly, late, sp]) => {
+    const o = demoOpts(kind, rnd, {fly: !!fly, late: !!late, sp});
+    if(k < stopAt) return;
+    const ts = addDays(end, -(k - stopAt)) + (fly ? 6.5 : 9)*3600000 + Math.floor(rnd()*40)*60000;
+    items.push({ts, opts:o}); if(fly) roster.push(ymd(ts));
+  });
+  loadDemo(items, roster, `Loaded ${items.length} demo checks: ${label}.`, 'trends');
+}
+function choiceSheet(title, body, opts){
+  const root = $('#sheet-root');
+  root.innerHTML = `<div class="sheet-back" id="sb"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><h2 style="margin:0">${esc(title)}</h2>${body}
+    ${opts.map((o, i) => `<button class="btn block ${i ? '' : 'primary'}" data-choice="${i}">${esc(o.label)}</button>`).join('')}<button class="btn ghost block" id="sh-cancel">Cancel</button></div></div>`;
+  const close = () => root.innerHTML = '';
+  $('#sh-cancel').onclick = close; $('#sb').onclick = e => { if(e.target.id === 'sb') close(); };
+  $$('#sheet-root [data-choice]').forEach(b => b.onclick = () => { close(); opts[Number(b.dataset.choice)].fn(); });
+  const f = $('#sheet-root [data-choice]'); if(f) f.focus();
+}
+$('#btn-demo-fill').addEventListener('click', () => choiceSheet('Load 4 weeks of example history',
+  '<p class="small">About 2 good weeks (with one off day that changes nothing), then a stretch that becomes Watch, then Not good with several flight days, then 3 normal days that bring it back to Good. Choose where the story ends today.</p><p class="small muted">Replaces this person\'s results.</p>',
+  [{label:'Full story (ends recovered, Good)', fn:() => loadStory(0, 'ends recovered')},
+   {label:'Stop at Watch', fn:() => loadStory(9, 'ends at Watch')},
+   {label:'Stop at Not good', fn:() => loadStory(3, 'ends at Not good')}]));
+// Employer view demos: a month that meets the requirement and one that doesn't yet.
+$('#btn-demo-met').addEventListener('click', () => {
+  const rnd = seeded(12), items = [], roster = [];
+  [27,25,23,21,19,17,15,14,12,10,8,6,4,3,2,1].forEach(k => { const fly = k % 3 === 0 || k <= 2, kind = k === 12 || k === 19 ? 'c' : 'g';
+    const ts = addDays(Date.now(), -k) + (fly ? 6.5 : 9)*3600000; items.push({ts, opts:demoOpts(kind, rnd, {fly, sp:2 + Math.floor(rnd()*2)})}); if(fly) roster.push(ymd(ts)); });
+  loadDemo(items, roster, 'Loaded a compliant month.', 'org');
 });
-$('#btn-clear').addEventListener('click', () => sheet('Delete all results?', '<p class="small">This removes every check from this device. It cannot be undone.</p>', 'Delete everything', () => { S.checks = []; S.badges = {}; S.honest = null; save(); toast('All results deleted.'); go('home'); }));
+$('#btn-demo-notmet').addEventListener('click', () => {
+  const rnd = seeded(7), items = [], roster = [], today = dayStart(Date.now()), yest = addDays(today, -1);
+  const missed = new Date(yest).getMonth() === new Date(today).getMonth() ? yest : today;
+  [26,22,19,15,12,9,6,2].forEach(k => { const ts = addDays(Date.now(), -k) + 7*3600000, fly = k % 2 === 0 && dayStart(ts) !== missed;
+    items.push({ts, opts:demoOpts(k === 9 ? 'c' : 'g', rnd, {fly, sp:3})}); if(fly) roster.push(ymd(ts)); });
+  roster.push(ymd(missed));
+  loadDemo(items, roster, 'Loaded a month that is not met yet.', 'org');
+});
+$('#btn-selftest').addEventListener('click', () => { const r = runStatusTests(); toast(`${r.pass} of ${r.total} self-tests passed. Details in the console.`); });
+$('#btn-clear').addEventListener('click', () => sheet('Delete all results?', '<p class="small">This removes every check from this device. It cannot be undone.</p>', 'Delete everything', () => { S.checks = []; S.badges = {}; S.honest = null; S.roster = []; save(); toast('All results deleted.'); go('home'); }));
 $('#btn-signout').addEventListener('click', () => { save(); DB.active = null; S = defaults(); save(); go('signin'); });
 renderers.settings = () => {
   const nm = S.user ? S.user.name : '';
@@ -1665,8 +2191,6 @@ renderers.settings = () => {
   $('#set-user').textContent = `${preChecks().length} checks logged on this phone`;
 };
 $('#btn-review-terms').addEventListener('click', () => go('consent'));
-$('#btn-me-support').addEventListener('click', openSupport);
-$('#home-support').addEventListener('click', openSupport);
 
 /* ---------- logbook tab ---------- */
 renderers.logbook = () => {
@@ -1693,6 +2217,7 @@ renderers.logbook = () => {
 /* ---------- start ---------- */
 let welcomed = false; try{ welcomed = !!localStorage.getItem('readycheck_welcomed'); }catch(e){}
 go(S.user ? (S.agreed ? 'home' : 'consent') : (welcomed || Object.keys(DB.profiles).length ? 'signin' : 'welcome'));
+if(/[?&]selftest/.test(location.search)) runStatusTests();
 })();
 </script>
 </body>
