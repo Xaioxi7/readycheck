@@ -1023,6 +1023,15 @@ renderers.home = () => {
       <button class="btn amber block big pulse" data-go="fly">Start check <span class="go-arrow">›</span></button>
       <p class="small muted" style="margin:0;text-align:center">${firstTime ? 'First time? You can do a short practice before the test.' : 'On a flight day, best done about an hour before report time.'}</p></div>`;
   }
+  // Long-term status in one line, with the way to more detail and the personal plan in History.
+  if(pre.length){
+    const col = {good:'var(--ok)', watch:'var(--warn)', bad:'var(--bad)', nodata:'var(--muted)'}[lt.s];
+    hero.insertAdjacentHTML('beforeend', `<div class="card row" style="justify-content:space-between;flex-wrap:nowrap;gap:12px;margin-top:16px">
+      <div style="min-width:0"><div class="eyebrow" style="margin:0">Long-term status · last 1 to 2 weeks</div>
+        <b style="color:${col};font-size:1.15rem">● ${ST[lt.s].word}</b>
+        <div class="small muted">For more detail and more recommendations, see your plan in History.</div></div>
+      <button class="btn" data-go="trends" style="flex:none">History ›</button></div>`);
+  }
 };
 /* ---------- self rating ---------- */
 let draft = null;
