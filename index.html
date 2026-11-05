@@ -553,7 +553,6 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
     <div class="row" style="flex-wrap:nowrap;gap:14px"><div class="avatar" id="me-avatar"></div><div><h1 style="margin:0" id="me-name"></h1><div class="small muted" id="set-user"></div></div></div>
     <div class="card menu">
       <button class="menu-item" data-go="method"><span>How ReadyCheck works</span><span>›</span></button>
-      <button class="menu-item" data-go="roster"><span>My duty calendar</span><span>›</span></button>
       <button class="menu-item" data-go="org"><span>Employer view (example)</span><span>›</span></button>
       <button class="menu-item" id="btn-review-terms"><span>Review the agreement</span><span>›</span></button>
     </div>
@@ -640,6 +639,7 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
 
 <nav class="tabbar" id="tabbar" hidden aria-label="Main">
   <button data-go="home" data-tab="home"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 13.2 20.5 10.8" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.4h2.5l1.5 1.2 1.5-1.2H16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Today</button>
+  <button data-go="roster" data-tab="roster"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8.5 15h7l-2-2M15.5 15l-2 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Duty</button>
   <button data-go="trends" data-tab="trends"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.5 15l3.5-4 3 2.5 5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>History</button>
   <button data-go="logbook" data-tab="logbook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13.5c-2.6-1.6-5.6-2.2-9-2 1 1.4 2.6 2.4 4.6 2.8-1.2.3-2.2.9-2.8 1.7 2.6.4 5 .1 7.2-1.2zM12 13.5c2.6-1.6 5.6-2.2 9-2-1 1.4-2.6 2.4-4.6 2.8 1.2.3 2.2.9 2.8 1.7-2.6.4-5 .1-7.2-1.2z" fill="currentColor"/><circle cx="12" cy="12.6" r="2.6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Logbook</button>
   <button data-go="settings" data-tab="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Me</button>
@@ -925,9 +925,9 @@ window.runStatusTests = runStatusTests;
 /* ---------- navigation ---------- */
 let current = null, lastTab = 'home';
 const renderers = {};
-const TABS = ['home','trends','logbook','settings'];
+const TABS = ['home','roster','trends','logbook','settings'];
 const FLOW = {fly:1, rate:2, duty:3, camera:4};
-const DETAIL = ['results','org','method','post','roster'];
+const DETAIL = ['results','org','method','post'];
 function go(id){
   if(current==='camera' && id!=='test') stopCamera();
   $$('section.screen').forEach(s => s.hidden = (s.id !== 'scr-'+id));
@@ -1940,10 +1940,9 @@ renderers.roster = () => {
       <div class="legend"><span><i class="sw" style="background:var(--accent-soft);border:2px solid var(--accent)"></i>Flight duty</span><span>${plural(n, 'duty day')} this month</span></div>
     </div>
     <p class="small muted" style="margin:0">Stays on this phone. Used to remind you to check in on duty days and for your monthly requirement.</p>
-    <button class="btn primary block" id="ro-done">Done</button>`;
+`;
   const move = d => { rosterMonth = new Date(y, mo + d, 1).getTime(); renderers.roster(); };
   $('#ro-prev').onclick = () => move(-1); $('#ro-next').onclick = () => move(1);
-  $('#ro-done').onclick = () => { rosterMonth = null; go(lastTab); };
   $$('#scr-roster [data-day]').forEach(b => b.onclick = () => {
     const k = b.dataset.day; S.roster = S.roster || [];
     S.roster = S.roster.includes(k) ? S.roster.filter(x => x !== k) : S.roster.concat(k);
