@@ -66,7 +66,7 @@ p{margin:0 0 12px}
 .icon-btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;
   padding:7px 10px;font:inherit;font-size:.85rem;cursor:pointer}
 label.field{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
-input[type=text],input[type=time],input[type=number]{font:inherit;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);
+input[type=text],input[type=time],input[type=number],input[type=date]{font:inherit;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);
   border-radius:10px;padding:10px 12px;min-width:0;width:100%}
 .opts{display:flex;flex-direction:column;gap:8px}
 label.opt{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer}
@@ -340,6 +340,19 @@ details[open] summary{margin-bottom:8px}
 .roster .c.duty{background:var(--accent-soft);border-color:var(--accent);border-width:2px;color:var(--accent-ink)}
 .roster .c.duty svg{width:16px;height:16px;color:var(--accent-ink)}
 .roster .c.past{opacity:.6}
+.roster .c.sby{border:2px dashed var(--accent);color:var(--accent-ink)}
+.roster .c.off{background:transparent;color:var(--muted)}
+.roster .c .mk{display:block;font-size:.6rem;letter-spacing:.02em;margin-top:2px;white-space:nowrap;overflow:hidden}
+.roster .c.chk::after{content:'✓';float:right;font-size:.7rem;color:var(--ok)}
+.week7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.week7 .d{border:1px solid var(--line,#d5dbe5);border-radius:12px;padding:6px 2px;text-align:center;font-family:var(--font-mono);font-size:.72rem;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.week7 .d.today{border-color:var(--accent);border-width:2px}
+.week7 .d svg{width:14px;height:14px}
+.week7 .d .ic{height:16px;display:grid;place-items:center;font-size:.62rem}
+.week7 .d .bar{width:70%;height:6px;border-radius:9px}
+.week7 .d .w{font-size:.6rem;color:var(--muted)}
+.sched-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sched-form .full{grid-column:1/-1}
 .roster .c:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .month-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .month-nav .btn{min-width:44px}
@@ -736,6 +749,12 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <p class="small" style="margin:0">The record is encrypted with AES-GCM before it is written. Someone else's phone reading your tag sees only scrambled text. The tag holds about 500 bytes, so your full test data could not fit on it anyway. Each save replaces the last one.</p>
       <p class="small muted" style="margin:0">Prototype: one demo key is built into the code so the base station can read badges. A real product would give each pilot their own key.</p>
     </div>
+    <div class="card stack">
+      <h3>10. Your schedule</h3>
+      <p class="small" style="margin:0">Add your roster once: import a .ics calendar file, set a repeating pattern, or tap days in. On the day, ReadyCheck asks "Is today's schedule correct?" and fills in report time, length and legs, so the duty questions take a few taps. Your answer on the day replaces the plan.</p>
+      <p class="small" style="margin:0">The 7-day forecast adds up the same duty load points as the Duty load card (body-clock low, legs, standby, carry-over from earlier days) for the days ahead. It is an estimate to help you plan rest, not a prediction of your result.</p>
+      <p class="small muted" style="margin:0">Reminders are calendar events about an hour before each report time, the time the check works best.</p>
+    </div>
     <div class="card flat stack">
       <h3>Limitations</h3>
       <ul class="tips small">
@@ -874,12 +893,12 @@ const ageNorm = age => AGE_NORMS.find(n => (Number(age) || 40) <= n.upTo);
 
 /* ---------- storage: one profile per name on this device ---------- */
 const DB_KEY = 'readycheck_profiles_v1';
-function defaults(){ return {user:null, checks:[], badges:{}, roster:[], days:{}, age:null,
+function defaults(){ return {user:null, checks:[], badges:{}, roster:[], days:{}, sched:{}, age:null,
   duty:{report:'14:00', hours:9, legs:3, wake:'07:30', tz:DEVICE_TZ, workload:'low'}}; }
 // Second example support partner, shown in Your plan when talking to someone is suggested.
 const SUPPORT_SITE = {name:'Listenr', url:'listenr.io'};
 // Checks saved before the "Flying today?" step were all pre-duty checks, so they count as flight days.
-function migrate(p){ (p.checks||[]).forEach(c => { if(c.flyingToday === undefined) c.flyingToday = true; }); if(!Array.isArray(p.roster)) p.roster = [];
+function migrate(p){ (p.checks||[]).forEach(c => { if(c.flyingToday === undefined) c.flyingToday = true; }); if(!Array.isArray(p.roster)) p.roster = []; if(!p.sched || typeof p.sched !== 'object') p.sched = {};
   // Profiles saved before Phase 1 have no daily entries and no time zone yet.
   if(!p.days || typeof p.days !== 'object') p.days = {};
   if(p.duty && !p.duty.tz) p.duty.tz = DEVICE_TZ;
@@ -1291,6 +1310,7 @@ renderers.home = () => {
       <button class="btn amber block big pulse" data-go="fly">Start check <span class="go-arrow">›</span></button>
       <p class="small muted" style="margin:0;text-align:center">${firstTime ? 'First time? You can do a short practice before the test.' : 'On a flight day, best done about an hour before report time.'}</p></div>`;
   }
+  hero.insertAdjacentHTML('beforeend', forecastCard(true));
   // Long-term status in one line, with the way to more detail and the personal plan in History.
   if(pre.length){
     const col = {good:'var(--ok)', watch:'var(--warn)', bad:'var(--bad)', nodata:'var(--muted)'}[lt.s];
@@ -1319,11 +1339,11 @@ renderers.fly = () => {
   if(!S.age){ ageNext = 'fly'; go('age'); return; } // age is needed once before the first readiness check
   draft = {type:'pre', ts:null, sp:null, late:false, wake:S.duty.wake, flyingToday:null, status:null, context:null};
   // Highlight today's earlier answer, or "On duty" if the duty calendar says so. The pilot still taps to confirm.
-  const saved = S.days[ymd(Date.now())], onRoster = (S.roster || []).includes(ymd(Date.now()));
-  const hinted = saved ? saved.status : (onRoster ? 'duty' : null);
+  const saved = S.days[ymd(Date.now())], plan = planFor(ymd(Date.now()));
+  const hinted = saved ? saved.status : (plan ? plan.status : null);
   $$('.fly-opt').forEach(b => b.classList.toggle('on', b.dataset.fly === hinted));
   $('#fly-hint').innerHTML = saved ? `<div class="notice info">Earlier today you chose ${esc(DUTY_STATUS[saved.status])}.</div>`
-    : onRoster ? '<div class="notice info">Your duty calendar shows a flight duty today.</div>' : '';
+    : plan ? `<div class="notice info"><b>Is today's schedule correct?</b> Your calendar shows ${esc(SCHED_TXT[plan.status].toLowerCase())}${plan.status !== 'rest' && plan.report ? `, ${plan.status === 'standby' ? 'starting' : 'report'} ${esc(plan.report)}` : ''}${plan.status === 'duty' && plan.legs ? `, ${plural(plan.legs, 'leg')}` : ''}. Tap it to confirm, or pick what is really happening.</div>` : '';
 };
 $$('.fly-opt').forEach(b => b.addEventListener('click', () => {
   draft.status = b.dataset.fly;                // 'duty', 'standby' or 'rest'
@@ -1390,9 +1410,10 @@ renderers.duty = () => {
   // Usual answers come from S.duty. Things that change daily (time zones crossed, extras, late night)
   // start empty, unless the pilot already saved an entry earlier today.
   const today = S.days[ymd(Date.now())];
-  $('#d-report').value = S.duty.report; $('#d-hours').value = S.duty.hours; $('#d-wake').value = S.duty.wake;
+  const plan = planFor(ymd(Date.now())), usePlan = !today && plan && plan.status === st && plan.report && plan.src !== 'calendar';
+  $('#d-report').value = usePlan ? plan.report : S.duty.report; $('#d-hours').value = usePlan ? plan.hours : S.duty.hours; $('#d-wake').value = S.duty.wake;
   fillTzSelect($('#d-tz'), S.duty.tz || DEVICE_TZ);
-  setStep('d-legs', S.duty.legs);
+  setStep('d-legs', usePlan && st === 'duty' ? plan.legs : S.duty.legs);
   setStep('d-tzx', today ? today.tzCrossed : 0);
   $$('#d-work input').forEach(i => i.checked = i.value === (S.duty.workload || 'low'));
   const ex = today ? (today.extras || []) : [];
@@ -1402,6 +1423,7 @@ renderers.duty = () => {
   const last = Object.values(S.days).filter(e => e.date !== ymd(Date.now()) && e.status !== 'rest').sort((a, b) => b.date.localeCompare(a.date))[0];
   const key = 'Anything you change is highlighted <span class="chg-key"></span>.';
   $('#d-same').innerHTML = today ? `<b>Still right?</b> These are your answers from earlier today. ${key}`
+    : usePlan ? `<b>From your schedule.</b> Report time, length${st === 'duty' ? ' and legs' : ''} come from your duty calendar. Check each one before you continue. ${key}`
     : last ? `<b>Same as last time?</b> These answers are copied from ${esc(fmtDate(fromYmd(last.date)))}. Check each one before you continue. ${key}`
     : `<b>Please check each answer.</b> These are example values, not yours yet. ${key}`;
   ctxPrefill = ctxValues(); markChanged();
@@ -1438,6 +1460,8 @@ $('#btn-duty-next').addEventListener('click', () => {
     workload: on ? S.duty.workload : null, extras: on ? $$('#d-extras input:checked').map(i => i.value) : [],
     wake: S.duty.wake, late: draft.late};
   S.days[entry.date] = entry; draft.context = entry;
+  const pl = (S.sched || {})[entry.date];
+  if(pl) S.sched[entry.date] = st === 'rest' ? {status:'rest', src:'check', title:pl.title} : {status:st, report:entry.report, hours:entry.hours, legs:entry.legs, src:'check', title:pl.title};
   save(); go('camera');
 });
 
@@ -2435,36 +2459,250 @@ renderers.trends = () => {
 
 /* ---------- duty calendar: tap a day to add or remove a flight duty ---------- */
 let rosterMonth = null;
+
+/* ---------- Phase 5: planned schedule (imported, pattern or tapped in) ---------- */
+// S.sched['YYYY-MM-DD'] = {status:'duty'|'standby'|'rest', report:'HH:MM', hours, legs, src:'ics'|'pattern'|'sample'|'manual'|'check', title}
+// S.roster (flight-duty days) is kept in sync, because the monthly requirement uses it.
+const SCHED_TXT = {duty:'Flight duty', standby:'Standby', rest:'Day off'};
+function planFor(k){
+  const e = (S.sched || {})[k]; if(e) return e;
+  return (S.roster || []).includes(k) ? {status:'duty', report:S.duty.report, hours:S.duty.hours, legs:S.duty.legs, src:'calendar'} : null;
+}
+function setSched(k, e){
+  S.sched = S.sched || {};
+  if(e) S.sched[k] = e; else delete S.sched[k];
+  const fly = !!e && e.status === 'duty';
+  S.roster = (S.roster || []).filter(x => x !== k); if(fly) S.roster.push(k);
+  // Latest change wins: a schedule edit also updates that day's checks (advice and monthly requirement follow).
+  preChecks().filter(c => ymd(c.ts) === k).forEach(c => { c.flyingToday = fly; c.duty = fly ? (c.duty || {...S.duty}) : null; });
+}
+const planEntry = k => { const p = planFor(k); if(!p) return null;
+  return {date:k, status:p.status, report:p.status === 'rest' ? null : p.report, hours:p.status === 'rest' ? null : p.hours,
+    legs:p.status === 'duty' ? p.legs : 0, tzCrossed:0, workload:S.duty.workload || 'low', extras:[], planned:true}; };
+// Duty load for today and the next n-1 days. Past days use what the pilot answered; days without an answer use the plan.
+function planSeries(n){
+  const out = [], t0 = dayStart(Date.now()); let cum = 0;
+  for(let k = -SCORE.lookbackDays; k < n; k++){
+    const day = addDays(t0, k), key = ymd(day), e = S.days[key] || planEntry(key);
+    const carry = e && e.status === 'rest' ? SCORE.carryRestDay : SCORE.carryWorkDay;
+    const pts = dutyLoad(e).pts; cum = pts + carry * cum;
+    if(k >= 0) out.push({t:day, key, e, pts, cum:Math.round(cum*10)/10, band:loadBand(cum),
+      wocl: !!e && e.status !== 'rest' && overlapsWOCL(e.report, e.hours)});
+  }
+  return out;
+}
+const BAND_COL = ['var(--ok)', 'var(--warn)', 'var(--bad)'];
+function weekStrip(ser){
+  return `<div class="week7">${ser.map((d, i) => { const st = d.e ? d.e.status : null;
+    const ic = st === 'duty' ? PLANE_MINI : st === 'standby' ? '<b>SB</b>' : st === 'rest' ? 'off' : '·';
+    const lab = `${fmtDate(d.t)}: ${st ? SCHED_TXT[st] : 'nothing planned'}${d.e && d.e.report && st !== 'rest' ? ', report ' + d.e.report : ''}, load ${LOAD_WORD[d.band].toLowerCase()} (${d.cum})${d.wocl ? ', during 02:00 to 06:00' : ''}`;
+    return `<div class="d ${i === 0 ? 'today' : ''}" role="img" aria-label="${esc(lab)}" title="${esc(lab)}">
+      <span>${i === 0 ? 'Today' : new Date(d.t).toLocaleDateString(undefined, {weekday:'short'})}</span><span class="ic">${ic}</span>
+      <span>${d.e && d.e.report && st !== 'rest' ? d.e.report : '&nbsp;'}</span>
+      <span class="bar" style="background:${BAND_COL[d.band]}"></span><span class="w">${LOAD_WORD[d.band]}${d.wocl ? ' ☾' : ''}</span></div>`; }).join('')}</div>`;
+}
+// Best time to check: about an hour before report (same advice as on Home).
+function nextCheck(ser){
+  const checkedToday = preChecks().some(c => sameDay(c.ts, Date.now()));
+  const nowH = new Date().getHours() + new Date().getMinutes() / 60;
+  const d = ser.find((x, i) => x.e && x.e.status !== 'rest' && x.e.report && !(i === 0 && (checkedToday || hm(x.e.report) <= nowH)));
+  if(!d) return null;
+  const when = sameDay(d.t, Date.now()) ? 'Today' : sameDay(d.t, addDays(Date.now(), 1)) ? 'Tomorrow' : fmtDate(d.t);
+  return {d, when, at: fmtClock(hm(d.e.report) - 1)};
+}
+function forecastCard(compact){
+  const ser = planSeries(7), any = ser.some(d => planFor(d.key));
+  if(!any) return compact ? `<div class="card row" style="justify-content:space-between;flex-wrap:nowrap;gap:12px;margin-top:16px">
+      <div><div class="eyebrow" style="margin:0">Next 7 days</div><div class="small muted">Add your schedule to see your duty load ahead and get check reminders.</div></div>
+      <button class="btn" data-go="roster" style="flex:none">Add ›</button></div>` : '';
+  const nc = nextCheck(ser), peak = ser.reduce((a, b) => b.cum > a.cum ? b : a, ser[0]);
+  return `<div class="card stack" style="${compact ? 'margin-top:16px;' : ''}gap:10px">
+    <div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><div class="eyebrow" style="margin:0">Next 7 days · duty load forecast</div>${compact ? '<button class="btn ghost" data-go="roster" style="flex:none;padding:4px 10px">Edit ›</button>' : ''}</div>
+    ${weekStrip(ser)}
+    ${nc ? `<div class="small"><b>Next check:</b> ${esc(nc.when)} around <b>${nc.at}</b> (report ${esc(nc.d.e.report)}).</div>` : ''}
+    ${peak.band ? `<div class="small" style="color:${BAND_COL[peak.band]}"><b>${LOAD_WORD[peak.band]} load ${sameDay(peak.t, Date.now()) ? 'today' : 'on ' + esc(fmtDate(peak.t))}.</b> Protect your sleep the night before.</div>` : ''}
+    <p class="small muted" style="margin:0">Estimate from your planned duties, using the same points as the Duty load card. ☾ means duty during 02:00 to 06:00. Your answers on the day replace the plan.</p>
+  </div>`;
+}
+/* ---- .ics import (calendar file from a crew app, Google or Outlook) ---- */
+function parseICS(text){
+  const lines = String(text).replace(/\r?\n[ \t]/g, '').split(/\r?\n/), evs = []; let cur = null;
+  for(const L of lines){
+    if(/^BEGIN:VEVENT/i.test(L)){ cur = {}; continue; }
+    if(/^END:VEVENT/i.test(L)){ if(cur && cur.start != null) evs.push(cur); cur = null; continue; }
+    if(!cur) continue;
+    const i = L.indexOf(':'); if(i < 0) continue;
+    const head = L.slice(0, i), val = L.slice(i + 1).trim(), name = head.split(';')[0].toUpperCase();
+    if(name === 'DTSTART' || name === 'DTEND'){ const v = icsTime(val); if(v){ cur[name === 'DTSTART' ? 'start' : 'end'] = v.t; if(name === 'DTSTART') cur.allDay = v.allDay; } }
+    else if(name === 'SUMMARY') cur.title = val.replace(/\\,/g, ',').replace(/\;/g, ';').replace(/\\n/gi, ' ');
+  }
+  return evs;
+}
+function icsTime(v){
+  const m = v.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/); if(!m) return null;
+  if(!m[4]) return {t: new Date(+m[1], m[2]-1, +m[3]).getTime(), allDay: true};
+  if(m[7]) return {t: Date.UTC(+m[1], m[2]-1, +m[3], +m[4], +m[5], +(m[6]||0)), allDay: false};
+  return {t: new Date(+m[1], m[2]-1, +m[3], +m[4], +m[5], +(m[6]||0)).getTime(), allDay: false}; // floating or TZID time: read as this phone's time
+}
+const RX_SBY = /standby|\bsby\b|reserve|\brsv\b|on[- ]call/i, RX_OFF = /\boff\b|day off|\brest\b|vacation|leave|holiday|\bpto\b/i,
+  RX_DUTY = /\breport\b|\bduty\b|sign[- ]?on|check[- ]?in/i, RX_SKIP = /hotel|layover/i, RX_WORK = /flight|trip|pairing|\b[A-Z]{2,3}\s?\d{2,4}\b/i;
+const toClock = t => { const d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+const roundH = h => clamp(Math.round(h * 2) / 2, 1, 18);
+function scheduleFromEvents(evs){
+  const byDay = {};
+  evs.forEach(e => { const t = e.title || ''; if(RX_SKIP.test(t)) return; (byDay[ymd(e.start)] = byDay[ymd(e.start)] || []).push(e); });
+  const out = {};
+  Object.entries(byDay).forEach(([k, list]) => {
+    const timed = list.filter(e => !e.allDay).sort((a, b) => a.start - b.start), allDay = list.filter(e => e.allDay);
+    const title = list.map(e => e.title || '').filter(Boolean).join(' · ').slice(0, 80);
+    const sby = timed.find(e => RX_SBY.test(e.title || '')), duty = timed.find(e => RX_DUTY.test(e.title || ''));
+    const flights = timed.filter(e => !RX_SBY.test(e.title || '') && !RX_DUTY.test(e.title || '') && !RX_OFF.test(e.title || ''));
+    const len = e => e.end && e.end > e.start ? (e.end - e.start) / 3.6e6 : null;
+    if(flights.length || duty){
+      const first = flights.length ? flights[0].start : duty.start, lastEnd = flights.length ? Math.max(...flights.map(f => f.end || f.start + 3.6e6)) : (duty.end || duty.start + 9 * 3.6e6);
+      out[k] = duty ? {status:'duty', report:toClock(duty.start), hours:roundH(len(duty) || S.duty.hours), legs:flights.length || S.duty.legs, src:'ics', title}
+        : {status:'duty', report:toClock(first - 3.6e6), hours:roundH((lastEnd - first) / 3.6e6 + 1.5), legs:flights.length, src:'ics', title};
+    } else if(sby) out[k] = {status:'standby', report:toClock(sby.start), hours:roundH(len(sby) || 12), legs:0, src:'ics', title};
+    else if(timed.some(e => RX_OFF.test(e.title || '')) || allDay.some(e => RX_OFF.test(e.title || ''))) out[k] = {status:'rest', src:'ics', title};
+    else if(allDay.some(e => RX_SBY.test(e.title || ''))) out[k] = {status:'standby', report:S.duty.report, hours:12, legs:0, src:'ics', title};
+    else if(allDay.some(e => RX_DUTY.test(e.title || '') || RX_WORK.test(e.title || ''))) out[k] = {status:'duty', report:S.duty.report, hours:S.duty.hours, legs:S.duty.legs, src:'ics', title};
+  });
+  return out;
+}
+function confirmPlan(plan, from){
+  const ks = Object.keys(plan).sort();
+  if(!ks.length){ sheet('Nothing found', `<p class="small">No duty, standby or day off was found${from ? ' in ' + esc(from) : ''}. ReadyCheck reads events named like a flight number (e.g. "AA123 PHX-DEN"), "Report", "Duty", "Standby", "Reserve" or "Off".</p>`, 'OK', () => {}); return; }
+  const n = st => ks.filter(k => plan[k].status === st).length, over = ks.filter(k => S.sched && S.sched[k]).length;
+  sheet('Add this schedule?', `<p class="small">${from ? 'From <b>' + esc(from) + '</b>: ' : ''}${esc(fmtDate(fromYmd(ks[0])))} to ${esc(fmtDate(fromYmd(ks[ks.length - 1])))}.</p>
+    <ul class="tips small"><li>${plural(n('duty'), 'flight duty day')}</li><li>${plural(n('standby'), 'standby day')}</li><li>${plural(n('rest'), 'day')} off</li></ul>
+    ${over ? `<p class="small">${plural(over, 'day')} already planned will be replaced.</p>` : ''}
+    <p class="small muted">Stays on this phone. Your company does not see your schedule. You can change any day by tapping it.</p>`,
+    'Add to my calendar', () => { ks.forEach(k => setSched(k, plan[k])); save(); rosterMonth = new Date(fromYmd(ks[0])).setDate(1); rosterMonth = dayStart(rosterMonth); renderers.roster(); toast(`Added ${plural(ks.length, 'day')} to your calendar.`); });
+}
+/* ---- sample schedule: a realistic 14 days (early starts, a red-eye, standby) ---- */
+function samplePlan(){
+  const P = [['duty','05:15',10,4],['duty','05:45',9.5,3],['rest'],['rest'],['standby','04:00',12,0],['duty','21:30',9,2],['rest'],
+             ['duty','13:00',9,3],['duty','06:00',11,4],['duty','06:30',10,3],['rest'],['rest'],['duty','02:45',8,2],['rest']];
+  const out = {}, t0 = dayStart(Date.now());
+  P.forEach((x, i) => { const k = ymd(addDays(t0, i)); out[k] = x[0] === 'rest' ? {status:'rest', src:'sample'} : {status:x[0], report:x[1], hours:x[2], legs:x[3], src:'sample'}; });
+  return out;
+}
+const icsStamp = t => { const d = new Date(t), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`; };
+function downloadText(name, text, type){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+// A sample crew-calendar export, so the import can be demonstrated with a real file.
+function sampleICS(){
+  const t0 = dayStart(Date.now()), ev = [];
+  const add = (day, h, m, mins, title) => { const s = addDays(t0, day) + (h * 60 + m) * 6e4; ev.push(['BEGIN:VEVENT', `UID:rc-sample-${ev.length}@readycheck`, `DTSTAMP:${icsStamp(Date.now())}`, `DTSTART:${icsStamp(s)}`, `DTEND:${icsStamp(s + mins * 6e4)}`, `SUMMARY:${title}`, 'END:VEVENT'].join('\r\n')); };
+  add(1, 6, 15, 95, 'RC101 PHX-DEN'); add(1, 8, 40, 100, 'RC102 DEN-PHX'); add(1, 11, 10, 75, 'RC233 PHX-LAS'); add(1, 13, 20, 70, 'RC234 LAS-PHX');
+  add(2, 5, 0, 600, 'Report / Duty');
+  ev.push(['BEGIN:VEVENT', 'UID:rc-sample-off@readycheck', `DTSTAMP:${icsStamp(Date.now())}`, `DTSTART;VALUE=DATE:${icsStamp(addDays(t0, 3)).slice(0, 8)}`, 'SUMMARY:OFF', 'END:VEVENT'].join('\r\n'));
+  add(4, 4, 0, 720, 'Standby (SBY)'); add(5, 23, 30, 290, 'RC900 PHX-JFK (red-eye)'); add(6, 0, 0, 0, 'Hotel JFK');
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ReadyCheck//Sample crew schedule//EN', ...ev, 'END:VCALENDAR'].join('\r\n');
+}
+// Check reminders as calendar events with an alert, for the next 28 days of duty and standby.
+function remindersICS(){
+  const t0 = dayStart(Date.now()), ev = [];
+  for(let i = 0; i < 28; i++){
+    const k = ymd(addDays(t0, i)), p = planFor(k); if(!p || p.status === 'rest' || !p.report) continue;
+    let s = addDays(t0, i) + (hm(p.report) - 1) * 3.6e6; if(s < Date.now()) continue;
+    ev.push(['BEGIN:VEVENT', `UID:rc-remind-${k}@readycheck`, `DTSTAMP:${icsStamp(Date.now())}`, `DTSTART:${icsStamp(s)}`, `DTEND:${icsStamp(s + 15 * 6e4)}`,
+      `SUMMARY:ReadyCheck: 4-minute readiness check`, `DESCRIPTION:${SCHED_TXT[p.status]}\\, report ${p.report}. Open ReadyCheck and take your check.`,
+      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:ReadyCheck readiness check', 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT'].join('\r\n'));
+  }
+  return {n: ev.length, text: ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ReadyCheck//Check reminders//EN', ...ev, 'END:VCALENDAR'].join('\r\n')};
+}
+/* ---- small forms inside a sheet: read the fields before the sheet closes ---- */
+function formSheet(title, body, label, onSave){
+  sheet(title, body, label, () => {});
+  $('#sh-act').onclick = () => { const r = onSave(); if(r !== false) $('#sheet-root').innerHTML = ''; };
+}
+const statusChips = (name, cur, withNone) => `<div class="chips full">${[['duty','Flight duty'],['standby','Standby'],['rest','Day off']].concat(withNone ? [['none','Nothing']] : [])
+  .map(([v, t]) => `<label class="chip"><input type="radio" name="${name}" value="${v}" ${v === cur ? 'checked' : ''}> ${t}</label>`).join('')}</div>`;
+function dayEditor(k){
+  const p = planFor(k) || {status:'none'}, d = {report:p.report || S.duty.report, hours:p.hours || S.duty.hours, legs:p.legs != null ? p.legs : S.duty.legs};
+  formSheet(fmtDate(fromYmd(k)), `<div class="sched-form">${statusChips('de-st', p.status, true)}
+      <label class="field">Report or start<input type="time" id="de-report" value="${esc(d.report)}"></label>
+      <label class="field">Length (hours)<input type="number" id="de-hours" min="1" max="18" step="0.5" value="${d.hours}"></label>
+      <label class="field full">Legs (takeoff and landing)<input type="number" id="de-legs" min="0" max="10" value="${d.legs}"></label></div>
+      ${p.title ? `<p class="small muted" style="margin:0">From your calendar: ${esc(p.title)}</p>` : ''}`, 'Save', () => {
+    const st = ($('input[name=de-st]:checked') || {}).value || 'none';
+    setSched(k, st === 'none' ? null : st === 'rest' ? {status:'rest', src:'manual'}
+      : {status:st, report:$('#de-report').value || S.duty.report, hours:roundH(Number($('#de-hours').value) || S.duty.hours), legs:st === 'duty' ? clamp(Number($('#de-legs').value) || 0, 0, 10) : 0, src:'manual'});
+    save(); renderers.roster(); const again = $(`#scr-roster [data-day="${k}"]`); if(again) again.focus();
+  });
+}
+function patternSheet(){
+  const t = ymd(addDays(Date.now(), 1));
+  formSheet('Repeating pattern', `<p class="small muted" style="margin:0">For rosters that repeat, like 4 days on and 3 off, or 7 on and 7 off.</p>
+    <div class="sched-form">
+      <label class="field full">First work day<input type="date" id="pt-start" value="${t}"></label>
+      <label class="field">Days on<input type="number" id="pt-on" min="1" max="14" value="4"></label>
+      <label class="field">Days off<input type="number" id="pt-off" min="0" max="14" value="3"></label>
+      <div class="chips full"><label class="chip"><input type="radio" name="pt-st" value="duty" checked> Flight duty</label><label class="chip"><input type="radio" name="pt-st" value="standby"> Standby</label></div>
+      <label class="field">Report or start<input type="time" id="pt-report" value="${esc(S.duty.report)}"></label>
+      <label class="field">Length (hours)<input type="number" id="pt-hours" min="1" max="18" step="0.5" value="${S.duty.hours}"></label>
+      <label class="field">Legs per day<input type="number" id="pt-legs" min="0" max="10" value="${S.duty.legs}"></label>
+      <label class="field">For how many weeks<input type="number" id="pt-weeks" min="1" max="12" value="4"></label></div>`, 'Preview', () => {
+    const start = fromYmd($('#pt-start').value || t), on = clamp(Number($('#pt-on').value) || 0, 1, 14), off = clamp(Number($('#pt-off').value) || 0, 0, 14);
+    const st = ($('input[name=pt-st]:checked') || {}).value || 'duty', weeks = clamp(Number($('#pt-weeks').value) || 4, 1, 12);
+    const rep = $('#pt-report').value || S.duty.report, hrs = roundH(Number($('#pt-hours').value) || S.duty.hours), legs = st === 'duty' ? clamp(Number($('#pt-legs').value) || 0, 0, 10) : 0;
+    const plan = {};
+    for(let i = 0; i < weeks * 7; i++){ const k = ymd(addDays(start, i)), work = i % (on + off) < on;
+      plan[k] = work ? {status:st, report:rep, hours:hrs, legs, src:'pattern'} : {status:'rest', src:'pattern'}; }
+    $('#sheet-root').innerHTML = ''; confirmPlan(plan, `${on} on, ${off} off`); return false;
+  });
+}
 renderers.roster = () => {
   const now = new Date(); if(!rosterMonth) rosterMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
   const m = new Date(rosterMonth), y = m.getFullYear(), mo = m.getMonth(), first = m.getTime(), last = new Date(y, mo + 1, 0).getTime();
-  const today = dayStart(Date.now()), set = new Set(S.roster || []), checked = new Set(preChecks().map(c => dayStart(c.ts)));
+  const today = dayStart(Date.now()), checked = new Set(preChecks().map(c => dayStart(c.ts)));
   const cells = ['M','T','W','T','F','S','S'].map(d => `<div class="hd">${d}</div>`);
+  const cnt = {duty:0, standby:0, rest:0};
   for(let t = weekStart(first); t <= addDays(weekStart(last), 6); t = addDays(t, 1)){
     if(t < first || t > last){ cells.push('<div class="c out" aria-hidden="true"></div>'); continue; }
-    const k = ymd(t), duty = set.has(k), lab = `${fmtDate(t)}: ${duty ? 'flight duty' : 'no duty'}${checked.has(t) ? ', checked' : ''}`;
-    cells.push(`<button class="c ${duty ? 'duty' : ''} ${t === today ? 'today' : ''} ${t < today ? 'past' : ''}" data-day="${k}" aria-pressed="${duty}" aria-label="${esc(lab)}">${new Date(t).getDate()}${duty ? PLANE_MINI : ''}</button>`);
+    const k = ymd(t), p = planFor(k), st = p ? p.status : null; if(st) cnt[st]++;
+    const lab = `${fmtDate(t)}: ${st ? SCHED_TXT[st] : 'nothing planned'}${p && p.report && st !== 'rest' ? ', report ' + p.report : ''}${checked.has(t) ? ', checked' : ''}. Tap to change.`;
+    const mk = st === 'duty' ? `<span class="mk">${p.report || 'duty'}</span>` : st === 'standby' ? '<span class="mk">SBY</span>' : st === 'rest' ? '<span class="mk">off</span>' : '';
+    cells.push(`<button class="c ${st === 'duty' ? 'duty' : st === 'standby' ? 'sby' : st === 'rest' ? 'off' : ''} ${t === today ? 'today' : ''} ${t < today ? 'past' : ''} ${checked.has(t) ? 'chk' : ''}" data-day="${k}" aria-label="${esc(lab)}">${new Date(t).getDate()}${mk}</button>`);
   }
-  const n = [...set].filter(k => k.startsWith(ymd(first).slice(0, 7))).length;
   $('#scr-roster').innerHTML = `
-    <div><h1>My duty calendar</h1><p class="muted">Tap a day to mark a flight duty. Tap it again to remove it.</p></div>
+    <div><h1>My duty calendar</h1><p class="muted">Add your schedule once. ReadyCheck then fills in each day's duty for you and shows the load ahead.</p></div>
+    ${forecastCard(false)}
+    ${planSeries(7).some(d => planFor(d.key) && planFor(d.key).status !== 'rest') ? `<button class="btn block" id="ro-remind">Add check reminders to my phone calendar</button>` : ''}
     <div class="card stack">
       <div class="month-nav"><button class="btn ghost" id="ro-prev" aria-label="Previous month">‹</button><h2 style="margin:0">${esc(m.toLocaleDateString(undefined, {month:'long', year:'numeric'}))}</h2><button class="btn ghost" id="ro-next" aria-label="Next month">›</button></div>
       <div class="heat roster">${cells.join('')}</div>
-      <div class="legend"><span><i class="sw" style="background:var(--accent-soft);border:2px solid var(--accent)"></i>Flight duty</span><span>${plural(n, 'duty day')} this month</span></div>
+      <div class="legend"><span><i class="sw" style="background:var(--accent-soft);border:2px solid var(--accent)"></i>Flight duty ${cnt.duty}</span><span><i class="sw" style="border:2px dashed var(--accent)"></i>Standby ${cnt.standby}</span><span>off: day off ${cnt.rest}</span><span style="color:var(--ok)">✓ checked</span></div>
+      <p class="small muted" style="margin:0">Tap any day to set flight duty, standby or a day off, with report time and legs.</p>
     </div>
-    <p class="small muted" style="margin:0">Stays on this phone. Used to remind you to check in on duty days and for your monthly requirement.</p>
+    <div class="card stack" id="ro-import">
+      <h2 style="margin:0">Add your schedule</h2>
+      <label class="btn primary block" style="text-align:center;cursor:pointer">Import a calendar file (.ics)<input type="file" id="ro-file" accept=".ics,text/calendar" hidden></label>
+      <p class="small muted" style="margin:0">Most crew scheduling apps, and Google or Outlook calendars, can export or email your roster as a .ics file. Save it to Files, then choose it here. Flights become legs; report time is set 1 hour before the first flight unless the file has a "Report" event.</p>
+      <button class="btn block" id="ro-pattern">Repeating pattern (e.g. 4 on, 3 off)</button>
+      <div class="row" style="flex-wrap:nowrap;gap:8px"><button class="btn ghost block" id="ro-sample">Try a sample</button><button class="btn ghost block" id="ro-sample-ics">Sample .ics file</button></div>
+      ${Object.keys(S.sched || {}).length ? '<button class="btn ghost block" id="ro-clear">Clear planned days from today on</button>' : ''}
+    </div>
+    <p class="small muted" style="margin:0">Your schedule stays on this phone. It is used for reminders, the load forecast and your monthly requirement. Your company does not see it.</p>
 `;
   const move = d => { rosterMonth = new Date(y, mo + d, 1).getTime(); renderers.roster(); };
   $('#ro-prev').onclick = () => move(-1); $('#ro-next').onclick = () => move(1);
-  $$('#scr-roster [data-day]').forEach(b => b.onclick = () => {
-    const k = b.dataset.day; S.roster = S.roster || [];
-    S.roster = S.roster.includes(k) ? S.roster.filter(x => x !== k) : S.roster.concat(k);
-    // Latest change wins: a calendar edit also updates that day's checks (their advice and the monthly requirement follow).
-    const fly = S.roster.includes(k);
-    preChecks().filter(c => ymd(c.ts) === k).forEach(c => { c.flyingToday = fly; c.duty = fly ? (c.duty || {...S.duty}) : null; });
-    save(); renderers.roster(); const again = $(`#scr-roster [data-day="${k}"]`); if(again) again.focus();
-  });
+  $$('#scr-roster [data-day]').forEach(b => b.onclick = () => dayEditor(b.dataset.day));
+  $('#ro-file').onchange = async e => { const f = e.target.files && e.target.files[0]; if(!f) return;
+    try{ confirmPlan(scheduleFromEvents(parseICS(await f.text())), f.name); } catch(err){ toast('Could not read that file. Is it a .ics calendar file?'); }
+    e.target.value = ''; };
+  $('#ro-pattern').onclick = patternSheet;
+  $('#ro-sample').onclick = () => confirmPlan(samplePlan(), 'a 14-day sample roster');
+  $('#ro-sample-ics').onclick = () => { downloadText('sample-crew-schedule.ics', sampleICS(), 'text/calendar'); toast('Sample saved. Now import it with the button above.'); };
+  const rm = $('#ro-remind'); if(rm) rm.onclick = () => { const r = remindersICS();
+    if(!r.n){ toast('No upcoming duty or standby with a report time.'); return; }
+    sheet('Check reminders', `<p class="small">This makes ${plural(r.n, 'calendar event')}, one about an hour before each report time in the next 4 weeks, each with an alert.</p><p class="small muted">On iPhone, tap <b>Add All</b> when the calendar opens. Re-add them if your schedule changes.</p>`,
+      'Add to my calendar', () => downloadText('readycheck-reminders.ics', r.text, 'text/calendar')); };
+  const cl = $('#ro-clear'); if(cl) cl.onclick = () => sheet('Clear planned days?', '<p class="small">Removes planned duty, standby and days off from today on. Past days and your check answers stay.</p>', 'Clear', () => {
+    const t = ymd(Date.now()); Object.keys(S.sched || {}).filter(k => k >= t).forEach(k => setSched(k, null)); save(); renderers.roster(); toast('Planned days cleared.'); });
 };
 
 /* ---------- employer view (example): pass / fail and counts only ---------- */
@@ -2593,7 +2831,7 @@ $('#btn-demo-notmet').addEventListener('click', () => {
 $$('.tag-name').forEach(e => e.textContent = TAG_NAME);
 if(!/[?&]dev\b/.test(location.search)){ const st = $('#btn-selftest'); if(st) st.hidden = true; }
 $('#btn-selftest').addEventListener('click', () => { const r = runStatusTests(); toast(`${r.pass} of ${r.total} self-tests passed. Details in the console.`); });
-$('#btn-clear').addEventListener('click', () => sheet('Delete all results?', '<p class="small">This removes every check and daily duty entry from this device. It cannot be undone.</p>', 'Delete everything', () => { S.checks = []; S.badges = {}; S.honest = null; S.roster = []; S.days = {}; save(); toast('All results deleted.'); go('home'); }));
+$('#btn-clear').addEventListener('click', () => sheet('Delete all results?', '<p class="small">This removes every check and daily duty entry from this device. It cannot be undone.</p>', 'Delete everything', () => { S.checks = []; S.badges = {}; S.honest = null; S.roster = []; S.days = {}; S.sched = {}; save(); toast('All results deleted.'); go('home'); }));
 $('#btn-signout').addEventListener('click', () => { save(); DB.active = null; S = defaults(); save(); go('signin'); });
 renderers.settings = () => {
   const nm = S.user ? S.user.name : '';
