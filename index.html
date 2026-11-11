@@ -337,6 +337,15 @@ details[open] summary{margin-bottom:8px}
 ul.never{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:.92rem}
 ul.never li{display:flex;align-items:center;gap:8px}
 ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted);background:linear-gradient(45deg,transparent 45%,var(--muted) 45%,var(--muted) 55%,transparent 55%)}
+/* Home screen: 5 steps in one row need narrower connectors and icons */
+.route.five>i{flex-basis:6px}
+.route.five svg{width:28px;height:28px}
+.route.five>div{font-size:.72rem}
+/* Duty form: anything the pilot changed from last time is highlighted */
+.field.changed input,.field.changed select{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
+.q.changed output{background:var(--accent-soft);color:var(--accent-ink);border-radius:8px;padding:2px 6px;box-shadow:0 0 0 2px var(--accent)}
+.chips.changed{outline:2px solid var(--accent);outline-offset:5px;border-radius:12px}
+.chg-key{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--accent-soft);box-shadow:0 0 0 1.5px var(--accent);margin:0 3px}
 /* Daily context form (Phase 1): tap steppers and a time zone list */
 select{font:inherit;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;width:100%}
 select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -380,7 +389,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <div class="slide" hidden>
         <div class="slide-art" id="art-3"></div>
         <h1>Yours alone.</h1>
-        <p class="muted">Results stay on this phone. Your airline only learns whether you did your checks, never how they went.</p>
+        <p class="muted">Results stay on this phone. Your company only learns whether you did your checks, never how they went.</p>
       </div>
     </div>
     <div class="dots" id="slide-dots"><i class="on"></i><i></i><i></i></div>
@@ -424,7 +433,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <!-- AGE (asked once at first setup, editable in Me) -->
   <section class="screen stack" id="scr-age" hidden>
     <div><div class="eyebrow">One-time setup</div><h1>How old are you?</h1>
-      <p class="muted">Until you have 14 readiness checks of your own, your results are compared with typical results for your age group. Your age stays on this phone. You can change it any time in Me.</p></div>
+      <p class="muted">Your first 3 checks are practice. After that, until you have 5 more checks of your own, your reaction speed is compared with typical results for your age group. Your age stays on this phone. You can change it any time in Me.</p></div>
     <label class="field">Age in years<input type="number" id="age-input" min="18" max="80" inputmode="numeric" placeholder="e.g. 38"></label>
     <button class="btn amber block big" id="btn-age">Continue</button>
   </section>
@@ -461,6 +470,8 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <section class="screen stack" id="scr-duty" hidden>
     <div><div class="eyebrow" id="duty-eyebrow">Step 3 of 5 · about 20 seconds</div><h1 id="duty-title">About today's duty</h1>
       <p class="muted" id="duty-sub"></p></div>
+    <!-- Filled in by renderers.duty: where the pre-filled answers came from -->
+    <div class="notice info" id="d-same" role="note"></div>
     <div class="card stack ctx-on">
       <div class="grid2">
         <label class="field"><span id="d-report-label">Report time</span><input type="time" id="d-report"></label>
@@ -643,7 +654,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     </div>
     <div class="card stack">
       <h3>5. Today's advice</h3>
-      <p class="small" style="margin:0">After every check you get a short message for today, based on your level (Ready, Caution or Low alertness) and whether you are flying. Sleep advice follows the adult recommendation of 7 or more hours (American Academy of Sleep Medicine and Sleep Research Society, 2015). On a flight day at Low alertness, ReadyCheck reminds you that under 14 CFR 117.5 a pilot who is too fatigued must not accept the duty. It never decides for you: that stays with you and your airline's normal process.</p>
+      <p class="small" style="margin:0">After every check you get a short message for today, based on your level (Ready, Caution or Low alertness) and whether you are flying. Sleep advice follows the adult recommendation of 7 or more hours (American Academy of Sleep Medicine and Sleep Research Society, 2015). On a flight day at Low alertness, ReadyCheck reminds you: if you feel too fatigued to fly safely, tell your company and do not accept the duty, and follow your operator's fatigue policy. For airline pilots (Part 121), 14 CFR 117.5 makes this a rule; Part 117 does not apply to Part 135 or Part 91 operations. It never decides for you: that stays with you and your operator's normal process.</p>
     </div>
     <div class="card stack">
       <h3>6. Long-term status</h3>
@@ -663,10 +674,25 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <p class="small" style="margin:0">Your employer learns only one thing: whether you met the requirement this month. It is <b>one check on every flight day</b> and <b>at least 12 check days in every 28 days</b>. Only one check per calendar day counts.</p>
       <ul class="tips small">
         <li>A valid weekly picture needs at least 3 valid data points per week (Plews et al., 2014, <i>International Journal of Sports Physiology and Performance</i>). 12 in 28 days is 3 a week.</li>
-        <li>28 days matches the FAA's 672-consecutive-hour cumulative window (14 CFR 117.23).</li>
-        <li>Every flight day matches the fit-for-duty statement each pilot makes before each flight (14 CFR 117.5(d)).</li>
+        <li>28 days matches the 672-consecutive-hour cumulative window airline rules use (14 CFR 117.23, Part 121 only). It is borrowed as a sensible length, not because it applies to your operation.</li>
+        <li>A check on every flight day mirrors the idea of confirming you are fit before each duty. Airline pilots make that statement under 14 CFR 117.5(d); Part 135 and Part 91 operators cover it in their own fatigue policy.</li>
       </ul>
       <p class="small muted" style="margin:0">The 12-in-28 number is a design rule derived from these sources. It is not a regulation. In this prototype, flight days are the days you answer "On duty" to "What's on today?". A real version would use the airline roster.</p>
+    </div>
+    <div class="card stack">
+      <h3>8. Duty load</h3>
+      <p class="small" style="margin:0">The reaction test shows how you are right now. Duty load adds what the test cannot see: how hard today is and how much has built up over recent days. Points for today:</p>
+      <ul class="tips small">
+        <li>Duty or standby during 02:00 to 06:00 (the body-clock low, as defined in 14 CFR 117.3): +2</li>
+        <li>Each time zone crossed in the last 24 hours: +1</li>
+        <li>Each leg: +1. More sectors means a shorter allowed duty in EASA rules (ORO.FTL.205).</li>
+        <li>Physical workload: medium +1, high +2. Charter pilots often load bags, fuel and clean.</li>
+        <li>Each extra (bad weather, de-icing, difficult passengers, company pressure): +1</li>
+        <li>Standby: +1. Short rest last night: +1</li>
+      </ul>
+      <p class="small" style="margin:0">Cumulative load = today's points + yesterday's cumulative × 0.5 (× 0.2 after a rest day). 8 or more is <b>Building</b> and shown as a note. 14 or more is <b>High</b> and makes the result one level more cautious. Performance keeps declining across days of short sleep (Van Dongen et al., 2003), which is why load carries over.</p>
+      <p class="small" style="margin:0">Your first 3 checks are practice and are not used for any baseline, because the reaction test has a short learning curve of 1 to 3 tries. Until you have 5 checks after practice, your reaction speed is compared with a typical value for your age group. These age values are placeholders and must be replaced with published norms.</p>
+      <p class="small muted" style="margin:0">All weights are design choices in one settings block of the code. They are not validated and will be tuned with study data.</p>
     </div>
     <div class="card flat stack">
       <h3>Limitations</h3>
@@ -730,6 +756,34 @@ const WORKLOAD = {low:'Low', medium:'Medium', high:'High'};
 const EXTRAS = {weather:'Bad weather', deice:'De-icing', pax:'Difficult passengers', pressure:'Company pressure'};
 const AGE_MIN = 18, AGE_MAX = 80;
 
+/* ---------- Phase 2 scoring settings: change the numbers here, nowhere else ---------- */
+// Rule-based, not AI. Points come from regulations (window of circadian low 02:00-05:59, 14 CFR 117.3;
+// EASA ORO.FTL.205 shortens duty with more sectors) and pilot feedback. They are design weights, not validated values.
+const SCORE = {
+  wocl:       {from: 2, to: 6, pts: 2},  // duty or standby overlaps 02:00-05:59 local time
+  perTzCrossed: 1,                       // each time zone crossed in the last 24 hours
+  perLeg:       1,                       // each leg (sector) planned today
+  workload:   {low: 0, medium: 1, high: 2}, // physical work: loading bags, fueling, cleaning
+  perExtra:     1,                       // each extra: bad weather, de-icing, difficult passengers, company pressure
+  standby:      1,                       // being on standby (reserve)
+  shortRest:    1,                       // late hotel check-in or short rest last night
+  // Cumulative load: today's points + yesterday's cumulative x carry. Rest days let it fall faster.
+  carryWorkDay: 0.5,
+  carryRestDay: 0.2,
+  lookbackDays: 14,
+  elevated: 8,                           // cumulative 8 to 13.9: "building", shown as a note
+  high: 14,                              // cumulative 14+: raises the result by one level (never above Low alertness)
+  practiceChecks: 3,                     // first checks are practice, not used for any baseline (PVT learning curve 1 to 3 trials)
+  personalAfter: 5                       // valid checks needed (after practice) before comparing with your own usual
+};
+// PLACEHOLDER age-group norms for median reaction time (ms) BEFORE a personal baseline exists.
+// Not validated. Replace with published PVT-B norms by age before any real use.
+const AGE_NORMS = [
+  {upTo: 29, med: 260, sd: 35}, {upTo: 39, med: 270, sd: 35}, {upTo: 49, med: 280, sd: 38},
+  {upTo: 59, med: 295, sd: 40}, {upTo: 69, med: 310, sd: 45}, {upTo: 120, med: 325, sd: 50}
+];
+const ageNorm = age => AGE_NORMS.find(n => (Number(age) || 40) <= n.upTo);
+
 /* ---------- storage: one profile per name on this device ---------- */
 const DB_KEY = 'readycheck_profiles_v1';
 function defaults(){ return {user:null, checks:[], badges:{}, roster:[], days:{}, age:null,
@@ -786,15 +840,54 @@ const ymd = ts => { const d = new Date(ts); return d.getFullYear() + '-' + Strin
 const fromYmd = s => { const [y,m,d] = String(s).split('-').map(Number); return new Date(y, m-1, d).getTime(); };
 const plural = (n, w, ws) => `${n} ${n === 1 ? w : (ws || w + 's')}`;
 
+/* ---------- Phase 2: duty load score (rule-based, weights in SCORE) ---------- */
+// Does a duty that starts at `report` (HH:MM) and lasts `hours` overlap 02:00-05:59 on any day it touches?
+function overlapsWOCL(report, hours){
+  if(!report) return false;
+  const a = hm(report), b = a + clamp(Number(hours) || 0, 0, 24);
+  for(let k = -1; k <= 1; k++){ const lo = SCORE.wocl.from + 24*k, hi = SCORE.wocl.to + 24*k; if(a < hi && b > lo) return true; }
+  return false;
+}
+// Today's points with the reason for each, e.g. [{label:'Early-morning duty (02:00 to 06:00)', pts:2}, ...]
+function dutyLoad(e){
+  const items = [];
+  if(!e) return {pts: 0, items};
+  const on = e.status === 'duty' || e.status === 'standby';
+  if(on && overlapsWOCL(e.report, e.hours)) items.push({label: `${e.status === 'standby' ? 'Standby' : 'Duty'} during 02:00 to 06:00 (body-clock low)`, pts: SCORE.wocl.pts});
+  if(e.tzCrossed) items.push({label: `${plural(e.tzCrossed, 'time zone')} crossed`, pts: e.tzCrossed * SCORE.perTzCrossed});
+  if(e.status === 'duty' && e.legs) items.push({label: plural(e.legs, 'leg'), pts: e.legs * SCORE.perLeg});
+  const w = on ? (SCORE.workload[e.workload] || 0) : 0;
+  if(w) items.push({label: `${WORKLOAD[e.workload]} physical workload`, pts: w});
+  (on ? (e.extras || []) : []).forEach(k => items.push({label: EXTRAS[k] || k, pts: SCORE.perExtra}));
+  if(e.status === 'standby') items.push({label: 'On standby', pts: SCORE.standby});
+  if(e.late) items.push({label: 'Short rest last night', pts: SCORE.shortRest});
+  return {pts: items.reduce((t, x) => t + x.pts, 0), items};
+}
+// Cumulative load for each of the last `n` days up to and including `ts`.
+// Each day: that day's points + the day before's cumulative x carry (0.5 after a work day, 0.2 after a rest day).
+function loadSeries(ts, n){
+  const out = []; let cum = 0;
+  for(let k = SCORE.lookbackDays + n - 1; k >= 0; k--){
+    const day = addDays(ts, -k), e = S.days[ymd(day)];
+    const carry = e && e.status === 'rest' ? SCORE.carryRestDay : SCORE.carryWorkDay;
+    const today = dutyLoad(e).pts;
+    cum = today + carry * cum;
+    if(k < n) out.push({t: day, today, cum: Math.round(cum*10)/10, status: e ? e.status : null});
+  }
+  return out;
+}
+const loadBand = cum => cum >= SCORE.high ? 2 : (cum >= SCORE.elevated ? 1 : 0);
+const LOAD_WORD = ['Light', 'Building', 'High'];
+
 /* ---------- long-term status (design rules, see How it works) ---------- */
 const ROLL_STEP = 5; // ms the 7-day rolling median must rise at each step to count as rising
 const ST = {good:{word:'Good', cls:'good'}, watch:{word:'Watch', cls:'watch'}, bad:{word:'Not good', cls:'bad'}, nodata:{word:'Not enough data', cls:'nodata'}};
 // Same personal-baseline rule as evaluate(): up to 20 earlier checks, robust z of the median reaction time.
 function withZ(list){
   return list.map((c, i) => {
-    const base = list.slice(0, i).filter(x => x.pvt && x.pvt.trials >= 10).slice(-20);
+    const base = list.slice(SCORE.practiceChecks, i).filter(x => x.pvt && x.pvt.trials >= 10).slice(-20);
     let z = null;
-    if(base.length >= 5 && c.pvt && c.pvt.medianRT){ const rts = base.map(x => x.pvt.medianRT), med = median(rts), mad = median(rts.map(x => Math.abs(x - med))); z = (c.pvt.medianRT - med) / (1.4826*mad + 10); }
+    if(base.length >= SCORE.personalAfter && c.pvt && c.pvt.medianRT){ const rts = base.map(x => x.pvt.medianRT), med = median(rts), mad = median(rts.map(x => Math.abs(x - med))); z = (c.pvt.medianRT - med) / (1.4826*mad + 10); }
     return {c, z};
   });
 }
@@ -896,15 +989,16 @@ function todayAdvice(c, lt){
     acts:[`Plan a recovery sleep tonight: in bed by ${bed} with 8 or more hours to sleep, and sleep in if you can.`,
       'If you feel very sleepy, avoid driving long distances today.',
       'Short naps of 10 to 20 minutes are fine. Keep them before mid-afternoon so they don\'t steal from tonight.']};
+  // Neutral wording for every operator type (Part 91, 135 and 121). 14 CFR 117.5 is only an example: Part 117 covers Part 121 airlines only.
   else a = {cls:'adv-bad2', urg:'Highest concern', title:'You may be too fatigued for this duty.',
-    body:'Under FAA rules (14 CFR 117.5), a pilot who is too fatigued to fly safely must not accept the duty, and should tell the airline. This check is one input to that judgment. The decision stays with you, through your airline\'s normal fatigue process.',
-    acts:["Open your airline's fatigue call. It is designed to be non-punitive.", 'Tell your crew how you are doing.'], btns:['fatigue','crew']};
+    body:"If you feel too fatigued to fly safely, tell your company and do not accept the duty. Follow your operator's fatigue policy. This readiness check is one input to that judgment; the decision stays with you. (For airline pilots, 14 CFR 117.5 makes this a rule.)",
+    acts:["Open your company's fatigue reporting. It is meant to be non-punitive.", 'Tell your crew how you are doing.'], btns:['fatigue','crew']};
   if(lt && lt.s === 'bad' && lvl >= 1) a.lt = "This fits a pattern from the last two weeks. Talking to someone can help, and it stays confidential.";
   return a;
 }
 function adviceCard(c, a, isToday){
   const btn = {crew:`<button class="btn block" id="adv-crew">${c.shared && c.shared.crew ? '✓ Crew told' : 'Tell my crew'}</button>`,
-    fatigue:`<button class="btn block ${a.cls === 'adv-bad2' ? 'primary' : ''}" id="adv-fatigue">Open my airline's fatigue call</button>`};
+    fatigue:`<button class="btn block ${a.cls === 'adv-bad2' ? 'primary' : ''}" id="adv-fatigue">Open my company's fatigue reporting</button>`};
   return `<div class="card adv ${a.cls}">
     <div class="eyebrow"><span class="dot"></span>${isToday ? "Today's advice" : 'Advice for ' + esc(fmtDate(c.ts))} · ${c.flyingToday ? 'flight day' : 'no flight'} · ${esc(a.urg)}</div>
     <h2>${esc(a.title)}</h2>
@@ -1103,9 +1197,9 @@ renderers.home = () => {
     const n = hero.querySelector('.needle'); requestAnimationFrame(() => requestAnimationFrame(() => n.style.transform = `rotate(${n.dataset.deg}deg)`));
   } else {
     hero.innerHTML = `<div class="card hero has-scene">${heroScene(new Date().getHours())}
-      <div><div class="eyebrow" style="margin:0">Daily check · about 4 min</div><h2 style="margin:4px 0 0">${firstTime ? 'Take your first check' : 'How are you really doing today?'}</h2></div>
-      <div class="small muted" style="margin-bottom:-6px">What happens when you tap Start:</div>
-      <div class="route"><div style="--d:0s">${STEP_ICONS.duty}<span>Today's duty</span><em>5 s</em></div><i></i><div style="--d:1.6s">${STEP_ICONS.feel}<span>Rate how you feel</span><em>10 s</em></div><i></i><div style="--d:3.2s">${STEP_ICONS.test}<span>Tap-speed test</span><em>3 min</em></div></div>
+      <div><div class="eyebrow" style="margin:0">Readiness check · about 4 min</div><h2 style="margin:4px 0 0">${firstTime ? 'Take your first readiness check' : 'How are you really doing today?'}</h2></div>
+      <div class="small muted" style="margin-bottom:-6px">What happens when you tap Start (the same 5 steps as the check):</div>
+      <div class="route five">${CHECK_STEPS.map((s, i) => `${i ? '<i></i>' : ''}<div style="--d:${(i*0.96).toFixed(2)}s">${STEP_ICONS[s.icon]}<span>${s.label}</span><em>${s.time}</em></div>`).join('')}</div>
       <button class="btn amber block big pulse" data-go="fly">Start check <span class="go-arrow">›</span></button>
       <p class="small muted" style="margin:0;text-align:center">${firstTime ? 'First time? You can do a short practice before the test.' : 'On a flight day, best done about an hour before report time.'}</p></div>`;
   }
@@ -1209,7 +1303,27 @@ renderers.duty = () => {
   const ex = today ? (today.extras || []) : [];
   $$('#d-extras input').forEach(i => i.checked = ex.includes(i.value));
   $$('input[name=late]').forEach(i => i.checked = i.value === (today && today.late ? 'yes' : 'no'));
+  // "Same as last time?" note, so pilots don't tap Continue on old answers without looking.
+  const last = Object.values(S.days).filter(e => e.date !== ymd(Date.now()) && e.status !== 'rest').sort((a, b) => b.date.localeCompare(a.date))[0];
+  const key = 'Anything you change is highlighted <span class="chg-key"></span>.';
+  $('#d-same').innerHTML = today ? `<b>Still right?</b> These are your answers from earlier today. ${key}`
+    : last ? `<b>Same as last time?</b> These answers are copied from ${esc(fmtDate(fromYmd(last.date)))}. Check each one before you continue. ${key}`
+    : `<b>Please check each answer.</b> These are example values, not yours yet. ${key}`;
+  ctxPrefill = ctxValues(); markChanged();
 };
+// Highlight every pre-filled answer the pilot changes today.
+// ctxPrefill holds the values the form opened with; markChanged() compares them with what is there now.
+let ctxPrefill = {};
+const CTX_FIELDS = {report:'#d-report', hours:'#d-hours', tz:'#d-tz', legs:'#d-legs', tzx:'#d-tzx', work:'#d-work', wake:'#d-wake'};
+function ctxValues(){
+  return {report: $('#d-report').value, hours: String($('#d-hours').value), tz: $('#d-tz').value, legs: getStep('d-legs'),
+    tzx: getStep('d-tzx'), work: ($('#d-work input:checked') || {}).value, wake: $('#d-wake').value};
+}
+function markChanged(){
+  const now = ctxValues();
+  Object.entries(CTX_FIELDS).forEach(([k, sel]) => { const el = $(sel), box = el.closest('.field, .q') || el; box.classList.toggle('changed', now[k] !== ctxPrefill[k]); });
+}
+['input', 'change', 'click'].forEach(ev => $('#scr-duty').addEventListener(ev, markChanged));
 $('#btn-duty-next').addEventListener('click', () => {
   const st = draft.status, on = st !== 'rest';
   // Remember the usual answers for next time.
@@ -1520,17 +1634,36 @@ function evaluate(check){
   let level = L3 <= 6 ? 0 : (L3 <= 16 ? 1 : 2);
   reasons.push({k:'pvt', text: `${L3} lapses and false starts (3-minute equivalent). ${level===0?'Within the high-performance range (6 or fewer).':level===1?'Medium range (7 to 16).':'Low range (more than 16).'}`});
   if(check.pvt.end === 'stopped') reasons.push({k:'note', text:'You stopped the test early, so this result is less reliable.'});
-  const base = preChecks().filter(c => c.id !== check.id && c.pvt && c.pvt.trials >= 10).slice(-20);
-  if(base.length >= 5){
+  // The first few checks are practice: shown to the pilot, never used as a baseline.
+  const all = preChecks().filter(c => c.id !== check.id && c.ts < check.ts);
+  check.practice = all.length < SCORE.practiceChecks ? all.length + 1 : 0;
+  check.hourLocal = new Date(check.ts).getHours(); // time of day matters: reaction time changes across the day
+  const base = all.slice(SCORE.practiceChecks).filter(c => c.pvt && c.pvt.trials >= 10).slice(-20);
+  if(base.length >= SCORE.personalAfter){
     const rts = base.map(c=>c.pvt.medianRT), med = median(rts), mad = median(rts.map(x=>Math.abs(x-med)));
     const z = (check.pvt.medianRT - med) / (1.4826*mad + 10);
     check.personal = {n: base.length, med: Math.round(med), z: Math.round(z*10)/10};
     if(z >= 2 && level < 1){ level = 1; reasons.push({k:'base', text:`Median reaction ${check.pvt.medianRT} ms vs your usual ${Math.round(med)} ms.`}); }
-  } else check.personal = {n: base.length};
+  } else {
+    check.personal = {n: base.length};
+    // No personal baseline yet: compare with the (placeholder) norm for this pilot's age group.
+    const nm = ageNorm(S.age);
+    if(nm && check.pvt.medianRT){
+      const za = (check.pvt.medianRT - nm.med) / nm.sd;
+      check.ageCmp = {age: S.age, med: nm.med, z: Math.round(za*10)/10};
+      if(za >= 2 && level < 1 && !check.practice){ level = 1; reasons.push({k:'age', text:`Median reaction ${check.pvt.medianRT} ms vs about ${nm.med} ms typical for your age group (placeholder norm until your own baseline exists).`}); }
+    }
+  }
   if(check.eye && check.eye.valid){
     const e = check.eye;
     if((e.longClose >= 2 || e.perclos >= 0.15) && level < 2){ level++; reasons.push({k:'eye', text:`Eye signs of drowsiness: ${e.longClose} long eye closures, eyes mostly closed ${(e.perclos*100).toFixed(1)}% of the time.`}); }
   }
+  // Duty load (Phase 2): today's points plus what has built up over recent days.
+  const ser = loadSeries(check.ts, 7), lt = ser[ser.length - 1];
+  const todayLoad = dutyLoad(check.context || S.days[ymd(check.ts)]);
+  check.load = {today: todayLoad.pts, items: todayLoad.items, cum: lt.cum, band: loadBand(lt.cum)};
+  if(check.load.band === 2 && level < 2){ level++; reasons.push({k:'load', text:`High duty load (${lt.cum} points over recent days): ${todayLoad.items.map(x => x.label.toLowerCase()).join(', ') || 'built up over earlier days'}.`}); }
+  else if(check.load.band === 1) reasons.push({k:'loadnote', text:`Duty load is building (${lt.cum} points over recent days). It does not change today's result yet.`});
   check.level = level; check.reasons = reasons;
   // feeling vs measured
   if(check.sp <= 3 && level >= 1) check.mismatch = 'feel-ok';
@@ -1744,8 +1877,19 @@ function heroScene(h){
 const STEP_ICONS = {
   feel: `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><circle cx="11.5" cy="13.5" r="1.6" fill="var(--accent-ink)"/><circle cx="20.5" cy="13.5" r="1.6" fill="var(--accent-ink)"/><path d="M10.5 19.5c3 2.6 8 2.6 11 0" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/></svg>`,
   duty: `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="22" height="20" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><path d="M5 12h22" stroke="var(--accent)" stroke-width="2"/><path d="M11 4v5M21 4v5" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><path d="M10 19l4 0 2-3 3 6 2-3h2" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-  test: `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="18" r="10.5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><path d="M13 4h6M16 4v3.5" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><path d="M16 18l4.5-4.5" stroke="var(--accent-ink)" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="18" r="1.8" fill="var(--accent-ink)"/></svg>`
+  test: `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="18" r="10.5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><path d="M13 4h6M16 4v3.5" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><path d="M16 18l4.5-4.5" stroke="var(--accent-ink)" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="18" r="1.8" fill="var(--accent-ink)"/></svg>`,
+  details: `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="7" y="5" width="18" height="23" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><rect x="12" y="3" width="8" height="5" rx="1.5" fill="var(--accent-ink)"/><path d="M11 14h10M11 19h10M11 24h6" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/></svg>`,
+  camera: `<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="9" width="24" height="17" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/><path d="M11 9l2-3.5h6L21 9" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="17.5" r="4.5" fill="none" stroke="var(--accent-ink)" stroke-width="2"/></svg>`
 };
+// The 5 steps of a readiness check, in order. The home screen shows these, so keep them
+// in step with the eyebrows on each step screen ("Step 1 of 5 · 5 seconds" and so on).
+const CHECK_STEPS = [
+  {icon:'duty',    label:"Today's duty", time:'5 s'},
+  {icon:'feel',    label:'How you feel', time:'10 s'},
+  {icon:'details', label:'Duty details', time:'20 s'},
+  {icon:'camera',  label:'Camera setup', time:'20 s'},
+  {icon:'test',    label:'Reaction test', time:'3 min'}
+];
 /* ---------- results helpers ---------- */
 function gaugeSVG(value){
   const cx = 140, cy = 140, r = 108, max = 24;
@@ -1777,6 +1921,8 @@ function plainWhy(c){
   else s = `Mostly from ${slowTxt}: moments when your attention drifted. Plus ${earlyTxt}.`;
   if(eyeR) s += ` Your eyes also stayed shut longer than a normal blink ${c.eye.longClose} time${c.eye.longClose===1?'':'s'}.`;
   if(baseR) s += ` You were also slower than your own usual.`;
+  if(c.reasons.find(r => r.k === 'age')) s += ` You were also slower than typical for your age group.`;
+  if(c.reasons.find(r => r.k === 'load')) s += ` Your duty load is high, so the result is one level more cautious.`;
   if(p.end === 'stopped') s += ' You stopped early, so treat this as a rough read.';
   return s;
 }
@@ -1875,10 +2021,10 @@ function carePlan(list, lt, now){
   const items = [];
   const add = (id, pri, title, body, why, extra) => items.push(Object.assign({id, pri, title, body, why}, extra || {}));
   if(today && today.flyingToday && today.level === 2)
-    add('noduty', 100, "Don't go on duty as planned", "Use your airline's fatigue call before you report. Under 14 CFR 117.5 a pilot who is too fatigued must not accept the duty. The decision stays with you.",
+    add('noduty', 100, "Don't go on duty as planned", "If you feel too fatigued to fly safely, tell your company before you report and do not accept the duty. Follow your operator's fatigue policy. The decision stays with you. (Airline pilots: 14 CFR 117.5.)",
       "Today's check: Low alertness on a flight day.", {btn:'fatigue'});
   if(lt.s === 'bad' || hard)
-    add('org', 95, 'Talk to someone who gets it', 'A trained peer pilot or an aviation counselor. Confidential: your airline is not told, and your results are never shared.',
+    add('org', 95, 'Talk to someone who gets it', 'A trained peer pilot or an aviation counselor. Confidential: your company is not told, and your results are never shared.',
       lt.s === 'bad' ? ltReason(lt) : `Your post-duty check-in: ${hard.post.events.length ? hard.post.events.join(', ').toLowerCase() : 'a very tiring day'}.`, {org:true});
   if(lt.s === 'bad' || low7 >= 2 || sp7 >= 4.5 || (lt.cause && lt.cause.why === 'rising'))
     add('sleep', lt.s === 'bad' ? 90 : 80, lt.s === 'good' ? 'Keep protecting your sleep' : 'Sleep more for the next 3 nights',
@@ -1909,14 +2055,14 @@ function planCard(p){
       <p class="small muted" style="margin:0">${plural(p.n, 'check')}${p.fly7 ? ', ' + plural(p.fly7, 'flight day') : ''}. Each tip shows the data behind it.</p></div>
     ${p.items.map(it => `<div class="plan-item ${it.id === 'noduty' ? 'pi-bad' : it.org ? 'pi-org' : ''}" ${it.org ? 'id="care-org"' : ''}>
       <b>${esc(it.title)}</b><div class="small">${esc(it.body)}</div><div class="small muted">Why: ${esc(it.why)}</div>
-      ${it.btn === 'fatigue' ? '<button class="btn primary block" data-act="fatigue">Open my airline\'s fatigue call</button>' : ''}
+      ${it.btn === 'fatigue' ? '<button class="btn primary block" data-act="fatigue">Open my company\'s fatigue reporting</button>' : ''}
       ${it.org ? PARTNERS().map((x, i) => `<div class="list-item" style="padding:6px 0"><div style="min-width:0"><b>${esc(x.name)}</b> <span class="small muted">${esc(x.by)}</span><div class="small muted" style="word-break:break-all">${esc(x.what)}</div><span class="demo-tag" style="white-space:normal">Example partner, prototype does not connect</span></div><button class="btn" data-act="contact" data-p="${i}">Contact</button></div>`).join('') : ''}
     </div>`).join('')}
     <p class="small muted" style="margin:0">Suggestions, not medical advice.</p>
   </div>`;
 }
 function reachedOut(){ if(!S.honest){ S.honest = Date.now(); const f = awardBadges(); save(); if(f.includes('honest')) setTimeout(() => toast('Wings unlocked: Wingman'), 1400); } }
-function fatigueSheet(){ sheet("Airline fatigue call", `<p class="small">This opens your airline's existing non-punitive fatigue call. ReadyCheck doesn't create a new process; it puts the existing one one tap away.</p><p class="small muted">Your result is not attached unless you choose to mention it.</p>`, 'Open fatigue call', () => { toast('Demo only. Would open your airline\'s process.'); }); }
+function fatigueSheet(){ sheet("Company fatigue reporting", `<p class="small">This opens your company's existing non-punitive fatigue reporting. ReadyCheck doesn't create a new process; it puts the existing one one tap away.</p><p class="small muted">Your result is not attached unless you choose to mention it.</p>`, 'Open fatigue call', () => { toast('Demo only. Would open your company\'s process.'); }); }
 // "See your plan" buttons go to History and scroll to the plan.
 function openPlan(){ go('trends'); requestAnimationFrame(() => { const el = $('#care-org') || $('#care-plan'); if(el) el.scrollIntoView({block:'start'}); }); }
 document.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if(!b) return;
@@ -1928,6 +2074,29 @@ function crewSheet(c){ sheet('Tell my crew', `<p class="small muted">Your captai
 
 /* ---------- results ---------- */
 let lastCheckId = null;
+/* Duty load card: 7-day chart of cumulative load and today's reasons in plain words */
+function loadChartSVG(ser){
+  const W = 420, H = 120, pad = 22, bw = (W - 10) / ser.length, max = Math.max(SCORE.high + 2, ...ser.map(d => d.cum));
+  const y = v => H - pad - (v / max) * (H - pad - 8);
+  const cols = ['var(--ok)', 'var(--warn)', 'var(--bad)'];
+  const bars = ser.map((d, i) => { const x = 5 + i*bw + 6, h = Math.max(2, (H - pad) - y(d.cum) + 0), top = y(d.cum);
+    return `<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${(bw-12).toFixed(1)}" height="${(H - pad - top).toFixed(1)}" rx="3" fill="${cols[loadBand(d.cum)]}" opacity="${i === ser.length-1 ? 1 : 0.7}"/>
+      <text x="${(x + (bw-12)/2).toFixed(1)}" y="${(top - 3).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--muted)">${d.cum}</text>
+      <text x="${(x + (bw-12)/2).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="10" fill="var(--muted)">${i === ser.length-1 ? 'Today' : new Date(d.t).toLocaleDateString(undefined, {weekday:'short'})}</text>`; }).join('');
+  const line = v => `<line x1="5" x2="${W-5}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="var(--muted)" stroke-dasharray="3 4" stroke-width="1"/>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Duty load over the last 7 days">${line(SCORE.elevated)}${line(SCORE.high)}${bars}</svg>`;
+}
+function loadCard(c){
+  if(!c.load) return '';
+  const ser = loadSeries(c.ts, 7), b = c.load.band, cls = ['ok','warn','bad'][b];
+  const items = c.load.items.length ? `<ul class="tips small">${c.load.items.map(x => `<li>${esc(x.label)} <b class="mono">+${x.pts}</b></li>`).join('')}</ul>`
+    : '<p class="small muted" style="margin:0">Nothing added today.</p>';
+  return `<div class="card stack"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><h2 style="margin:0">Duty load</h2><span class="pill ${cls}"><span class="dot"></span>${LOAD_WORD[b]} · ${c.load.cum}</span></div>
+    <p class="small muted" style="margin:0">Fatigue builds up across days. Each bar is today's points plus what is left over from earlier days. Rest days let it fall faster.</p>
+    ${loadChartSVG(ser)}
+    <div class="small"><b>Today: +${c.load.today}</b></div>${items}
+    <p class="small muted" style="margin:0">${b === 2 ? 'High load makes today\'s result one level more cautious.' : b === 1 ? 'Building: it does not change today\'s result, but plan your rest.' : 'Light: no effect on today\'s result.'} Lines mark ${SCORE.elevated} (building) and ${SCORE.high} (high). Design weights, not a validated model.</p></div>`;
+}
 renderers.results = () => {
   const c = S.checks.find(x => x.id === lastCheckId) || preChecks().pop();
   const el = $('#scr-results');
@@ -1952,6 +2121,7 @@ renderers.results = () => {
     : `<dl class="kv"><dt>Long eye closures (500 ms+)</dt><dd>${c.eye.longClose}</dd><dt>PERCLOS (eyes 80%+ closed)</dt><dd>${(c.eye.perclos*100).toFixed(1)}%</dd><dt>Blinks per minute</dt><dd>${c.eye.blinkRate}</dd><dt>Face in view</dt><dd>${Math.round(c.eye.facePct*100)}%</dd><dt>Frames per second</dt><dd>${c.eye.fps}</dd><dt>Eye data used</dt><dd>${c.eye.valid?'yes':'no'}</dd></dl>`;
   el.innerHTML = `
     <div><div class="eyebrow">${c.simulated ? 'Demo check · simulated' : fly ? 'Pre-duty check' : 'Daily check'} · ${fmtDate(c.ts)} ${fmtTime(c.ts)}</div><h1>Your readiness</h1></div>
+    ${c.practice ? `<div class="notice info"><b>Practice check ${c.practice} of ${SCORE.practiceChecks}.</b> Your first checks help you learn the test. They are not used for your personal baseline.</div>` : ''}
     ${adviceCard(c, adv, sameDay(c.ts, Date.now()))}
     ${celebrate}
     <div class="panel screws gauge-wrap">
@@ -1972,13 +2142,14 @@ renderers.results = () => {
     <div class="card stack"><h2 style="margin:0">${fly ? "Today's fatigue forecast" : "Your day's alertness forecast"}</h2>
       ${weatherBlocks(fc)}
       <p class="small muted" style="margin:0">Illustrative estimate from today's result, hours awake and the body-clock low (02:00 to 06:00). Not a validated model.</p></div>
+    ${loadCard(c)}
     ${c.context ? `<div class="card stack"><div class="eyebrow" style="margin:0">Duty info for this day</div><p class="small" style="margin:0">${esc(ctxSummary(c.context))}</p></div>` : ''}
     ${tips.length ? `<div class="card stack"><h2>More for today</h2><ul class="tips">${tips.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
     <div class="card stack"><h2>Your choices</h2>
       <p class="small muted" style="margin:0">All optional. Nothing is sent unless you tap it.</p>
       ${fly ? `<button class="btn block" id="act-crew">${c.shared && c.shared.crew ? '✓ Crew told' : 'Tell my crew'}</button>
       <button class="btn block" id="act-cockpit">${c.shared && c.shared.cockpit ? '✓ Cockpit monitoring on' : 'Turn on cockpit monitoring boost'}</button>` : ''}
-      ${fly && c.level >= 1 ? `<button class="btn block" id="act-fatigue">Open my airline's fatigue call</button>` : ''}
+      ${fly && c.level >= 1 ? `<button class="btn block" id="act-fatigue">Open my company's fatigue reporting</button>` : ''}
       <button class="btn ghost block" data-go="home">Keep it to myself</button></div>
     <div class="card row" style="justify-content:space-between"><div><div class="eyebrow" style="margin:0">Logbook</div><b>Entry #${entry} logged</b></div><div class="small muted">${weekStreak(list)}-week streak · ${Object.keys(S.badges||{}).length}/${BADGES.length} badges</div></div>
     <details class="card"><summary>Details for the curious</summary>
@@ -1998,7 +2169,7 @@ renderers.results = () => {
   const crew = () => crewSheet(c);
   const fatigue = fatigueSheet;
   [['#act-crew', crew], ['#adv-crew', crew], ['#act-fatigue', fatigue], ['#adv-fatigue', fatigue]].forEach(([sel, fn]) => { const b = $(sel); if(b) b.onclick = fn; });
-  const ck = $('#act-cockpit'); if(ck) ck.onclick = () => sheet('Cockpit monitoring boost', `<p class="small">With your permission, one flag goes to Honeywell's cockpit pilot state monitoring for this duty:</p><div class="msg-preview"><b>Elevated pre-duty fatigue risk.</b> Watch window around ${fmtClock(fc.peak.clock)}.</div><ul class="tips small"><li>The camera alerts a little earlier than usual today.</li><li>It pays closer attention around your likely low point.</li><li>Alerts stay in the cockpit. Your airline and dispatch are not told.</li></ul><p class="small muted">Concept only. Pilot state monitoring is still being tested and does not accept outside inputs today.</p>`, 'Turn on for this duty', () => { c.shared = {...(c.shared||{}), cockpit:true}; save(); toast('Demo only. Cockpit link is a concept.'); renderers.results(); });
+  const ck = $('#act-cockpit'); if(ck) ck.onclick = () => sheet('Cockpit monitoring boost', `<p class="small">With your permission, one flag goes to Honeywell's cockpit pilot state monitoring for this duty:</p><div class="msg-preview"><b>Elevated pre-duty fatigue risk.</b> Watch window around ${fmtClock(fc.peak.clock)}.</div><ul class="tips small"><li>The camera alerts a little earlier than usual today.</li><li>It pays closer attention around your likely low point.</li><li>Alerts stay in the cockpit. Your company and dispatch are not told.</li></ul><p class="small muted">Concept only. Pilot state monitoring is still being tested and does not accept outside inputs today.</p>`, 'Turn on for this duty', () => { c.shared = {...(c.shared||{}), cockpit:true}; save(); toast('Demo only. Cockpit link is a concept.'); renderers.results(); });
 };
 
 /* ---------- sheet ---------- */
@@ -2100,7 +2271,7 @@ renderers.org = () => {
   const r = reqNow();
   $('#scr-org').innerHTML = `
     <div><div class="eyebrow">Example · built from your checks on this phone</div><h1>Employer view (example)</h1>
-      <p class="muted">This is everything your airline would see about you. Nothing more.</p></div>
+      <p class="muted">This is everything your company would see about you. Nothing more.</p></div>
     <div class="card stack">
       <div class="row" style="justify-content:space-between;flex-wrap:nowrap"><div><div class="eyebrow" style="margin:0">ReadyCheck requirement</div><h2 style="margin:0">${esc(r.month)}</h2></div><span class="demo-tag">Example</span></div>
       <div class="emp-status ${r.met ? 'met' : 'notyet'}">${r.met
