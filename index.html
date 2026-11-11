@@ -10,9 +10,9 @@
 <style>
 /* Layout: one narrow phone column, cockpit-amber accent on cool instrument greys. */
 :root{
-  --bg:#eef2f6; --surface:#ffffff; --surface-2:#f6f8fb; --ink:#0f1b2d; --muted:#5a6779; --line:#d9e0e8;
+  --bg:#eef2f6; --surface:#ffffff; --surface-2:#f6f8fb; --ink:#0f1b2d; --muted:#4d5a6c; --line:#d9e0e8;
   --accent:#c98200; --accent-ink:#6e4700; --accent-soft:#fdf1dc;
-  --ok:#1d8656; --ok-soft:#e3f4ea; --warn:#b97300; --warn-soft:#fbefd9; --bad:#bf3b28; --bad-soft:#fbe6e2;
+  --ok:#17744b; --ok-soft:#e3f4ea; --warn:#975f00; --warn-soft:#fbefd9; --bad:#b3361f; --bad-soft:#fbe6e2;
   --test-bg:#05080e; --test-ink:#ffb52e;
   --font-sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
@@ -47,7 +47,7 @@ h3{font-size:1rem;margin:0 0 6px;font-weight:600}
 p{margin:0 0 12px}
 .muted{color:var(--muted)}
 .small{font-size:.86rem}
-.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.eyebrow{font-family:var(--font-mono);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .stack{display:flex;flex-direction:column;gap:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
 .card.flat{background:var(--surface-2)}
@@ -77,7 +77,7 @@ label.opt:has(input:checked){border-color:var(--accent);background:var(--accent-
 .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:.88rem;cursor:pointer;background:var(--surface)}
 .chip:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .chip input{accent-color:var(--accent)}
-.pill{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:500;padding:3px 10px;border-radius:999px;white-space:nowrap;flex:none}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;font-weight:500;padding:3px 10px;border-radius:999px;white-space:nowrap;flex:none}
 .pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
 .pill.neutral{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
 .dot{width:8px;height:8px;border-radius:50%;background:currentColor;display:inline-block}
@@ -92,7 +92,7 @@ label.opt:has(input:checked){border-color:var(--accent);background:var(--accent-
 .notice.info{background:var(--surface-2);border:1px solid var(--line)}
 ul.tips{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px}
 .chart{width:100%;height:auto;display:block}
-.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.86rem;color:var(--muted)}
 .legend span{display:inline-flex;gap:6px;align-items:center}
 .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
 .list{display:flex;flex-direction:column}
@@ -168,7 +168,7 @@ details[open] summary{margin-bottom:8px}
 .screws{position:relative}
 .screws:before,.screws:after{content:"";position:absolute;top:10px;width:7px;height:7px;border-radius:50%;background:#2a3852;box-shadow:inset 0 0 0 1.5px #0a0f1a}
 .screws:before{left:10px}.screws:after{right:10px}
-.annun{font-family:var(--font-mono);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;border-radius:6px;border:1.5px solid currentColor;
+.annun{font-family:var(--font-mono);font-size:.86rem;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:6px;border:1.5px solid currentColor;
   background:color-mix(in srgb,currentColor 12%,transparent);text-shadow:0 0 8px color-mix(in srgb,currentColor 55%,transparent)}
 .annun.ok{color:var(--lit-ok)}.annun.warn{color:var(--lit-warn)}.annun.bad{color:var(--lit-bad)}
 .brand-ai{flex:none}
@@ -179,19 +179,19 @@ details[open] summary{margin-bottom:8px}
 .headline{font-size:1.35rem;font-weight:600;line-height:1.25;text-wrap:balance;margin:6px 0 2px}
 .signals{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sig{background:var(--panel-2);border:1px solid var(--panel-line);border-top:3px solid var(--lc,var(--panel-muted));border-radius:10px;padding:11px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
-.sig .k{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lc,var(--panel-muted));display:flex;align-items:center;gap:6px}
+.sig .k{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--lc,var(--panel-muted));display:flex;align-items:center;gap:6px}
 .sig .k .dot{box-shadow:0 0 6px currentColor}
 .sig .v{font-family:var(--font-mono);font-size:1.4rem;font-weight:500;line-height:1.15;font-variant-numeric:tabular-nums;color:var(--panel-ink)}
 .sig .v .small{color:var(--panel-muted)}
-.sig .d{font-size:.8rem;color:var(--panel-muted);line-height:1.35}
+.sig .d{font-size:.86rem;color:var(--panel-muted);line-height:1.35}
 .sig.ok{--lc:var(--lit-ok)} .sig.warn{--lc:var(--lit-warn)} .sig.bad{--lc:var(--lit-bad)} .sig.neutral{--lc:var(--panel-muted)}
 .wx{display:flex;flex-direction:column;gap:8px}
 .wx-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2)}
 .wx-row svg{flex:none}
-.wx-row .t{font-family:var(--font-mono);font-size:.82rem;color:var(--muted);min-width:96px}
+.wx-row .t{font-family:var(--font-mono);font-size:.86rem;color:var(--muted);min-width:96px}
 .wx-row b{font-weight:600}
 .badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.badge{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:.72rem;color:var(--muted);line-height:1.2}
+.badge{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:.8rem;color:var(--muted);line-height:1.2}
 .badge .seal{width:100%;max-width:92px;height:auto;display:block}
 .badge.locked .seal{opacity:.55}
 .badge.earned{color:var(--ink)}
@@ -216,7 +216,7 @@ details[open] summary{margin-bottom:8px}
 .app{padding-bottom:110px}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:center;gap:0;background:color-mix(in srgb,var(--surface) 92%,transparent);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
-.tabbar button{flex:1;max-width:115px;appearance:none;border:0;background:none;color:var(--muted);font:inherit;font-size:.72rem;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;border-radius:10px}
+.tabbar button{flex:1;max-width:115px;appearance:none;border:0;background:none;color:var(--muted);font:inherit;font-size:.8rem;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;border-radius:10px}
 .tabbar button svg{width:24px;height:24px}
 .tabbar button{-webkit-tap-highlight-color:transparent}
 .tabbar button:focus:not(:focus-visible){outline:none;background:none}
@@ -269,11 +269,11 @@ details[open] summary{margin-bottom:8px}
 .bname{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .bname b{font-size:1.02rem}
 .tagline{font-style:italic;font-size:.88rem;margin:1px 0 2px}
-.metal{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:999px;color:#1a1100;font-weight:600}
+.metal{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;color:#1a1100;font-weight:600}
 .metal.locked{background:var(--lock-fill);color:var(--muted);border:1px solid var(--lock-line)}
-.m-Bronze{background:linear-gradient(#f3c19a,#c47a45)} .m-Silver{background:linear-gradient(#fff,#c3ccd8)} .m-Ruby{background:linear-gradient(#ffb3b3,#e0414a);color:#fff}
+.m-Bronze{background:linear-gradient(#f3c19a,#c47a45)} .m-Silver{background:linear-gradient(#fff,#c3ccd8)} .m-Ruby{background:linear-gradient(#ffc9c9,#f0858a);color:#4a0008}
 .m-Gold{background:linear-gradient(#ffe08a,#f0b23a)} .m-Orange{background:linear-gradient(#ffd1a1,#ff8a1f)} .m-Platinum{background:linear-gradient(#fff,#dfe9f5)}
-.m-Jade{background:linear-gradient(#bff5dc,#2fbf86)} .m-Midnight{background:linear-gradient(#a9c4ff,#3b5bdb);color:#fff}
+.m-Jade{background:linear-gradient(#bff5dc,#2fbf86)} .m-Midnight{background:linear-gradient(#c9d8ff,#8ea8f5);color:#0b1a4a}
 .plan-item{display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
 .plan-item.pi-bad{border-color:var(--bad);border-left-width:4px}
 .plan-item.pi-org{border-color:var(--accent);border-left-width:4px}
@@ -330,19 +330,20 @@ details[open] summary{margin-bottom:8px}
 /* History: 28-day calendar */
 .heat{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
 .heat .hd{font-family:var(--font-mono);font-size:.66rem;color:var(--muted);text-align:center}
-.heat .c{position:relative;aspect-ratio:1;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);padding:3px 5px;font-family:var(--font-mono);font-size:.68rem;color:var(--muted);min-width:0;line-height:1.2}
+.heat .c{position:relative;aspect-ratio:1;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);padding:3px 5px;font-family:var(--font-mono);font-size:.8rem;color:var(--muted);min-width:0;line-height:1.2}
 .heat .c.out{visibility:hidden}
 .heat .c.l0{background:color-mix(in srgb,var(--ok) 30%,var(--surface));border-color:var(--ok);color:var(--ink)}
 .heat .c.l1{background:color-mix(in srgb,var(--warn) 32%,var(--surface));border-color:var(--warn);color:var(--ink)}
 .heat .c.l2{background:color-mix(in srgb,var(--bad) 32%,var(--surface));border-color:var(--bad);color:var(--ink)}
 .heat .c[data-open]{cursor:pointer}
-.roster .c{appearance:none;font:inherit;font-family:var(--font-mono);font-size:.78rem;text-align:left;cursor:pointer;color:var(--ink)}
+.roster .c{appearance:none;font:inherit;font-family:var(--font-mono);font-size:.84rem;text-align:left;cursor:pointer;color:var(--ink)}
 .roster .c.duty{background:var(--accent-soft);border-color:var(--accent);border-width:2px;color:var(--accent-ink)}
 .roster .c.duty svg{width:16px;height:16px;color:var(--accent-ink)}
+.roster .c{padding:3px}
 .roster .c.past{opacity:.6}
 .roster .c.sby{border:2px dashed var(--accent);color:var(--accent-ink)}
 .roster .c.off{background:transparent;color:var(--muted)}
-.roster .c .mk{display:block;font-size:.6rem;letter-spacing:.02em;margin-top:2px;white-space:nowrap;overflow:hidden}
+.roster .c .mk{display:block;font-family:var(--font-sans);font-variant-numeric:tabular-nums;font-size:.72rem;letter-spacing:-.02em;letter-spacing:.02em;margin-top:2px;white-space:nowrap;overflow:hidden}
 .roster .c.chk::after{content:'✓';float:right;font-size:.7rem;color:var(--ok)}
 .pin-dots{display:flex;justify-content:center;gap:16px;margin-top:8px}
 .pin-dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink);opacity:.5}
@@ -354,6 +355,15 @@ details[open] summary{margin-bottom:8px}
 .keypad button{appearance:none;font:inherit;font-size:1.6rem;width:72px;height:72px;justify-self:center;border-radius:50%;border:1px solid var(--line,#d5dbe5);background:var(--surface);color:var(--ink);cursor:pointer}
 .keypad button:active{background:var(--accent-soft)}
 .keypad button.fn{border:none;background:transparent;font-size:1rem}
+.wk{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.wk-row{display:grid;grid-template-columns:4.2rem 1fr auto;align-items:center;gap:10px;padding:9px 12px;font-size:.92rem;border-top:1px solid var(--line)}
+.wk-row:first-child{border-top:0}
+.wk-row.today{background:var(--accent-soft)}
+.wk-row .day{font-weight:600}
+.wk-row .what{display:flex;align-items:center;gap:6px;min-width:0}
+.wk-row .what svg{width:16px;height:16px;flex:none}
+.wk-row .what span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wk-row .band{font-size:.84rem;font-weight:600;padding:2px 9px;border-radius:999px;border:1.5px solid currentColor;white-space:nowrap}
 .week7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .week7 .d{border:1px solid var(--line,#d5dbe5);border-radius:12px;padding:6px 2px;text-align:center;font-family:var(--font-mono);font-size:.72rem;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
 .week7 .d.today{border-color:var(--accent);border-width:2px}
@@ -532,9 +542,9 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <label class="field">Time zone of that time<select id="d-tz"></select></label>
     </div>
     <div class="card stack">
-      <div class="q ctx-legs"><span>Legs planned today<small class="muted" style="display:block;font-size:.8rem">A leg is one takeoff and one landing.</small></span>
+      <div class="q ctx-legs"><span>Legs planned today<small class="muted" style="display:block;font-size:.86rem;font-weight:400">A leg is one takeoff and one landing.</small></span>
         <div class="stepper" id="d-legs" data-min="0" data-max="10"><button type="button" data-d="-1" aria-label="One leg fewer">−</button><output aria-live="polite">0</output><button type="button" data-d="1" aria-label="One leg more">+</button></div></div>
-      <div class="q"><span>Time zones crossed in the last 24 hours<small class="muted" style="display:block;font-size:.8rem">Count the hour difference, e.g. Phoenix to New York is 2 (summer: 3).</small></span>
+      <div class="q"><span>Time zones crossed in the last 24 hours<small class="muted" style="display:block;font-size:.86rem;font-weight:400">Count the hour difference, e.g. Phoenix to New York is 2 (summer: 3).</small></span>
         <div class="stepper" id="d-tzx" data-min="0" data-max="12"><button type="button" data-d="-1" aria-label="One time zone fewer">−</button><output aria-live="polite">0</output><button type="button" data-d="1" aria-label="One time zone more">+</button></div></div>
     </div>
     <div class="card stack ctx-on">
@@ -2650,13 +2660,12 @@ function planSeries(n){
 }
 const BAND_COL = ['var(--ok)', 'var(--warn)', 'var(--bad)'];
 function weekStrip(ser){
-  return `<div class="week7">${ser.map((d, i) => { const st = d.e ? d.e.status : null;
-    const ic = st === 'duty' ? PLANE_MINI : st === 'standby' ? '<b>SB</b>' : st === 'rest' ? 'off' : '·';
-    const lab = `${fmtDate(d.t)}: ${st ? SCHED_TXT[st] : 'nothing planned'}${d.e && d.e.report && st !== 'rest' ? ', report ' + d.e.report : ''}, load ${LOAD_WORD[d.band].toLowerCase()} (${d.cum})${d.wocl ? ', during 02:00 to 06:00' : ''}`;
-    return `<div class="d ${i === 0 ? 'today' : ''}" role="img" aria-label="${esc(lab)}" title="${esc(lab)}">
-      <span>${i === 0 ? 'Today' : new Date(d.t).toLocaleDateString(undefined, {weekday:'short'})}</span><span class="ic">${ic}</span>
-      <span>${d.e && d.e.report && st !== 'rest' ? d.e.report : '&nbsp;'}</span>
-      <span class="bar" style="background:${BAND_COL[d.band]}"></span><span class="w">${LOAD_WORD[d.band]}${d.wocl ? ' ☾' : ''}</span></div>`; }).join('')}</div>`;
+  return `<div class="wk">${ser.map((d, i) => { const e = d.e, st = e ? e.status : null;
+    const what = st === 'duty' ? `${PLANE_MINI}<span><b>${e.report || 'Duty'}</b>${e.legs ? ' · ' + plural(e.legs, 'leg') : ''}</span>`
+      : st === 'standby' ? `<span>Standby <b>${e.report || ''}</b></span>` : st === 'rest' ? '<span class="muted">Day off</span>' : '<span class="muted">Nothing planned</span>';
+    const day = i === 0 ? 'Today' : new Date(d.t).toLocaleDateString(undefined, {weekday:'short', day:'numeric'});
+    return `<div class="wk-row ${i === 0 ? 'today' : ''}"><span class="day">${day}</span><span class="what">${what}</span>
+      <span class="band" style="color:${BAND_COL[d.band]}" title="Load ${d.cum}">${LOAD_WORD[d.band]}${d.wocl ? ' ☾' : ''}</span></div>`; }).join('')}</div>`;
 }
 // Best time to check: about an hour before report (same advice as on Home).
 function nextCheck(ser){
@@ -2678,7 +2687,7 @@ function forecastCard(compact){
     ${weekStrip(ser)}
     ${nc ? `<div class="small"><b>Next check:</b> ${esc(nc.when)} around <b>${nc.at}</b> (report ${esc(nc.d.e.report)}).</div>` : ''}
     ${peak.band ? `<div class="small" style="color:${BAND_COL[peak.band]}"><b>${LOAD_WORD[peak.band]} load ${sameDay(peak.t, Date.now()) ? 'today' : 'on ' + esc(fmtDate(peak.t))}.</b> Protect your sleep the night before.</div>` : ''}
-    <p class="small muted" style="margin:0">Estimate from your planned duties, using the same points as the Duty load card. ☾ means duty during 02:00 to 06:00. Your answers on the day replace the plan.</p>
+    <p class="small muted" style="margin:0">☾ = duty during 02:00 to 06:00, your body-clock low. Estimate from your planned duties, using the same points as the Duty load card. Your answers on the day replace the plan.</p>
   </div>`;
 }
 /* ---- .ics import (calendar file from a crew app, Google or Outlook) ---- */
@@ -2822,7 +2831,8 @@ renderers.roster = () => {
     if(t < first || t > last){ cells.push('<div class="c out" aria-hidden="true"></div>'); continue; }
     const k = ymd(t), p = planFor(k), st = p ? p.status : null; if(st) cnt[st]++;
     const lab = `${fmtDate(t)}: ${st ? SCHED_TXT[st] : 'nothing planned'}${p && p.report && st !== 'rest' ? ', report ' + p.report : ''}${checked.has(t) ? ', checked' : ''}. Tap to change.`;
-    const mk = st === 'duty' ? `<span class="mk">${p.report || 'duty'}</span>` : st === 'standby' ? '<span class="mk">SBY</span>' : st === 'rest' ? '<span class="mk">off</span>' : '';
+    const rt = p && p.report ? p.report.replace(/^0/, '') : 'duty';
+    const mk = st === 'duty' ? `<span class="mk"${rt.length > 4 ? ' style="font-size:.66rem;letter-spacing:-.04em"' : ''}>${rt}</span>` : st === 'standby' ? '<span class="mk">stby</span>' : st === 'rest' ? '<span class="mk">off</span>' : '';
     cells.push(`<button class="c ${st === 'duty' ? 'duty' : st === 'standby' ? 'sby' : st === 'rest' ? 'off' : ''} ${t === today ? 'today' : ''} ${t < today ? 'past' : ''} ${checked.has(t) ? 'chk' : ''}" data-day="${k}" aria-label="${esc(lab)}">${new Date(t).getDate()}${mk}</button>`);
   }
   $('#scr-roster').innerHTML = `
@@ -2832,7 +2842,7 @@ renderers.roster = () => {
     <div class="card stack">
       <div class="month-nav"><button class="btn ghost" id="ro-prev" aria-label="Previous month">‹</button><h2 style="margin:0">${esc(m.toLocaleDateString(undefined, {month:'long', year:'numeric'}))}</h2><button class="btn ghost" id="ro-next" aria-label="Next month">›</button></div>
       <div class="heat roster">${cells.join('')}</div>
-      <div class="legend"><span><i class="sw" style="background:var(--accent-soft);border:2px solid var(--accent)"></i>Flight duty ${cnt.duty}</span><span><i class="sw" style="border:2px dashed var(--accent)"></i>Standby ${cnt.standby}</span><span>off: day off ${cnt.rest}</span><span style="color:var(--ok)">✓ checked</span></div>
+      <div class="legend"><span><i class="sw" style="background:var(--accent-soft);border:2px solid var(--accent)"></i>Flight duty ${cnt.duty}</span><span><i class="sw" style="border:2px dashed var(--accent)"></i>Standby ${cnt.standby}</span><span>Day off ${cnt.rest}</span><span style="color:var(--ok)">✓ checked</span></div>
       <p class="small muted" style="margin:0">Tap any day to set flight duty, standby or a day off, with report time and legs.</p>
     </div>
     <div class="card stack" id="ro-import">
