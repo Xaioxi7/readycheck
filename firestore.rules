@@ -1,0 +1,48 @@
+rules_version = '2';
+// ReadyCheck security rules.
+// Pilots (anonymous sign-in from the phone app) can only write their own records, only to a company that exists,
+// and only the fields their chosen sharing level allows. Managers (email + password accounts listed in /managers)
+// can read only their own company. Nobody can read another pilot's records from the app.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function isManagerOf(code) {
+      return signedIn() && request.auth.token.firebase.sign_in_provider == 'password'
+        && exists(/databases/$(db)/documents/managers/$(request.auth.uid))
+        && get(/databases/$(db)/documents/managers/$(request.auth.uid)).data.code == code;
+    }
+    function companyExists(code) { return exists(/databases/$(db)/documents/companies/$(code)); }
+    function levelFieldsOk(d) {
+      return d.lv in [1, 2, 3]
+        && (d.lv >= 2 || !('st' in d))
+        && (d.lv >= 3 || !('rt' in d || 'lp' in d || 'fs' in d || 'load' in d));
+    }
+
+    match /companies/{code} {
+      allow get: if signedIn();            // the app shows the company name after the code is typed
+      allow list, write: if false;
+
+      match /checks/{id} {
+        allow read: if isManagerOf(code);
+        allow create, update: if signedIn() && companyExists(code)
+          && request.resource.data.uid == request.auth.uid
+          && id == request.auth.uid + '_' + request.resource.data.date
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'date', 'lv', 'done', 'via', 'at', 'st', 'rt', 'lp', 'fs', 'load'])
+          && request.resource.data.via in ['phone', 'tag']
+          && levelFieldsOk(request.resource.data);
+        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
+      match /pilots/{uid} {
+        allow read: if isManagerOf(code);
+        allow create, update: if signedIn() && companyExists(code) && request.auth.uid == uid
+          && request.resource.data.uid == uid
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'lastCheck', 'at', 'month']);
+        allow delete: if signedIn() && request.auth.uid == uid;
+      }
+    }
+    match /managers/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;               // set up by the admin in the Firebase console
+    }
+  }
+}

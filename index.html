@@ -825,6 +825,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <div id="sheet-root"></div>
 <div class="toast" id="toast" hidden></div>
 
+<script src="firebase-config.js"></script>
 <script>
 (() => {
 'use strict';
@@ -887,6 +888,45 @@ const AGE_NORMS = [
   {upTo: 29, med: 260, sd: 35}, {upTo: 39, med: 270, sd: 35}, {upTo: 49, med: 280, sd: 38},
   {upTo: 59, med: 295, sd: 40}, {upTo: 69, med: 310, sd: 45}, {upTo: 120, med: 325, sd: 50}
 ];
+
+/* ---------- Phase 6: company cloud (Firebase Firestore) ----------
+   The phone signs in anonymously and writes only the record the pilot chose to share (same fields as the tag).
+   Paths: companies/{code}/checks/{uid}_{date}  and  companies/{code}/pilots/{uid} (monthly met / not met).
+   Security rules (firestore.rules) stop anyone writing other pilots' records or extra fields. */
+const FB_VER = '10.12.2';
+let cloudP = null;
+const cloudReady = () => !!(window.RC_FIREBASE && window.RC_FIREBASE.apiKey);
+function cloudInit(){
+  if(!cloudReady()) return Promise.reject(new Error('not-configured'));
+  if(cloudP) return cloudP;
+  cloudP = (async () => {
+    const base = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
+    const [A, U, F] = await Promise.all(['firebase-app.js', 'firebase-auth.js', 'firebase-firestore.js'].map(f => import(base + f)));
+    const cfg = window.RC_FIREBASE, app = A.initializeApp(cfg, 'readycheck'), auth = U.getAuth(app), db = F.getFirestore(app);
+    if(cfg.emulator){ U.connectAuthEmulator(auth, 'http://' + cfg.emulator.auth, {disableWarnings:true}); const [h, pt] = cfg.emulator.firestore.split(':'); F.connectFirestoreEmulator(db, h, Number(pt)); }
+    if(!auth.currentUser) await U.signInAnonymously(auth);
+    return {F, db, uid: auth.currentUser.uid};
+  })();
+  cloudP.catch(() => { cloudP = null; });
+  return cloudP;
+}
+async function sendToCompany(c, via){
+  const {F, db, uid} = await cloudInit();
+  const code = S.user && S.user.code; if(!code) throw new Error('no-code');
+  const p = badgePayload(c), r = reqNow();
+  const rec = {uid, name: p.n, date: p.d, lv: p.lv, done: true, via: via || 'phone', at: F.serverTimestamp()};
+  if(p.st) rec.st = p.st;
+  if(p.lv >= 3){ ['rt', 'lp', 'fs', 'load'].forEach(k => { if(p[k] != null) rec[k] = p[k]; }); }
+  await F.setDoc(F.doc(db, 'companies', code, 'checks', `${uid}_${p.d}`), rec);
+  await F.setDoc(F.doc(db, 'companies', code, 'pilots', uid), {uid, name: p.n, lastCheck: p.d, at: F.serverTimestamp(),
+    month: {label: r.month, met: r.met, n28: r.n28, need: r.need, covered: r.covered, flights: r.flights}});
+  c.sentAt = Date.now(); c.sentLv = p.lv; save();
+  return rec;
+}
+const cloudErr = e => e && e.message === 'not-configured' ? 'The company connection is not set up yet in this prototype.'
+  : e && e.message === 'no-code' ? 'Sign in with a company code first.'
+  : e && /permission/i.test(e.code || e.message) ? 'Your company code was not accepted by the server.'
+  : 'Could not reach your company. Check your internet and try again.';
 /* ---------- Phase 4: what goes on the tag ---------- */
 const TAG_NAME = 'Wings tag'; // working name for the physical NFC tag; change here only
 
@@ -2453,7 +2493,11 @@ function badgeCard(c){
       <li>Paste, then tap <b>OK</b> > <b>Write</b>.</li>
       <li>Hold the <b>top</b> of your iPhone (or the <b>back</b> of an Android phone) near your tag until it says done.</li>
     </ol>
-    <div class="small" id="badge-status"></div></div>`;
+    <div class="small" id="badge-status"></div>
+    ${S.user && S.user.code ? `<div class="stack" style="gap:6px;border-top:1px solid var(--line);padding-top:12px">
+      <div class="small"><b>No tag with you?</b> Send the same record to ${esc(S.user.company || 'your company')} straight from this phone.</div>
+      <button class="btn block" id="btn-send-co">${c.sentAt ? `✓ Sent at ${fmtTime(c.sentAt)} (level ${c.sentLv}). Send again` : 'Send to my company now'}</button>
+      <div class="small" id="send-status" aria-live="polite"></div></div>` : ''}</div>`;
 }
 async function prepareBadge(c){
   const p = badgePayload(c), enc = await encryptBadge(p);
@@ -2463,6 +2507,12 @@ async function prepareBadge(c){
   return enc;
 }
 function bindBadgeCard(c){
+  const sc = $('#btn-send-co'); if(sc) sc.onclick = async () => {
+    const st = $('#send-status'); sc.disabled = true; st.textContent = 'Sending...';
+    try{ const r = await sendToCompany(c, 'phone'); st.innerHTML = `<span style="color:var(--ok)">✓ Received by ${esc(S.user.company || 'your company')}.</span> They see: ${esc(badgeLines(badgePayload(c)).filter(x => !/^Tag ID/.test(x)).join(', '))}.`; sc.textContent = `✓ Sent at ${fmtTime(c.sentAt)} (level ${r.lv}). Send again`; toast('Sent to your company.'); }
+    catch(e){ st.innerHTML = `<span style="color:var(--bad)">Not sent.</span> ${esc(cloudErr(e))}`; }
+    sc.disabled = false;
+  };
   const pt = $('#btn-pair-tag'); if(pt) pt.onclick = () => { go('settings'); setTimeout(() => { const b = $('#badge-settings'); if(b){ b.scrollIntoView({behavior:'smooth', block:'start'}); const u = $('#set-badge'); if(u) u.focus({preventScroll:true}); } }, 60); };
   const copy = $('#btn-badge-copy'), write = $('#btn-badge-write'), status = $('#badge-status');
   if(copy) copy.onclick = async () => {
@@ -3005,6 +3055,7 @@ renderers.settings = () => {
   $('#me-name').textContent = nm; $('#me-avatar').innerHTML = uniformSVG(nm, wornBadge(), rankOf(preChecks().length).bars, true);
   $('#set-user').textContent = `${S.user && S.user.company ? S.user.company + ' · ' : ''}${plural(preChecks().length, 'check')} logged on this phone`;
   $('#acct-info').innerHTML = S.user ? `Signed in as <b>${esc(S.user.name)}</b>${S.user.code ? ` · company code <b>${esc(S.user.code)}</b>` : ''}. ${S.user.pin ? 'PIN on' : '<span style="color:var(--bad)">No PIN yet</span>'}${S.user.passkey ? ', Face ID or fingerprint on' : ''}.` : '';
+  $('#acct-info').insertAdjacentHTML('beforeend', `<br>Company connection: ${cloudReady() ? '<span style="color:var(--ok)">set up</span>' : 'not set up yet (works offline)'}.`);
   $$('#set-lock input').forEach(i => i.checked = i.value === (S.lockMode || '12h'));
   $('#btn-bio').textContent = S.user && S.user.passkey ? 'Turn off Face ID or fingerprint' : 'Use Face ID or fingerprint'; $('#btn-bio').hidden = !canPasskey();
   $('#btn-pin-change').textContent = S.user && S.user.pin ? 'Change PIN' : 'Set a PIN';

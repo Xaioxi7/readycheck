@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ReadyCheck Company Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f6;--surface:#fff;--surface-2:#f6f8fb;--ink:#0f1b2d;--muted:#4d5a6c;--line:#d9e0e8;--accent:#c98200;--accent-soft:#fdf1dc;
+  --ok:#17744b;--ok-soft:#e3f4ea;--warn:#975f00;--warn-soft:#fbefd9;--bad:#b3361f;--bad-soft:#fbe6e2;
+  --font-sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a111d;--surface:#121b2b;--surface-2:#172235;--ink:#e5ecf4;--muted:#a3b0c2;--line:#26344b;--accent:#f0a83a;--accent-soft:#2c2414;
+  --ok:#43c08a;--ok-soft:#14291f;--warn:#f0a83a;--warn-soft:#2c2414;--bad:#f06b55;--bad-soft:#331a17}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-sans);font-size:16px;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:1.1rem}
+.brand i{width:28px;height:28px;border-radius:8px;background:var(--ink);display:grid;place-items:center}
+.brand i::after{content:'';width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.eyebrow{font-family:var(--font-mono);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:1.6rem;margin:2px 0 4px;line-height:1.2}
+.muted{color:var(--muted)} .small{font-size:.9rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.btn{appearance:none;font:inherit;font-weight:500;border-radius:12px;padding:10px 16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+label{display:flex;flex-direction:column;gap:6px;font-size:.92rem;color:var(--muted)}
+input{font:inherit;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.login{max-width:400px;margin:8vh auto 0;display:flex;flex-direction:column;gap:14px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.tile .v{font-family:var(--font-mono);font-size:2rem;font-weight:500;line-height:1.1}
+.tile .k{font-size:.92rem;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:.85rem;font-weight:600;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.86rem;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)} .p-warn{background:var(--warn-soft);color:var(--warn)} .p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-none{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+tr.flash td{animation:flash 2.4s ease-out}
+@keyframes flash{0%{background:var(--accent-soft)}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){tr.flash td{animation:none}}
+.live{display:inline-flex;align-items:center;gap:8px;font-size:.9rem;color:var(--muted)}
+.live b{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px var(--ok-soft)}
+.note{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.err{color:var(--bad);min-height:1.4em}
+@media (max-width:640px){
+  thead{display:none} table,tbody,tr,td{display:block;width:100%} tr{border-bottom:1px solid var(--line);padding:8px 0} td{border:0;padding:4px 0}
+  td[data-k]::before{content:attr(data-k);display:block;font-size:.8rem;color:var(--muted)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><i></i>ReadyCheck <span class="muted" style="font-weight:400">Company dashboard</span></div>
+    <div id="hdr-right"></div>
+  </header>
+
+  <section id="v-setup" class="card login" hidden>
+    <h1>Not connected yet</h1>
+    <p class="muted" style="margin:0">This dashboard needs the company cloud. Add your Firebase project settings to <code>firebase-config.js</code>, then reload.</p>
+  </section>
+
+  <section id="v-login" class="card login" hidden>
+    <div><div class="eyebrow">Managers only</div><h1>Sign in</h1>
+      <p class="muted small" style="margin:0">Use the manager account your ReadyCheck admin gave you.</p></div>
+    <label>Email<input type="email" id="em" autocomplete="username"></label>
+    <label>Password<input type="password" id="pw" autocomplete="current-password"></label>
+    <button class="btn primary" id="btn-login">Sign in</button>
+    <div class="err small" id="login-err" role="alert"></div>
+  </section>
+
+  <section id="v-main" hidden>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+      <div><div class="eyebrow" id="co-code"></div><h1 id="co-name"></h1><div class="muted" id="today-label"></div></div>
+      <div class="live"><b></b>Live: updates the moment a pilot checks in</div>
+    </div>
+    <div class="tiles">
+      <div class="card tile"><div class="v" id="t-checked">0</div><div class="k">checked in today</div></div>
+      <div class="card tile"><div class="v" id="t-pilots">0</div><div class="k">pilots using ReadyCheck</div></div>
+      <div class="card tile"><div class="v" id="t-met">0</div><div class="k">meeting this month's check requirement</div></div>
+      <div class="card tile"><div class="v" id="t-flag">0</div><div class="k">shared Caution or Low alertness today</div></div>
+    </div>
+    <div class="card" style="padding:6px 6px 0">
+      <table>
+        <thead><tr><th>Pilot</th><th>Today's check</th><th>Shared status</th><th>Shared details</th><th>This month</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <p class="muted small" id="empty" style="padding:14px 12px;margin:0" hidden>No pilots yet. They appear here after their first check is sent.</p>
+    </div>
+    <div class="note small muted" style="margin-top:14px">You see only what each pilot chose to share: level 1 shows that a check was done, level 2 adds Ready, Caution or Low alertness, level 3 adds reaction time and duty load. ReadyCheck never decides fitness to fly; that stays with the pilot and your fatigue policy.</div>
+  </section>
+</div>
+
+<script src="firebase-config.js"></script>
+<script type="module">
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const show = id => ['v-setup','v-login','v-main'].forEach(v => $('#' + v).hidden = v !== id);
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const cfg = window.RC_FIREBASE;
+if(!cfg || !cfg.apiKey){ show('v-setup'); }
+else {
+  const base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  const [A, U, F] = await Promise.all(['firebase-app.js','firebase-auth.js','firebase-firestore.js'].map(f => import(base + f)));
+  const app = A.initializeApp(cfg), auth = U.getAuth(app), db = F.getFirestore(app);
+  if(cfg.emulator){ U.connectAuthEmulator(auth, 'http://' + cfg.emulator.auth, {disableWarnings:true}); const [h, p] = cfg.emulator.firestore.split(':'); F.connectFirestoreEmulator(db, h, Number(p)); }
+  let unsub = [];
+  const login = async () => {
+    $('#login-err').textContent = '';
+    try{ await U.signInWithEmailAndPassword(auth, $('#em').value.trim(), $('#pw').value); }
+    catch(e){ $('#login-err').textContent = /invalid|wrong|not-found|credential/i.test(e.code || '') ? 'Email or password is not right.' : 'Could not sign in: ' + (e.code || e.message); }
+  };
+  $('#btn-login').onclick = login; $('#pw').addEventListener('keydown', e => { if(e.key === 'Enter') login(); });
+  U.onAuthStateChanged(auth, async user => {
+    unsub.forEach(f => f()); unsub = [];
+    if(!user || user.isAnonymous){ show('v-login'); $('#hdr-right').innerHTML = ''; return; }
+    $('#hdr-right').innerHTML = `<span class="muted small">${esc(user.email)}</span> <button class="btn" id="btn-out">Sign out</button>`;
+    $('#btn-out').onclick = () => U.signOut(auth);
+    const m = await F.getDoc(F.doc(db, 'managers', user.uid)).catch(() => null);
+    if(!m || !m.exists()){ show('v-login'); $('#login-err').textContent = 'This account is not set up as a manager. Ask your admin to add it in /managers.'; await U.signOut(auth); return; }
+    const code = m.data().code, co = await F.getDoc(F.doc(db, 'companies', code)).catch(() => null);
+    $('#co-code').textContent = 'Company code ' + code; $('#co-name').textContent = (co && co.exists() && co.data().name) || code;
+    show('v-main'); watch(code);
+  });
+  function watch(code){
+    const today = ymd(new Date());
+    $('#today-label').textContent = new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+    let pilots = {}, checks = {}, seen = new Set(), first = true;
+    const render = () => {
+      const ids = new Set([...Object.keys(pilots), ...Object.values(checks).map(c => c.uid)]);
+      const rows = [...ids].map(uid => ({p: pilots[uid] || {}, c: Object.values(checks).find(c => c.uid === uid)}))
+        .sort((a, b) => (b.c ? 1 : 0) - (a.c ? 1 : 0) || ((b.c && b.c.at && b.c.at.seconds) || 0) - ((a.c && a.c.at && a.c.at.seconds) || 0) || String(a.p.name || '').localeCompare(String(b.p.name || '')));
+      $('#t-checked').textContent = rows.filter(r => r.c).length;
+      $('#t-pilots').textContent = rows.length;
+      $('#t-met').textContent = `${rows.filter(r => r.p.month && r.p.month.met).length} of ${rows.length}`;
+      $('#t-flag').textContent = rows.filter(r => r.c && (r.c.st === 'caution' || r.c.st === 'low')).length;
+      $('#empty').hidden = rows.length > 0;
+      $('#rows').innerHTML = rows.map(({p, c}) => {
+        const name = (c && c.name) || p.name || 'Pilot', key = c ? c.uid + c.date + (c.at ? c.at.seconds : '') : '';
+        const flash = c && !first && !seen.has(key); if(key) seen.add(key);
+        const time = c && c.at ? new Date(c.at.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+        const todayCell = c ? `<span class="pill p-ok">✓ Checked</span> <span class="mono small">${esc(time)}</span><div class="small muted">via ${c.via === 'tag' ? 'tag tap at base station' : 'phone'}</div>` : '<span class="pill p-none">No check yet</span>';
+        const st = c && c.st ? {ready:['p-ok','Ready'], caution:['p-warn','Caution'], low:['p-bad','Low alertness']}[c.st] : null;
+        const stCell = st ? `<span class="pill ${st[0]}">${st[1]}</span>` : `<span class="muted small">${c ? 'Not shared (level 1)' : ''}</span>`;
+        const det = c && c.lv >= 3 ? `<span class="small mono">${c.rt != null ? c.rt + ' ms median' : ''}${c.lp != null ? ' · ' + c.lp + ' slow' : ''}${c.fs != null ? ' · ' + c.fs + ' early' : ''}${c.load != null ? ' · load ' + c.load : ''}</span>` : `<span class="muted small">${c ? 'Not shared' : ''}</span>`;
+        const mo = p.month ? `<span class="pill ${p.month.met ? 'p-ok' : 'p-warn'}">${p.month.met ? 'Met' : 'Not met yet'}</span><div class="small muted">${Math.min(p.month.n28, p.month.need)} of ${p.month.need} check days</div>` : '<span class="muted small">No data</span>';
+        return `<tr class="${flash ? 'flash' : ''}"><td data-k="Pilot"><b>${esc(name)}</b></td><td data-k="Today's check">${todayCell}</td><td data-k="Shared status">${stCell}</td><td data-k="Shared details">${det}</td><td data-k="This month">${mo}</td></tr>`;
+      }).join('');
+      first = false;
+    };
+    const err = e => { $('#today-label').textContent = 'Live connection error: ' + (e.code || e.message); };
+    unsub.push(F.onSnapshot(F.collection(db, 'companies', code, 'pilots'), s => { pilots = {}; s.forEach(d => pilots[d.id] = d.data()); render(); }, err));
+    unsub.push(F.onSnapshot(F.query(F.collection(db, 'companies', code, 'checks'), F.where('date', '==', today)), s => { checks = {}; s.forEach(d => checks[d.id] = d.data()); render(); }, err));
+  }
+}
+</script>
+</body>
+</html>
