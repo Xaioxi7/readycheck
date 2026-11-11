@@ -48,6 +48,17 @@ tr.flash td{animation:flash 2.4s ease-out}
 .live b{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px var(--ok-soft)}
 .note{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 .err{color:var(--bad);min-height:1.4em}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:16px}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.row label{flex:1;min-width:120px}
+.code{font-family:var(--font-mono);font-size:1.05rem;letter-spacing:.06em;font-weight:500}
+.list{display:flex;flex-direction:column}
+.li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.li:first-child{border-top:0}
+textarea{font:inherit;font-family:var(--font-mono);font-size:.85rem;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-height:84px;resize:vertical}
+.btn.sm{padding:6px 10px;font-size:.9rem}
+.btn.danger{color:var(--bad)}
+h2{font-size:1.15rem;margin:0 0 6px}
 @media (max-width:640px){
   thead{display:none} table,tbody,tr,td{display:block;width:100%} tr{border-bottom:1px solid var(--line);padding:8px 0} td{border:0;padding:4px 0}
   td[data-k]::before{content:attr(data-k);display:block;font-size:.8rem;color:var(--muted)}
@@ -93,11 +104,31 @@ tr.flash td{animation:flash 2.4s ease-out}
       </table>
       <p class="muted small" id="empty" style="padding:14px 12px;margin:0" hidden>No pilots yet. They appear here after their first check is sent.</p>
     </div>
+    <div class="grid2">
+      <div class="card">
+        <h2>Pilots and activation codes</h2>
+        <p class="muted small" style="margin:0 0 12px">Add a pilot, then give them the code. They sign in with company code, Crew ID and this code. Pilots can later make their own recovery code for a new phone.</p>
+        <div class="row"><label>Name<input id="inv-name" placeholder="Dana Ruiz"></label><label>Crew ID<input id="inv-crew" placeholder="A1234" style="text-transform:uppercase"></label><button class="btn primary" id="btn-inv">Add pilot</button></div>
+        <div class="err small" id="inv-err" role="alert"></div>
+        <div class="list" id="inv-list"></div>
+      </div>
+      <div class="card">
+        <h2>Tag encryption key</h2>
+        <p class="muted small" style="margin:0 0 12px">Your company's own key pair. Pilots' phones get only the public half, which locks tag records. The private half opens them: only you and your base station have it.</p>
+        <div id="key-box" class="small"></div>
+        <h2 style="margin-top:16px">Read a tag record</h2>
+        <p class="muted small" style="margin:0 0 8px">Paste the text from a tag (it starts with RC2.) to see exactly what it holds.</p>
+        <textarea id="tag-in" placeholder="RC2.xxxxxx...."></textarea>
+        <div style="margin-top:8px"><button class="btn" id="btn-open">Open with company key</button></div>
+        <div id="tag-out" class="small" style="margin-top:8px"></div>
+      </div>
+    </div>
     <div class="note small muted" style="margin-top:14px">You see only what each pilot chose to share: level 1 shows that a check was done, level 2 adds Ready, Caution or Low alertness, level 3 adds reaction time and duty load. ReadyCheck never decides fitness to fly; that stays with the pilot and your fatigue policy.</div>
   </section>
 </div>
 
 <script src="firebase-config.js"></script>
+<script src="rc-crypto.js"></script>
 <script type="module">
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -127,23 +158,23 @@ else {
     if(!m || !m.exists()){ show('v-login'); $('#login-err').textContent = 'This account is not set up as a manager. Ask your admin to add it in /managers.'; await U.signOut(auth); return; }
     const code = m.data().code, co = await F.getDoc(F.doc(db, 'companies', code)).catch(() => null);
     $('#co-code').textContent = 'Company code ' + code; $('#co-name').textContent = (co && co.exists() && co.data().name) || code;
-    show('v-main'); watch(code);
+    show('v-main'); watch(code); manage(code);
   });
   function watch(code){
     const today = ymd(new Date());
     $('#today-label').textContent = new Date().toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric', year:'numeric'});
     let pilots = {}, checks = {}, seen = new Set(), first = true;
     const render = () => {
-      const ids = new Set([...Object.keys(pilots), ...Object.values(checks).map(c => c.uid)]);
-      const rows = [...ids].map(uid => ({p: pilots[uid] || {}, c: Object.values(checks).find(c => c.uid === uid)}))
+      const ids = new Set([...Object.keys(pilots), ...Object.values(checks).map(c => c.crewId)]);
+      const rows = [...ids].map(id => ({p: pilots[id] || {}, c: Object.values(checks).find(c => c.crewId === id), id}))
         .sort((a, b) => (b.c ? 1 : 0) - (a.c ? 1 : 0) || ((b.c && b.c.at && b.c.at.seconds) || 0) - ((a.c && a.c.at && a.c.at.seconds) || 0) || String(a.p.name || '').localeCompare(String(b.p.name || '')));
       $('#t-checked').textContent = rows.filter(r => r.c).length;
       $('#t-pilots').textContent = rows.length;
       $('#t-met').textContent = `${rows.filter(r => r.p.month && r.p.month.met).length} of ${rows.length}`;
       $('#t-flag').textContent = rows.filter(r => r.c && (r.c.st === 'caution' || r.c.st === 'low')).length;
       $('#empty').hidden = rows.length > 0;
-      $('#rows').innerHTML = rows.map(({p, c}) => {
-        const name = (c && c.name) || p.name || 'Pilot', key = c ? c.uid + c.date + (c.at ? c.at.seconds : '') : '';
+      $('#rows').innerHTML = rows.map(({p, c, id}) => {
+        const name = (c && c.name) || p.name || 'Pilot', key = c ? c.crewId + c.date + (c.at ? c.at.seconds : '') : '';
         const flash = c && !first && !seen.has(key); if(key) seen.add(key);
         const time = c && c.at ? new Date(c.at.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
         const todayCell = c ? `<span class="pill p-ok">✓ Checked</span> <span class="mono small">${esc(time)}</span><div class="small muted">via ${c.via === 'tag' ? 'tag tap at base station' : 'phone'}</div>` : '<span class="pill p-none">No check yet</span>';
@@ -151,13 +182,63 @@ else {
         const stCell = st ? `<span class="pill ${st[0]}">${st[1]}</span>` : `<span class="muted small">${c ? 'Not shared (level 1)' : ''}</span>`;
         const det = c && c.lv >= 3 ? `<span class="small mono">${c.rt != null ? c.rt + ' ms median' : ''}${c.lp != null ? ' · ' + c.lp + ' slow' : ''}${c.fs != null ? ' · ' + c.fs + ' early' : ''}${c.load != null ? ' · load ' + c.load : ''}</span>` : `<span class="muted small">${c ? 'Not shared' : ''}</span>`;
         const mo = p.month ? `<span class="pill ${p.month.met ? 'p-ok' : 'p-warn'}">${p.month.met ? 'Met' : 'Not met yet'}</span><div class="small muted">${Math.min(p.month.n28, p.month.need)} of ${p.month.need} check days</div>` : '<span class="muted small">No data</span>';
-        return `<tr class="${flash ? 'flash' : ''}"><td data-k="Pilot"><b>${esc(name)}</b></td><td data-k="Today's check">${todayCell}</td><td data-k="Shared status">${stCell}</td><td data-k="Shared details">${det}</td><td data-k="This month">${mo}</td></tr>`;
+        return `<tr class="${flash ? 'flash' : ''}"><td data-k="Pilot"><b>${esc(name)}</b><div class="small muted mono">${esc(id)}</div></td><td data-k="Today's check">${todayCell}</td><td data-k="Shared status">${stCell}</td><td data-k="Shared details">${det}</td><td data-k="This month">${mo}</td></tr>`;
       }).join('');
       first = false;
     };
     const err = e => { $('#today-label').textContent = 'Live connection error: ' + (e.code || e.message); };
     unsub.push(F.onSnapshot(F.collection(db, 'companies', code, 'pilots'), s => { pilots = {}; s.forEach(d => pilots[d.id] = d.data()); render(); }, err));
     unsub.push(F.onSnapshot(F.query(F.collection(db, 'companies', code, 'checks'), F.where('date', '==', today)), s => { checks = {}; s.forEach(d => checks[d.id] = d.data()); render(); }, err));
+  }
+  function manage(code){
+    const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const newCode = () => { const r = crypto.getRandomValues(new Uint8Array(8)); return [...r].map((x, i) => A[x % A.length] + (i === 3 ? '-' : '')).join(''); };
+    $('#btn-inv').onclick = async () => {
+      const name = $('#inv-name').value.trim(), crew = $('#inv-crew').value.trim().toUpperCase(); $('#inv-err').textContent = '';
+      if(!name || !crew){ $('#inv-err').textContent = 'Enter the pilot\'s name and Crew ID.'; return; }
+      if(!/^[A-Z0-9-]{2,20}$/.test(crew)){ $('#inv-err').textContent = 'Crew ID: letters, numbers and dashes only.'; return; }
+      try{ await F.setDoc(F.doc(db, 'companies', code, 'invites', newCode()), {crewId: crew, name, createdAt: F.serverTimestamp()}); $('#inv-name').value = ''; $('#inv-crew').value = ''; }
+      catch(e){ $('#inv-err').textContent = 'Could not add: ' + (e.code || e.message); }
+    };
+    unsub.push(F.onSnapshot(F.collection(db, 'companies', code, 'invites'), snap => {
+      const list = []; snap.forEach(d => list.push({id: d.id, ...d.data()}));
+      list.sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
+      $('#inv-list').innerHTML = list.length ? list.map(v => `<div class="li"><div><b>${esc(v.name)}</b> <span class="muted small mono">${esc(v.crewId)}</span>
+          <div class="small">${v.usedAt ? '<span style="color:var(--ok)">✓ Activated</span>' : 'Not used yet'}</div></div>
+          <div style="text-align:right"><div class="code">${esc(v.id)}</div><button class="btn sm danger" data-del="${esc(v.id)}">Remove code</button></div></div>`).join('')
+        : '<p class="muted small" style="margin:8px 0 0">No pilots added yet.</p>';
+      document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { if(confirm('Remove this activation code? Pilots already signed in stay signed in.')) F.deleteDoc(F.doc(db, 'companies', code, 'invites', b.dataset.del)); });
+    }, e => { $('#inv-list').textContent = 'Error: ' + (e.code || e.message); }));
+    let priv = null;
+    const keyUI = async () => {
+      const pub = await F.getDoc(F.doc(db, 'companies', code, 'keys', 'public')).catch(() => null);
+      const pv = await F.getDoc(F.doc(db, 'companies', code, 'keys', 'private')).catch(() => null);
+      priv = pv && pv.exists() ? pv.data() : null;
+      const has = pub && pub.exists();
+      $('#key-box').innerHTML = has ? `<div>Key <span class="code">${esc(pub.data().kid)}</span> · created ${pub.data().created ? new Date(pub.data().created.seconds * 1000).toLocaleDateString() : ''}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn sm" id="btn-key-dl">Download base-station key file</button><button class="btn sm danger" id="btn-key-new">Replace key</button></div>`
+        : `<div class="muted">No key yet. Tags use the demo key until you create one.</div><button class="btn primary" id="btn-key-new" style="margin-top:10px">Create company key</button>`;
+      $('#btn-key-new').onclick = async () => {
+        if(has && !confirm('Replace the key? Records already on tags can no longer be opened; pilots re-save after their next check.')) return;
+        const k = await RCCrypto.newCompanyKeys();
+        await F.setDoc(F.doc(db, 'companies', code, 'keys', 'private'), {kid: k.kid, jwk: k.priv, created: F.serverTimestamp()});
+        await F.setDoc(F.doc(db, 'companies', code, 'keys', 'public'), {kid: k.kid, jwk: k.pub, created: F.serverTimestamp()});
+        keyUI();
+      };
+      const dl = $('#btn-key-dl'); if(dl) dl.onclick = () => {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({company: code, kid: priv.kid, jwk: priv.jwk}, null, 2)], {type: 'application/json'}));
+        a.download = `readycheck-${code}-station-key-${priv.kid}.json`; a.click(); };
+    };
+    keyUI();
+    $('#btn-open').onclick = async () => {
+      const t = $('#tag-in').value.trim(), out = $('#tag-out');
+      if(!priv){ out.innerHTML = '<span style="color:var(--bad)">Create a company key first.</span>'; return; }
+      try{ const r = await RCCrypto.openWithPrivate(priv.jwk, t), d = r.data;
+        const L = [['Name', d.n], ['Crew ID', d.c], ['Tag ID', d.b], ['Date', d.d], ['Sharing level', d.lv], ['Check completed', d.done ? 'yes' : 'no'],
+          ['Status', d.st && {ready:'Ready', caution:'Caution', low:'Low alertness'}[d.st]], ['Median reaction', d.rt != null && d.rt + ' ms'], ['Slow reactions', d.lp], ['Early taps', d.fs], ['Duty load', d.load]].filter(x => x[1] != null && x[1] !== false);
+        out.innerHTML = `<div style="color:var(--ok);font-weight:600">✓ Opened with key ${esc(r.kid)}${r.kid !== priv.kid ? ' (old key?)' : ''}</div><table style="margin-top:6px">${L.map(([k, v]) => `<tr><td class="muted" style="padding:3px 12px 3px 0;border:0">${k}</td><td style="padding:3px 0;border:0">${esc(v)}</td></tr>`).join('')}</table>`; }
+      catch(e){ out.innerHTML = `<span style="color:var(--bad)">Could not open it.</span> ${/v2/.test(e.message) ? 'It does not look like a ReadyCheck tag record.' : 'It was locked with a different key, or the text is incomplete.'}`; }
+    };
   }
 }
 </script>

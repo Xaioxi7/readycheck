@@ -453,9 +453,14 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <form class="stack" id="signin-form">
       <label class="field">Company code<input type="text" id="si-code" style="text-transform:uppercase;letter-spacing:.08em" placeholder="e.g. DEMO" autocomplete="organization" autocapitalize="characters" spellcheck="false"></label>
       <div class="small" id="si-company" aria-live="polite"></div>
-      <label class="field">Your name<input type="text" id="si-name" placeholder="e.g. Dana Ruiz" autocomplete="name" required></label>
+      <div class="stack" id="si-cloud" hidden style="gap:12px">
+        <label class="field" id="si-crew-wrap">Crew ID<input type="text" id="si-crew" placeholder="e.g. A1234" autocapitalize="characters" spellcheck="false" autocomplete="off"></label>
+        <label class="field"><span id="si-act-label">Activation code</span><input type="text" id="si-act" placeholder="From your chief pilot, e.g. K7Q2-M9XD" autocapitalize="characters" spellcheck="false" autocomplete="one-time-code" style="text-transform:uppercase;letter-spacing:.06em"></label>
+        <button type="button" class="btn ghost" id="si-mode">New phone? Use my recovery code</button>
+      </div>
+      <label class="field" id="si-name-wrap">Your name<input type="text" id="si-name" placeholder="e.g. Dana Ruiz" autocomplete="name" required></label>
       <button class="btn amber block big" type="button" id="btn-signin">Continue</button>
-      <p class="small muted" style="margin:0">No code? Ask your chief pilot or safety office. For this prototype, use <b>DEMO</b>.</p>
+      <p class="small muted" style="margin:0" id="si-help">No code? Ask your chief pilot or safety office. For this prototype, use <b>DEMO</b>.</p>
     </form>
     <div class="card stack" id="profiles-box" hidden><h3 style="margin:0">Already on this phone</h3><div class="list" id="profiles-list"></div></div>
   </section>
@@ -713,6 +718,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <div class="chips" id="set-lock"><label class="chip"><input type="radio" name="lock" value="open"> Every time I open it</label><label class="chip"><input type="radio" name="lock" value="12h"> After 12 hours</label></div>
       <button class="btn block" id="btn-bio">Use Face ID or fingerprint</button>
       <button class="btn block" id="btn-pin-change">Change PIN</button>
+      <button class="btn block" id="btn-recovery" hidden>Create a recovery code for a new phone</button>
       <button class="btn block" id="btn-signout">Sign out</button>
       <p class="small muted" style="margin:0">Signing out keeps your results on this phone. You need your PIN to sign back in.</p>
     </div>
@@ -791,7 +797,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <h3>9. Your <span class="tag-name">Wings tag</span></h3>
       <p class="small" style="margin:0">After a check, you can save a short record to an NFC chip inside your <span class="tag-name">Wings tag</span>. You choose how much it holds: level 1 completion only (default), level 2 daily status, or level 3 full results. The record also holds your tag ID, so it only counts on your own badge.</p>
       <p class="small" style="margin:0">The record is encrypted with AES-GCM before it is written. Someone else's phone reading your tag sees only scrambled text. The tag holds about 500 bytes, so your full test data could not fit on it anyway. Each save replaces the last one.</p>
-      <p class="small muted" style="margin:0">Prototype: one demo key is built into the code so the base station can read badges. A real product would give each pilot their own key.</p>
+      <p class="small muted" style="margin:0">With the company cloud on, each company has its own key pair. Phones get only the public half, which can lock a record but not open it; only the company's base station holds the private half. So other phones, including other pilots' phones, cannot read your tag. Without the cloud, a demo key built into the code is used.</p>
     </div>
     <div class="card stack">
       <h3>10. Your schedule</h3>
@@ -826,6 +832,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <div class="toast" id="toast" hidden></div>
 
 <script src="firebase-config.js"></script>
+<script src="rc-crypto.js"></script>
 <script>
 (() => {
 'use strict';
@@ -910,21 +917,63 @@ function cloudInit(){
   cloudP.catch(() => { cloudP = null; });
   return cloudP;
 }
+// Join a company: Crew ID + activation code (from the manager), or the pilot's own recovery code.
+async function enrollCompany(code, crewId, secret, via){
+  const {F, db, uid} = await cloudInit();
+  const coDoc = await F.getDoc(F.doc(db, 'companies', code));
+  if(!coDoc.exists()) throw new Error('no-company');
+  const src = await F.getDoc(F.doc(db, 'companies', code, via === 'recovery' ? 'recovery' : 'invites', secret));
+  if(!src.exists()) throw new Error(via === 'recovery' ? 'bad-recovery' : 'bad-invite');
+  const d = src.data();
+  if(via !== 'recovery' && keyOf(d.crewId) !== keyOf(crewId)) throw new Error('bad-invite');
+  await F.setDoc(F.doc(db, 'companies', code, 'members', uid), {crewId: d.crewId, name: d.name, via, code: secret, at: F.serverTimestamp()});
+  if(via !== 'recovery') F.updateDoc(F.doc(db, 'companies', code, 'invites', secret), {usedAt: F.serverTimestamp(), usedBy: uid}).catch(() => {});
+  let coKey = null;
+  try{ const k = await F.getDoc(F.doc(db, 'companies', code, 'keys', 'public')); if(k.exists()) coKey = {kid: k.data().kid, jwk: k.data().jwk}; }catch(e){}
+  return {company: coDoc.data().name || code, crewId: d.crewId, name: d.name, coKey};
+}
+// The phone's anonymous ID can change (new browser data). Re-join quietly with the code used before.
+async function ensureMember(){
+  const {F, db, uid} = await cloudInit(), u = S.user;
+  const m = await F.getDoc(F.doc(db, 'companies', u.code, 'members', uid)).catch(() => null);
+  if(m && m.exists()) return;
+  if(!u.joinCode) throw new Error('not-member');
+  await F.setDoc(F.doc(db, 'companies', u.code, 'members', uid), {crewId: u.crewId, name: u.name, via: u.joinVia, code: u.joinCode, at: F.serverTimestamp()});
+}
+async function refreshCompanyKey(){
+  if(!cloudReady() || !S.user || !S.user.crewId) return;
+  await ensureMember();
+  const {F, db} = await cloudInit(), k = await F.getDoc(F.doc(db, 'companies', S.user.code, 'keys', 'public'));
+  if(k.exists()){ S.user.coKey = {kid: k.data().kid, jwk: k.data().jwk}; save(); }
+}
+async function makeRecoveryCode(){
+  const {F, db, uid} = await cloudInit(); await ensureMember();
+  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = crypto.getRandomValues(new Uint8Array(12));
+  const rc = 'R-' + [...r].map((x, i) => A[x % A.length] + (i % 4 === 3 && i < 11 ? '-' : '')).join('');
+  await F.setDoc(F.doc(db, 'companies', S.user.code, 'recovery', rc), {crewId: S.user.crewId, name: S.user.name, by: uid, at: F.serverTimestamp()});
+  return rc;
+}
 async function sendToCompany(c, via){
   const {F, db, uid} = await cloudInit();
   const code = S.user && S.user.code; if(!code) throw new Error('no-code');
-  const p = badgePayload(c), r = reqNow();
-  const rec = {uid, name: p.n, date: p.d, lv: p.lv, done: true, via: via || 'phone', at: F.serverTimestamp()};
+  if(!S.user.crewId) throw new Error('not-member');
+  await ensureMember();
+  const crew = S.user.crewId, p = badgePayload(c), r = reqNow();
+  const rec = {crewId: crew, uid, name: p.n, date: p.d, lv: p.lv, done: true, via: via || 'phone', at: F.serverTimestamp()};
   if(p.st) rec.st = p.st;
   if(p.lv >= 3){ ['rt', 'lp', 'fs', 'load'].forEach(k => { if(p[k] != null) rec[k] = p[k]; }); }
-  await F.setDoc(F.doc(db, 'companies', code, 'checks', `${uid}_${p.d}`), rec);
-  await F.setDoc(F.doc(db, 'companies', code, 'pilots', uid), {uid, name: p.n, lastCheck: p.d, at: F.serverTimestamp(),
+  await F.setDoc(F.doc(db, 'companies', code, 'checks', `${crew}_${p.d}`), rec);
+  await F.setDoc(F.doc(db, 'companies', code, 'pilots', crew), {crewId: crew, name: p.n, lastCheck: p.d, at: F.serverTimestamp(),
     month: {label: r.month, met: r.met, n28: r.n28, need: r.need, covered: r.covered, flights: r.flights}});
   c.sentAt = Date.now(); c.sentLv = p.lv; save();
   return rec;
 }
 const cloudErr = e => e && e.message === 'not-configured' ? 'The company connection is not set up yet in this prototype.'
   : e && e.message === 'no-code' ? 'Sign in with a company code first.'
+  : e && e.message === 'not-member' ? 'Sign out and sign in again with your Crew ID and activation code.'
+  : e && e.message === 'no-company' ? 'That company code was not found.'
+  : e && e.message === 'bad-invite' ? 'That Crew ID and activation code do not match. Check both, or ask your chief pilot for a new code.'
+  : e && e.message === 'bad-recovery' ? 'That recovery code was not found. Check it, or ask your chief pilot for an activation code.'
   : e && /permission/i.test(e.code || e.message) ? 'Your company code was not accepted by the server.'
   : 'Could not reach your company. Check your internet and try again.';
 /* ---------- Phase 4: what goes on the tag ---------- */
@@ -943,7 +992,8 @@ const normUid = u => String(u || '').toUpperCase().replace(/[^0-9A-F]/g, '').rep
 // Exactly what will be written, before encryption. Keys are short to fit the badge.
 function badgePayload(c){
   const lv = shareLevel();
-  const p = {v:1, n: S.user ? S.user.name : '', b: normUid(S.badgeUid), d: ymd(c.ts), lv, done: 1};
+  const co = S.user && S.user.coKey, p = {v: co ? 2 : 1, n: S.user ? S.user.name : '', b: normUid(S.badgeUid), d: ymd(c.ts), lv, done: 1};
+  if(S.user && S.user.crewId) p.c = S.user.crewId;
   if(lv >= 2) p.st = ['ready','caution','low'][c.level];
   if(lv >= 3){ p.rt = c.pvt.medianRT; p.lp = c.pvt.lapses; p.fs = c.pvt.fs; if(c.load) p.load = c.load.cum; }
   return p;
@@ -961,6 +1011,8 @@ const fromB64url = s => Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/
 async function badgeKey(){ return crypto.subtle.importKey('raw', hexBytes(BADGE.demoKeyHex), 'AES-GCM', false, ['encrypt','decrypt']); }
 // AES-GCM: 12-byte random IV + ciphertext with tag, as base64url after the RC1. prefix.
 async function encryptBadge(p){
+  // Version 2: locked with the company's public key, so only the company's base station can open it.
+  if(S.user && S.user.coKey && window.RCCrypto) return RCCrypto.sealForCompany(S.user.coKey.jwk, S.user.coKey.kid, p);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM', iv}, await badgeKey(), new TextEncoder().encode(JSON.stringify(p))));
   const all = new Uint8Array(12 + ct.length); all.set(iv); all.set(ct, 12);
@@ -1005,8 +1057,8 @@ let S = (DB.active && DB.profiles[DB.active]) ? migrate(Object.assign(defaults()
 const userKey = u => u.key || keyOf(u.name);
 function save(){ if(S.user && S.user.name){ DB.profiles[userKey(S.user)] = S; } try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){} }
 // Profiles are keyed by company code + name. Earlier profiles (name only) keep their old key.
-function switchTo(name, code){
-  const k = code ? keyOf(code) + '|' + keyOf(name) : keyOf(name);
+function switchTo(name, code, key){
+  const k = key || (code ? keyOf(code) + '|' + keyOf(name) : keyOf(name));
   if(!DB.profiles[k]) DB.profiles[k] = Object.assign(defaults(), {user:{name:String(name).trim(), since:Date.now(), key:k}});
   DB.active = k; S = migrate(Object.assign(defaults(), DB.profiles[k])); S.user.key = k;
   if(code && !S.user.code){ S.user.code = code.toUpperCase(); S.user.company = COMPANIES[S.user.code] || null; }
@@ -1336,12 +1388,42 @@ async function hashPin(pin, saltB64){
   const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt, iterations:150000, hash:'SHA-256'}, key, 256);
   return {salt: b64(salt), hash: b64(bits)};
 }
+let siRecovery = false, hintT = 0;
 function companyHint(){
   const code = $('#si-code').value.trim().toUpperCase(), el = $('#si-company');
-  el.innerHTML = !code ? '' : COMPANIES[code] ? `<span style="color:var(--ok)">✓ ${esc(COMPANIES[code])}</span>` : code.length >= 3 ? '<span class="muted">Code not found yet. Check the spelling.</span>' : '';
+  if(!cloudReady()){ el.innerHTML = !code ? '' : COMPANIES[code] ? `<span style="color:var(--ok)">✓ ${esc(COMPANIES[code])}</span>` : code.length >= 3 ? '<span class="muted">Code not found yet. Check the spelling.</span>' : ''; return; }
+  clearTimeout(hintT); if(code.length < 3){ el.innerHTML = ''; return; }
+  hintT = setTimeout(async () => { try{ const {F, db} = await cloudInit(); const d = await F.getDoc(F.doc(db, 'companies', code));
+    if($('#si-code').value.trim().toUpperCase() === code) el.innerHTML = d.exists() ? `<span style="color:var(--ok)">✓ ${esc(d.data().name || code)}</span>` : '<span class="muted">Code not found yet. Check the spelling.</span>'; }catch(e){ el.innerHTML = '<span class="muted">Offline. Check your internet.</span>'; } }, 350);
+}
+function siLayout(){
+  const cloud = cloudReady();
+  $('#si-cloud').hidden = !cloud; $('#si-name-wrap').hidden = cloud;
+  $('#si-crew-wrap').hidden = cloud && siRecovery;
+  $('#si-act-label').textContent = siRecovery ? 'Recovery code' : 'Activation code';
+  $('#si-act').placeholder = siRecovery ? 'The code you saved, e.g. R-ABCD-EFGH-JKLM' : 'From your chief pilot, e.g. K7Q2-M9XD';
+  $('#si-mode').textContent = siRecovery ? 'Use an activation code instead' : 'New phone? Use my recovery code';
+}
+$('#si-mode').addEventListener('click', () => { siRecovery = !siRecovery; siLayout(); });
+async function doCloudSignIn(){
+  const code = $('#si-code').value.trim().toUpperCase(), crew = $('#si-crew').value.trim().toUpperCase(), secret = $('#si-act').value.trim().toUpperCase();
+  if(!code){ $('#si-code').focus(); toast('Enter your company code.'); return; }
+  if(!siRecovery && !crew){ $('#si-crew').focus(); toast('Enter your Crew ID.'); return; }
+  if(!secret){ $('#si-act').focus(); toast(siRecovery ? 'Enter your recovery code.' : 'Enter your activation code.'); return; }
+  const btn = $('#btn-signin'); btn.disabled = true; btn.textContent = 'Checking...';
+  try{
+    const r = await enrollCompany(code, crew, secret, siRecovery ? 'recovery' : 'invite');
+    const k = keyOf(code) + '|crew:' + keyOf(r.crewId), existing = DB.profiles[k];
+    if(existing && existing.user && existing.user.pin){ Object.assign(existing.user, {company: r.company, coKey: r.coKey || existing.user.coKey, joinCode: secret, joinVia: siRecovery ? 'recovery' : 'invite'}); save(); askPin('enter', k); return; }
+    switchTo(r.name, code, k); Object.assign(S.user, {code, company: r.company, crewId: r.crewId, coKey: r.coKey, joinCode: secret, joinVia: siRecovery ? 'recovery' : 'invite'}); save();
+    $('#si-act').value = ''; toast(`Joined ${r.company} as ${r.name}.`);
+    askPin('set', k, () => go(S.agreed ? 'home' : 'consent'));
+  }catch(e){ toast(cloudErr(e)); }
+  finally{ btn.disabled = false; btn.textContent = 'Continue'; }
 }
 $('#si-code').addEventListener('input', companyHint);
 function doSignIn(){
+  if(cloudReady()){ doCloudSignIn(); return; }
   const code = $('#si-code').value.trim().toUpperCase(), name = $('#si-name').value.trim();
   if(!COMPANIES[code]){ $('#si-code').focus(); toast(code ? 'That company code was not found. For the demo, use DEMO.' : 'Enter your company code.'); return; }
   if(!name){ $('#si-name').focus(); toast('Enter your name to sign in.'); return; }
@@ -1357,7 +1439,7 @@ $('#signin-form').addEventListener('submit', e => { e.preventDefault(); doSignIn
 renderers.signin = () => {
   $('#signin-scene').innerHTML = heroScene(new Date().getHours());
   const ps = Object.entries(DB.profiles).filter(([k, p]) => p.user && p.user.name);
-  $('#profiles-box').hidden = !ps.length; companyHint();
+  $('#profiles-box').hidden = !ps.length; siLayout(); companyHint();
   $('#profiles-list').innerHTML = ps.map(([k, p]) => `<div class="list-item"><div><div>${esc(p.user.name)}</div><div class="small muted">${p.user.company ? esc(p.user.company) + ' · ' : ''}${plural((p.checks||[]).length, 'check')}</div></div><button class="btn" data-profile="${esc(k)}">Sign in</button></div>`).join('');
   $$('#profiles-list [data-profile]').forEach(b => b.onclick = () => {
     const k = b.dataset.profile, p = DB.profiles[k]; if(!p) return;
@@ -1451,6 +1533,16 @@ function needsUnlock(){
 }
 // ---- settings: account ----
 $('#set-lock').addEventListener('change', e => { S.lockMode = e.target.value; save(); toast(S.lockMode === 'open' ? 'ReadyCheck will ask for your PIN every time you open it.' : 'ReadyCheck will ask for your PIN after 12 hours.'); });
+$('#btn-recovery').addEventListener('click', async () => {
+  const b = $('#btn-recovery'); b.disabled = true;
+  try{ const rc = await makeRecoveryCode();
+    sheet('Your recovery code', `<p class="small">On a new phone, sign in with your company code and this recovery code. You come back as <b>${esc(S.user.name)}</b> (Crew ID ${esc(S.user.crewId)}) without asking your chief pilot.</p>
+      <div class="mono" style="font-size:1.35rem;text-align:center;letter-spacing:.06em;padding:12px;border:2px dashed var(--accent);border-radius:12px;user-select:all">${rc}</div>
+      <p class="small muted">Write it down or save it in your password manager. ReadyCheck shows it only once. Your results stay on this phone; the code restores your company sign-in, not your history.</p>`,
+      'Copy code', () => { navigator.clipboard && navigator.clipboard.writeText(rc).then(() => toast('Copied.'), () => {}); });
+  }catch(e){ toast(cloudErr(e)); }
+  b.disabled = false;
+});
 $('#btn-pin-change').addEventListener('click', () => askPin('change', userKey(S.user)));
 $('#btn-bio').addEventListener('click', async () => {
   if(S.user.passkey){ sheet('Turn off Face ID or fingerprint?', '<p class="small">You will sign in with your PIN only.</p>', 'Turn off', () => { S.user.passkey = null; save(); renderers.settings(); }); return; }
@@ -2483,7 +2575,7 @@ function badgeCard(c){
     ${paired ? '' : `<div class="notice warn small stack" style="gap:8px"><div><b>Pair your ${TAG_NAME} first</b>, so the base station can check the tag is yours.</div><button class="btn block" id="btn-pair-tag">Pair my ${TAG_NAME}</button></div>`}
     <div class="small"><b>Exactly what goes on your tag</b> (${SHARE_TXT[p.lv]}):</div>
     <ul class="tips small" style="margin:0">${badgeLines(p).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-    <p class="small muted" style="margin:0">It is encrypted first, so anyone else who reads the tag sees only scrambled text. Each save replaces the last one; the tag holds only your latest check. Change the level in Me.</p>
+    <p class="small muted" style="margin:0">${S.user && S.user.coKey ? `Locked with ${esc(S.user.company || 'your company')}'s key (${esc(S.user.coKey.kid)}): only its base station can open it, not other phones.` : 'Encrypted with the demo key.'} Anyone else who reads the tag sees only scrambled text. Each save replaces the last one; the tag holds only your latest check. Change the level in Me.</p>
     <div class="mono small" id="badge-enc" style="word-break:break-all;display:none"></div>
     ${canWebNFC() ? `<button class="btn primary block" id="btn-badge-write" ${paired?'':'disabled'}>Write to my tag</button>` : ''}
     <button class="btn ${canWebNFC() ? '' : 'primary'} block" id="btn-badge-copy" ${paired?'':'disabled'}>Copy for my tag</button>
@@ -2500,6 +2592,7 @@ function badgeCard(c){
       <div class="small" id="send-status" aria-live="polite"></div></div>` : ''}</div>`;
 }
 async function prepareBadge(c){
+  await refreshCompanyKey().catch(() => {});
   const p = badgePayload(c), enc = await encryptBadge(p);
   if(new TextEncoder().encode(enc).length > BADGE.maxBytes){ toast('Too much data for the tag. Choose a lower sharing level.'); return null; }
   const box = $('#badge-enc'); box.textContent = 'Encrypted: ' + enc; box.style.display = 'block';
@@ -3059,6 +3152,8 @@ renderers.settings = () => {
   $$('#set-lock input').forEach(i => i.checked = i.value === (S.lockMode || '12h'));
   $('#btn-bio').textContent = S.user && S.user.passkey ? 'Turn off Face ID or fingerprint' : 'Use Face ID or fingerprint'; $('#btn-bio').hidden = !canPasskey();
   $('#btn-pin-change').textContent = S.user && S.user.pin ? 'Change PIN' : 'Set a PIN';
+  $('#btn-recovery').hidden = !(cloudReady() && S.user && S.user.crewId);
+  if(S.user && S.user.crewId) $('#acct-info').insertAdjacentHTML('beforeend', `<br>Crew ID <b>${esc(S.user.crewId)}</b> at ${esc(S.user.company || S.user.code)}. Tag key: ${S.user.coKey ? esc(S.user.coKey.kid) : 'not set by your company yet (demo key used)'}.`);
   $('#set-age').value = S.age || '';
   $$('#set-look input').forEach(i => i.checked = i.value === (S.testLook || 'radar'));
   $$('#set-share input').forEach(i => i.checked = Number(i.value) === shareLevel());

@@ -1,17 +1,21 @@
 rules_version = '2';
 // ReadyCheck security rules.
-// Pilots (anonymous sign-in from the phone app) can only write their own records, only to a company that exists,
-// and only the fields their chosen sharing level allows. Managers (email + password accounts listed in /managers)
-// can read only their own company. Nobody can read another pilot's records from the app.
+// Pilots: anonymous sign-in on the phone, then they join a company with Crew ID + activation code (from the manager)
+// or with their own recovery code. Their phone is then a "member" mapped to that Crew ID.
+// Members write only their own records and only the fields their sharing level allows.
+// Managers (email + password accounts listed in /managers) read and manage only their own company.
 service cloud.firestore {
   match /databases/{db}/documents {
     function signedIn() { return request.auth != null; }
+    function co(code) { return /databases/$(db)/documents/companies/$(code); }
     function isManagerOf(code) {
       return signedIn() && request.auth.token.firebase.sign_in_provider == 'password'
         && exists(/databases/$(db)/documents/managers/$(request.auth.uid))
         && get(/databases/$(db)/documents/managers/$(request.auth.uid)).data.code == code;
     }
-    function companyExists(code) { return exists(/databases/$(db)/documents/companies/$(code)); }
+    function memberDoc(code) { return /databases/$(db)/documents/companies/$(code)/members/$(request.auth.uid); }
+    function isMember(code) { return signedIn() && exists(memberDoc(code)); }
+    function myCrew(code) { return get(memberDoc(code)).data.crewId; }
     function levelFieldsOk(d) {
       return d.lv in [1, 2, 3]
         && (d.lv >= 2 || !('st' in d))
@@ -19,30 +23,72 @@ service cloud.firestore {
     }
 
     match /companies/{code} {
-      allow get: if signedIn();            // the app shows the company name after the code is typed
+      allow get: if signedIn();                       // company name shown after the code is typed
       allow list, write: if false;
 
+      // Activation codes. The document ID is the code itself, so only someone who has the code can read it.
+      match /invites/{inv} {
+        allow get: if signedIn();
+        allow list, create, delete: if isManagerOf(code);
+        allow update: if isManagerOf(code)
+          || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedAt', 'usedBy']));
+      }
+      // Recovery codes made by the pilot. Same idea: the ID is the secret.
+      match /recovery/{rc} {
+        allow get: if signedIn();
+        allow list: if isManagerOf(code);
+        allow create: if isMember(code) && rc.size() >= 14
+          && request.resource.data.keys().hasOnly(['crewId', 'name', 'by', 'at'])
+          && request.resource.data.crewId == myCrew(code);
+        allow delete: if isManagerOf(code) || (isMember(code) && resource.data.crewId == myCrew(code));
+      }
+      // Phone -> Crew ID mapping. Created only with a valid activation or recovery code.
+      match /members/{uid} {
+        allow get: if (signedIn() && request.auth.uid == uid) || isManagerOf(code);
+        allow list: if isManagerOf(code);
+        allow create, update: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['crewId', 'name', 'via', 'code', 'at'])
+          && (
+            (request.resource.data.via == 'invite'
+              && exists(/databases/$(db)/documents/companies/$(code)/invites/$(request.resource.data.code))
+              && get(/databases/$(db)/documents/companies/$(code)/invites/$(request.resource.data.code)).data.crewId == request.resource.data.crewId)
+            || (request.resource.data.via == 'recovery'
+              && exists(/databases/$(db)/documents/companies/$(code)/recovery/$(request.resource.data.code))
+              && get(/databases/$(db)/documents/companies/$(code)/recovery/$(request.resource.data.code)).data.crewId == request.resource.data.crewId)
+          );
+        allow delete: if isManagerOf(code) || (signedIn() && request.auth.uid == uid);
+      }
+      // Company tag keys. Public half: any member's phone uses it to lock tag records.
+      // Private half: only managers (and the base station signed in as a manager) can read it.
+      match /keys/public {
+        allow get: if isMember(code) || isManagerOf(code);
+        allow write: if isManagerOf(code);
+      }
+      match /keys/private {
+        allow get, write: if isManagerOf(code);
+      }
+      // Today's records and the monthly summary, keyed by Crew ID.
       match /checks/{id} {
         allow read: if isManagerOf(code);
-        allow create, update: if signedIn() && companyExists(code)
+        allow create, update: if isMember(code)
+          && request.resource.data.crewId == myCrew(code)
+          && id == myCrew(code) + '_' + request.resource.data.date
+          && request.resource.data.keys().hasOnly(['crewId', 'uid', 'name', 'date', 'lv', 'done', 'via', 'at', 'st', 'rt', 'lp', 'fs', 'load'])
           && request.resource.data.uid == request.auth.uid
-          && id == request.auth.uid + '_' + request.resource.data.date
-          && request.resource.data.keys().hasOnly(['uid', 'name', 'date', 'lv', 'done', 'via', 'at', 'st', 'rt', 'lp', 'fs', 'load'])
           && request.resource.data.via in ['phone', 'tag']
           && levelFieldsOk(request.resource.data);
-        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+        allow delete: if isManagerOf(code);
       }
-      match /pilots/{uid} {
+      match /pilots/{crewId} {
         allow read: if isManagerOf(code);
-        allow create, update: if signedIn() && companyExists(code) && request.auth.uid == uid
-          && request.resource.data.uid == uid
-          && request.resource.data.keys().hasOnly(['uid', 'name', 'lastCheck', 'at', 'month']);
-        allow delete: if signedIn() && request.auth.uid == uid;
+        allow create, update: if isMember(code) && crewId == myCrew(code)
+          && request.resource.data.keys().hasOnly(['crewId', 'name', 'lastCheck', 'at', 'month']);
+        allow delete: if isManagerOf(code);
       }
     }
     match /managers/{uid} {
-      allow read: if signedIn() && request.auth.uid == uid;
-      allow write: if false;               // set up by the admin in the Firebase console
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow write: if false;                          // set up by the admin in the Firebase console
     }
   }
 }
