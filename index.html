@@ -122,7 +122,7 @@ ul.tips{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px}
 .demo-box{display:grid;place-items:center;height:110px;background:#000;border-radius:14px;border:1px solid #1f2a3c}
 .demo-box .target{width:80px;box-shadow:0 0 0 6px rgba(255,194,26,.18)}
 .demo-box .fix{width:10px;height:10px}
-.test-pad.radar{background:
+.test-pad.radar,.demo-box.radar{background:
   radial-gradient(circle at center, rgba(67,192,138,.10) 0, rgba(67,192,138,0) 62%),
   repeating-radial-gradient(circle at center, transparent 0 58px, rgba(67,192,138,.16) 58px 59px),
   linear-gradient(transparent calc(50% - .5px), rgba(67,192,138,.14) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
@@ -130,6 +130,8 @@ ul.tips{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px}
   border-radius:18px}
 .radar .fix{width:14px;height:14px;background:transparent;border:2px solid #43c08a;box-shadow:0 0 0 5px rgba(67,192,138,.12)}
 .radar #stim{position:relative}
+.demo-box.radar .stimwrap{position:relative}
+.demo-box.radar .blip{width:30px;height:30px}
 .radar .blip{position:absolute;left:50%;bottom:100%;transform:translate(-50%,-6px);width:46px;height:46px;color:var(--test-ink);filter:drop-shadow(0 0 8px rgba(255,194,26,.55))}
 .radar .feedback b{color:#7ee2b0}
 .radar .feedback.bad b{color:#ff9a8a}
@@ -430,7 +432,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <h3>What it does</h3>
       <p class="small" style="margin:0">A short reaction test while the camera looks at your eyelids, to help you understand how alert you are before duty.</p>
       <h3>It is not a medical device</h3>
-      <p class="small" style="margin:0">It does not diagnose anything and does not decide whether you are fit to fly. That decision stays with you and your airline's normal process.</p>
+      <p class="small" style="margin:0">It does not diagnose anything and does not decide whether you are fit to fly. That decision stays with you and your company's normal process.</p>
       <h3>Camera</h3>
       <p class="small" style="margin:0">The camera is used only during a check. Video is analysed on this phone and is never recorded, stored or sent.</p>
       <h3>Your results</h3>
@@ -493,9 +495,9 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <label class="field">Time zone of that time<select id="d-tz"></select></label>
     </div>
     <div class="card stack">
-      <div class="q ctx-legs"><span>Legs planned today</span>
+      <div class="q ctx-legs"><span>Legs planned today<small class="muted" style="display:block;font-size:.8rem">A leg is one takeoff and one landing.</small></span>
         <div class="stepper" id="d-legs" data-min="0" data-max="10"><button type="button" data-d="-1" aria-label="One leg fewer">−</button><output aria-live="polite">0</output><button type="button" data-d="1" aria-label="One leg more">+</button></div></div>
-      <div class="q"><span>Time zones crossed in the last 24 hours</span>
+      <div class="q"><span>Time zones crossed in the last 24 hours<small class="muted" style="display:block;font-size:.8rem">Count the hour difference, e.g. Phoenix to New York is 2 (summer: 3).</small></span>
         <div class="stepper" id="d-tzx" data-min="0" data-max="12"><button type="button" data-d="-1" aria-label="One time zone fewer">−</button><output aria-live="polite">0</output><button type="button" data-d="1" aria-label="One time zone more">+</button></div></div>
     </div>
     <div class="card stack ctx-on">
@@ -622,16 +624,16 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <p class="small muted" style="margin:0">Used to compare your reaction speed with your age group until your own baseline exists (after 3 practice checks and 5 more). Stays on this phone.</p>
     </div>
     <div class="card stack" id="badge-settings">
-      <h3 style="margin:0">My wings badge (NFC)</h3>
-      <p class="small muted" style="margin:0">Your badge holds only what you choose below. Your full results never leave this phone unless you pick level 3.</p>
+      <h3 style="margin:0">My <span class="tag-name">Wings tag</span> (NFC)</h3>
+      <p class="small muted" style="margin:0">Your <span class="tag-name">Wings tag</span> holds only what you choose below. Your full results never leave this phone unless you pick level 3.</p>
       <div class="small muted">What can be shared</div>
       <div class="stack" id="set-share" style="gap:6px">
         <label class="chip" style="justify-content:flex-start"><input type="radio" name="share" value="1"> <span><b>Level 1: completion only</b> (default). "Check completed today."</span></label>
         <label class="chip" style="justify-content:flex-start"><input type="radio" name="share" value="2"> <span><b>Level 2: daily status</b>. Completion + Ready, Caution or Low alertness.</span></label>
         <label class="chip" style="justify-content:flex-start"><input type="radio" name="share" value="3"> <span><b>Level 3: full results</b>. Status + reaction time, slow reactions, early taps and duty load.</span></label>
       </div>
-      <div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="field" style="flex:1">Badge ID (UID)<input type="text" id="set-badge" placeholder="e.g. 04:A2:3B:1C:5D:80:00" autocomplete="off" autocapitalize="characters"></label><button class="btn" id="btn-set-badge">Pair</button></div>
-      <p class="small muted" style="margin:0">To find the ID: open the free NFC Tools app, tap <b>Read</b>, hold your phone near the badge, and copy the <b>Serial number</b>.</p>
+      <div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="field" style="flex:1">Tag ID (serial number)<input type="text" id="set-badge" placeholder="e.g. 04:A2:3B:1C:5D:80:00" autocomplete="off" autocapitalize="characters"></label><button class="btn" id="btn-set-badge">Pair</button></div>
+      <p class="small muted" style="margin:0">To find the ID: open the free NFC Tools app, tap <b>Read</b>, hold your phone near the tag, and copy the <b>Serial number</b>.</p>
       <div class="small" id="badge-now"></div>
     </div>
     <div class="card stack">
@@ -729,9 +731,9 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <p class="small muted" style="margin:0">All weights are design choices in one settings block of the code. They are not validated and will be tuned with study data.</p>
     </div>
     <div class="card stack">
-      <h3>9. Your wings badge</h3>
-      <p class="small" style="margin:0">After a check, you can save a short record to an NFC chip inside your wings badge. You choose how much it holds: level 1 completion only (default), level 2 daily status, or level 3 full results. The record also holds your badge ID, so it only counts on your own badge.</p>
-      <p class="small" style="margin:0">The record is encrypted with AES-GCM before it is written. Someone else's phone reading your badge sees only scrambled text. The badge holds about 500 bytes, so your full test data could not fit on it anyway. Each save replaces the last one.</p>
+      <h3>9. Your <span class="tag-name">Wings tag</span></h3>
+      <p class="small" style="margin:0">After a check, you can save a short record to an NFC chip inside your <span class="tag-name">Wings tag</span>. You choose how much it holds: level 1 completion only (default), level 2 daily status, or level 3 full results. The record also holds your tag ID, so it only counts on your own badge.</p>
+      <p class="small" style="margin:0">The record is encrypted with AES-GCM before it is written. Someone else's phone reading your tag sees only scrambled text. The tag holds about 500 bytes, so your full test data could not fit on it anyway. Each save replaces the last one.</p>
       <p class="small muted" style="margin:0">Prototype: one demo key is built into the code so the base station can read badges. A real product would give each pilot their own key.</p>
     </div>
     <div class="card flat stack">
@@ -822,7 +824,9 @@ const AGE_NORMS = [
   {upTo: 29, med: 260, sd: 35}, {upTo: 39, med: 270, sd: 35}, {upTo: 49, med: 280, sd: 38},
   {upTo: 59, med: 295, sd: 40}, {upTo: 69, med: 310, sd: 45}, {upTo: 120, med: 325, sd: 50}
 ];
-/* ---------- Phase 4: what goes on the wings badge ---------- */
+/* ---------- Phase 4: what goes on the tag ---------- */
+const TAG_NAME = 'Wings tag'; // working name for the physical NFC tag; change here only
+
 // DEMO ONLY: one shared AES-256 key for the prototype, so the base station can decrypt.
 // A real product would give each pilot their own key and keep keys out of the page code.
 const BADGE = {
@@ -842,7 +846,7 @@ function badgePayload(c){
   return p;
 }
 function badgeLines(p){
-  const L = [`Name: ${p.n || '(not set)'}`, `Badge: ${p.b || '(not paired)'}`, `Date: ${p.d}`, 'Check completed: yes'];
+  const L = [`Name: ${p.n || '(not set)'}`, `Tag ID: ${p.b || '(not paired)'}`, `Date: ${p.d}`, 'Check completed: yes'];
   if(p.st) L.push(`Status: ${{ready:'Ready', caution:'Caution', low:'Low alertness'}[p.st]}`);
   if(p.rt != null) L.push(`Median reaction: ${p.rt} ms`, `Slow reactions: ${p.lp}`, `Early taps: ${p.fs}`);
   if(p.load != null) L.push(`Duty load: ${p.load}`);
@@ -1295,6 +1299,13 @@ renderers.home = () => {
         <b style="color:${col};font-size:1.15rem">● ${ST[lt.s].word}</b>
         <div class="small muted">For more detail and more recommendations, see your plan in History.</div></div>
       <button class="btn" data-go="trends" style="flex:none">History ›</button></div>`);
+    const r = reqNow(), pct = Math.min(100, Math.round(100 * Math.min(r.n28, r.need) / r.need));
+    hero.insertAdjacentHTML('beforeend', `<div class="card stack" style="margin-top:16px;gap:8px">
+      <div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><div class="eyebrow" style="margin:0">Check requirement · ${esc(r.month)}</div>
+        <span class="pill ${r.met ? 'ok' : ''}">${r.met ? '✓ On track' : 'In progress'}</span></div>
+      <div style="height:8px;border-radius:99px;background:var(--line, #2a3549);overflow:hidden" role="progressbar" aria-valuemin="0" aria-valuemax="${r.need}" aria-valuenow="${Math.min(r.n28, r.need)}"><div style="height:100%;width:${pct}%;background:${r.met ? 'var(--ok)' : 'var(--accent)'}"></div></div>
+      <div class="small"><b>${Math.min(r.n28, r.need)} of ${r.need}</b> check days in the last 28 · <b>${r.covered} of ${r.flights}</b> flight days checked${r.missed ? ` · <span style="color:var(--bad)">${plural(r.missed, 'flight day')} missed</span>` : ''}</div>
+      <div class="small muted">Your company sees only whether this is met. Nothing else.</div></div>`);
   }
 };
 /* ---------- self rating ---------- */
@@ -1509,7 +1520,10 @@ renderers.camera = async () => {
     setStatus('st-cam','bad','Camera','Not available in this browser. Open the page over https or use "Test without camera".'); return;
   }
   try { await startCamera(); setStatus('st-cam','ok','Camera','On. Video stays on this device.'); }
-  catch(e){ setStatus('st-cam','bad','Camera', e && e.name==='NotAllowedError' ? 'Permission denied. Allow camera access, or test without camera.' : 'Could not start the camera.'); return; }
+  catch(e){ setStatus('st-cam','bad','Camera', e && e.name==='NotAllowedError' ? 'Permission denied. Allow camera access for this site in your browser settings, then reload. Or test without camera.'
+      : e && e.name==='NotFoundError' ? 'No front camera found. Test without camera.'
+      : e && e.name==='NotReadableError' ? 'The camera is busy in another app. Close it (for example a video call) and tap Back, then try again.'
+      : `Could not start the camera (${esc((e && e.name) || 'unknown error')}). Reload the page, or test without camera.`); return; }
   calib.bTimer = setInterval(() => {
     const b = brightness(); if(b==null) return; calib.brightness = b;
     if(b < 45) setStatus('st-light','warn','Lighting','Too dark. Face a light source.');
@@ -1585,11 +1599,20 @@ $('#btn-test-cancel').addEventListener('click', leaveCheck);
 $('#btn-test-sound').addEventListener('click', e => { e.stopPropagation(); e.currentTarget.blur(); S.testSound = !soundOn(); save(); unlockAudio(); applyTestLook(); });
 $('#set-look').addEventListener('change', e => { S.testLook = e.target.value; save(); toast(S.testLook === 'radar' ? 'Radar look on.' : 'Classic look on.'); });
 $('#set-sound').addEventListener('change', e => { S.testSound = e.target.checked; save(); });
-$('#set-share').addEventListener('change', e => { S.shareLevel = Number(e.target.value); save(); toast(`Sharing set to level ${S.shareLevel}: ${SHARE_TXT[S.shareLevel].toLowerCase()}.`); });
+const SHARE_ADDS = {2:['Your status today: Ready, Caution or Low alertness'], 3:['Your typical reaction time','Your number of slow reactions and early taps','Your duty load score']};
+$('#set-share').addEventListener('change', e => {
+  const old = shareLevel(), nv = Number(e.target.value);
+  const setRadios = v => $$('#set-share input').forEach(i => i.checked = Number(i.value) === v);
+  const apply = () => { S.shareLevel = nv; save(); setRadios(nv); toast(`Sharing set to level ${nv}: ${SHARE_TXT[nv].toLowerCase()}.`); };
+  if(nv <= old){ apply(); return; }
+  setRadios(old);
+  const adds = []; for(let l = old + 1; l <= nv; l++) adds.push(...(SHARE_ADDS[l] || []));
+  sheet(`Share more on your ${TAG_NAME}?`, `<p class="small">From your next save, the base station and your company will also see:</p><ul class="tips small">${adds.map(x => `<li>${esc(x)}</li>`).join('')}</ul><p class="small muted">You can lower the level again any time. Records already saved are not changed until you save again.</p>`, `Yes, share level ${nv}`, apply);
+});
 $('#btn-set-badge').addEventListener('click', () => {
   const u = normUid($('#set-badge').value);
   if(u.replace(/:/g,'').length < 8){ toast('Enter the badge serial number from NFC Tools.'); return; }
-  S.badgeUid = u; save(); $('#set-badge').value = u; toast('Badge paired.');
+  S.badgeUid = u; save(); $('#set-badge').value = u; toast(`${TAG_NAME} paired.`);
 });
 $('#btn-test-start').addEventListener('click', () => {
   clearInterval(demoTimer); unlockAudio();
@@ -1623,8 +1646,8 @@ function startDemoStim(){
   clearInterval(demoTimer); const el = $('#demo-box'); if(!el) return; let on = false;
   let t0 = 0;
   const tick = () => { const now = performance.now();
-    if(now - t0 > 1400){ on = !on; t0 = now; el.innerHTML = on ? '<div class="counter" style="font-size:2.6rem">000</div>' : '<div class="fix"></div>'; }
-    if(on){ const c = el.firstChild; if(c) c.textContent = String(Math.floor(now - t0)).padStart(3,'0'); } };
+    if(now - t0 > 1400){ on = !on; t0 = now; el.innerHTML = on ? `<div class="stimwrap">${radarOn() ? PLANE_SVG : ''}<div class="counter" style="font-size:2.6rem">000</div></div>` : '<div class="fix"></div>'; }
+    if(on){ const c = el.querySelector('.counter'); if(c) c.textContent = String(Math.floor(now - t0)).padStart(3,'0'); } };
   tick(); demoTimer = setInterval(tick, 30);
 }
 function eyeFrame(f, t){
@@ -2225,45 +2248,46 @@ function loadCard(c){
 function badgeCard(c){
   if(!sameDay(c.ts, Date.now())) return '';
   const p = badgePayload(c), paired = !!S.badgeUid;
-  return `<div class="card stack" id="badge-card"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><h2 style="margin:0">Save to my wings badge</h2><span class="pill">Level ${p.lv}</span></div>
-    ${paired ? '' : `<div class="notice warn small"><b>Pair your badge first.</b> Go to Me > My wings badge and enter its ID, so the base station can check the badge is yours.</div>`}
-    <div class="small"><b>Exactly what goes on your badge</b> (${SHARE_TXT[p.lv]}):</div>
+  return `<div class="card stack" id="badge-card"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><h2 style="margin:0">Save to my ${TAG_NAME}</h2><span class="pill">Level ${p.lv}</span></div>
+    ${paired ? '' : `<div class="notice warn small stack" style="gap:8px"><div><b>Pair your ${TAG_NAME} first</b>, so the base station can check the tag is yours.</div><button class="btn block" id="btn-pair-tag">Pair my ${TAG_NAME}</button></div>`}
+    <div class="small"><b>Exactly what goes on your tag</b> (${SHARE_TXT[p.lv]}):</div>
     <ul class="tips small" style="margin:0">${badgeLines(p).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-    <p class="small muted" style="margin:0">It is encrypted first, so anyone else who reads the badge sees only scrambled text. Each save replaces the last one; the badge holds only your latest check. Change the level in Me.</p>
+    <p class="small muted" style="margin:0">It is encrypted first, so anyone else who reads the tag sees only scrambled text. Each save replaces the last one; the tag holds only your latest check. Change the level in Me.</p>
     <div class="mono small" id="badge-enc" style="word-break:break-all;display:none"></div>
-    ${canWebNFC() ? `<button class="btn primary block" id="btn-badge-write" ${paired?'':'disabled'}>Write to my badge</button>` : ''}
-    <button class="btn ${canWebNFC() ? '' : 'primary'} block" id="btn-badge-copy" ${paired?'':'disabled'}>Copy for my badge</button>
+    ${canWebNFC() ? `<button class="btn primary block" id="btn-badge-write" ${paired?'':'disabled'}>Write to my tag</button>` : ''}
+    <button class="btn ${canWebNFC() ? '' : 'primary'} block" id="btn-badge-copy" ${paired?'':'disabled'}>Copy for my tag</button>
     <ol class="tips small" id="badge-steps" style="display:none;margin:0">
       <li>Open the free <b>NFC Tools</b> app.</li>
       <li>Tap <b>Write</b> > <b>Add a record</b> > <b>Text</b>.</li>
       <li>Paste, then tap <b>OK</b> > <b>Write</b>.</li>
-      <li>Hold the <b>top</b> of your iPhone (or the <b>back</b> of an Android phone) near your badge until it says done.</li>
+      <li>Hold the <b>top</b> of your iPhone (or the <b>back</b> of an Android phone) near your tag until it says done.</li>
     </ol>
     <div class="small" id="badge-status"></div></div>`;
 }
 async function prepareBadge(c){
   const p = badgePayload(c), enc = await encryptBadge(p);
-  if(new TextEncoder().encode(enc).length > BADGE.maxBytes){ toast('Too much data for the badge. Choose a lower sharing level.'); return null; }
+  if(new TextEncoder().encode(enc).length > BADGE.maxBytes){ toast('Too much data for the tag. Choose a lower sharing level.'); return null; }
   const box = $('#badge-enc'); box.textContent = 'Encrypted: ' + enc; box.style.display = 'block';
   S.badgeLast = {date: p.d, lv: p.lv, lines: badgeLines(p), ts: Date.now()}; save();
   return enc;
 }
 function bindBadgeCard(c){
+  const pt = $('#btn-pair-tag'); if(pt) pt.onclick = () => { go('settings'); setTimeout(() => { const b = $('#badge-settings'); if(b){ b.scrollIntoView({behavior:'smooth', block:'start'}); const u = $('#set-badge'); if(u) u.focus({preventScroll:true}); } }, 60); };
   const copy = $('#btn-badge-copy'), write = $('#btn-badge-write'), status = $('#badge-status');
   if(copy) copy.onclick = async () => {
     const enc = await prepareBadge(c); if(!enc) return;
-    try{ await navigator.clipboard.writeText(enc); status.textContent = '✓ Copied. Now write it to your badge with NFC Tools:'; }
+    try{ await navigator.clipboard.writeText(enc); status.textContent = '✓ Copied. Now write it to your tag with NFC Tools:'; }
     catch(e){ status.textContent = 'Copy did not work here. Press and hold the encrypted text above to copy it.'; }
     $('#badge-steps').style.display = 'block';
   };
   if(write) write.onclick = async () => {
     const enc = await prepareBadge(c); if(!enc) return;
     try{
-      status.textContent = 'Hold the back of your phone near your badge...';
+      status.textContent = 'Hold the back of your phone near your tag...';
       const nfc = new NDEFReader(); await nfc.write({records:[{recordType:'text', data: enc}]});
       try{ navigator.vibrate && navigator.vibrate(30); }catch(e){}
-      status.textContent = '✓ Saved to your wings badge.'; toast('Saved to your wings badge.');
-    }catch(e){ status.textContent = 'Not saved: ' + (e.message || e.name) + '. Keep the phone still on the badge, check NFC is on, and keep the badge away from metal.'; }
+      status.textContent = `✓ Saved to your ${TAG_NAME}.`; toast(`Saved to your ${TAG_NAME}.`);
+    }catch(e){ status.textContent = 'Not saved: ' + (e.message || e.name) + '. Keep the phone still on the tag, check NFC is on, and keep the tag away from metal.'; }
   };
 }
 renderers.results = () => {
@@ -2280,8 +2304,9 @@ renderers.results = () => {
   if(c.mismatch === 'feel-ok') mismatch = `<div class="notice warn"><b>Your feeling and the test disagree.</b> You felt ${esc(SP[c.sp-1].toLowerCase())} (${c.sp} of 7), but the test says ${L.name}. When short on sleep, people are often the last to notice. Trust the test today.</div>`;
   if(c.mismatch === 'feel-tired') mismatch = `<div class="notice info"><b>The test looks fine, but you feel tired</b> (${c.sp} of 7). Your feeling counts too. Treat today as a lower-energy day.</div>`;
   const nb = (c.newBadges || []).map(id => BADGES.find(b => b.id === id)).filter(Boolean);
-  const celebrate = nb.length ? `<div class="card stack celebrate"><div class="eyebrow" style="margin:0;color:var(--accent-ink)">New badge${nb.length>1?'s':''} unlocked</div>
-      <div class="row" style="gap:16px">${nb.map(b => `<div class="row" style="flex-wrap:nowrap;gap:10px"><div class="badge earned" style="width:96px;flex:none">${wings(b.code, true)}</div><div><div class="bname"><b>${esc(b.name)}</b><span class="metal m-${b.metal}">${b.metal}</span></div><div class="tagline">${esc(b.tag)}</div><button class="btn" style="margin-top:6px" data-wear-now="${b.id}">Wear these wings</button></div></div>`).join('')}</div></div>` : '';
+  const hasAdvBtn = k => (adv.btns || []).includes(k);
+  const celebrate = !nb.length ? '' : c.level >= 1 ? `<div class="card small">🏅 New badge${nb.length>1?'s':''}: <b>${nb.map(b => esc(b.name)).join(', ')}</b>. See them in Logbook.</div>` : `<div class="card stack celebrate"><div class="eyebrow" style="margin:0;color:var(--accent-ink)">New badge${nb.length>1?'s':''} unlocked</div>
+      <div class="row" style="gap:16px">${nb.map(b => `<div class="row" style="flex-wrap:nowrap;gap:10px"><div class="badge earned" style="width:96px;flex:none">${wings(b.code, true)}</div><div><div class="bname"><b>${esc(b.name)}</b><span class="metal m-${b.metal}">${b.metal}</span></div><div class="tagline">${esc(b.tag)}</div><button class="btn" style="margin-top:6px" data-wear-now="${b.id}">Wear these wings</button></div></div>`).join('')}</div></div>`;
   const drift = c.pvt.seq && c.pvt.seq.length ? driftLine(c.pvt.seq) : '';
   const base = c.personal && c.personal.n >= 5
     ? `<dt>Your usual median</dt><dd>${c.personal.med} ms</dd>`
@@ -2291,8 +2316,6 @@ renderers.results = () => {
   el.innerHTML = `
     <div><div class="eyebrow">${c.simulated ? 'Demo check · simulated' : fly ? 'Pre-duty check' : 'Daily check'} · ${fmtDate(c.ts)} ${fmtTime(c.ts)}</div><h1>Your readiness</h1></div>
     ${c.practice ? `<div class="notice info"><b>Practice check ${c.practice} of ${SCORE.practiceChecks}.</b> Your first checks help you learn the test. They are not used for your personal baseline.</div>` : ''}
-    ${adviceCard(c, adv, sameDay(c.ts, Date.now()))}
-    ${celebrate}
     <div class="panel screws gauge-wrap">
       <div class="eyebrow" style="margin:0">Alertness</div>
       ${gaugeSVG(c.pvt.lpfs3)}
@@ -2302,25 +2325,32 @@ renderers.results = () => {
       <div class="small muted" style="margin-top:6px;font-family:var(--font-mono)">You felt: ${c.sp} of 7 · ${esc(SP[c.sp-1])}</div>
     </div>
     ${mismatch}
-    <div class="panel stack" style="gap:12px"><div class="eyebrow" style="margin:0">What the test saw</div>${signalCards(c)}</div>
-    ${c.pvt.seq && c.pvt.seq.length ? `<div class="card stack"><h2 style="margin:0">Your 3 minutes, tap by tap</h2>
-      <p class="small muted" style="margin:0">Each bar is one reaction. Taller means slower.</p>
-      ${stripSVG(c.pvt.seq)}
-      ${drift ? `<p class="small" style="margin:0">${esc(drift)}</p>` : ''}
-      ${c.pvt.fastest ? `<p class="small" style="margin:0">Quickest reaction: <b class="mono">${(c.pvt.fastest/1000).toFixed(2)} s</b>${pb ? ' <span class="pill ok">personal best</span>' : ''}</p>` : ''}</div>` : ''}
+    ${adviceCard(c, adv, sameDay(c.ts, Date.now()))}
+    <div class="card stack"><h2>Your choices</h2>
+      <p class="small muted" style="margin:0">All optional. Nothing is sent unless you tap it.</p>
+      ${fly && !hasAdvBtn('crew') ? `<button class="btn block" id="act-crew">${c.shared && c.shared.crew ? '✓ Crew told' : 'Tell my crew'}</button>
+      ` : ''}
+      ${fly ? `<button class="btn block" id="act-cockpit">${c.shared && c.shared.cockpit ? '✓ Cockpit monitoring on' : 'Turn on cockpit monitoring boost'}</button>` : ''}
+      ${fly && c.level >= 1 && !hasAdvBtn('fatigue') ? `<button class="btn block" id="act-fatigue">Open my company's fatigue reporting</button>` : ''}
+      <button class="btn ghost block" data-go="home">Keep it to myself</button></div>
+    ${badgeCard(c)}
     <div class="card stack"><h2 style="margin:0">${fly ? "Today's fatigue forecast" : "Your day's alertness forecast"}</h2>
       ${weatherBlocks(fc)}
       <p class="small muted" style="margin:0">Illustrative estimate from today's result, hours awake and the body-clock low (02:00 to 06:00). Not a validated model.</p></div>
     ${loadCard(c)}
-    ${c.context ? `<div class="card stack"><div class="eyebrow" style="margin:0">Duty info for this day</div><p class="small" style="margin:0">${esc(ctxSummary(c.context))}</p></div>` : ''}
-    ${tips.length ? `<div class="card stack"><h2>More for today</h2><ul class="tips">${tips.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
-    ${badgeCard(c)}
-    <div class="card stack"><h2>Your choices</h2>
-      <p class="small muted" style="margin:0">All optional. Nothing is sent unless you tap it.</p>
-      ${fly ? `<button class="btn block" id="act-crew">${c.shared && c.shared.crew ? '✓ Crew told' : 'Tell my crew'}</button>
-      <button class="btn block" id="act-cockpit">${c.shared && c.shared.cockpit ? '✓ Cockpit monitoring on' : 'Turn on cockpit monitoring boost'}</button>` : ''}
-      ${fly && c.level >= 1 ? `<button class="btn block" id="act-fatigue">Open my company's fatigue reporting</button>` : ''}
-      <button class="btn ghost block" data-go="home">Keep it to myself</button></div>
+    ${celebrate}
+    <details class="card"><summary>What the test saw</summary><div class="stack" style="margin-top:8px">
+    <div class="panel stack" style="gap:12px">${signalCards(c)}</div>
+    ${c.pvt.seq && c.pvt.seq.length ? `<div class="stack"><h3 style="margin:0">Your 3 minutes, tap by tap</h3>
+      <p class="small muted" style="margin:0">Each bar is one reaction. Taller means slower.</p>
+      ${stripSVG(c.pvt.seq)}
+      ${drift ? `<p class="small" style="margin:0">${esc(drift)}</p>` : ''}
+      ${c.pvt.fastest ? `<p class="small" style="margin:0">Quickest reaction: <b class="mono">${(c.pvt.fastest/1000).toFixed(2)} s</b>${pb ? ' <span class="pill ok">personal best</span>' : ''}</p>` : ''}</div>` : ''}
+    </div></details>
+    ${tips.length || c.context ? `<details class="card"><summary>More for today</summary><div class="stack" style="margin-top:8px">
+      ${c.context ? `<p class="small" style="margin:0"><b>Duty info:</b> ${esc(ctxSummary(c.context))}</p>` : ''}
+      ${tips.length ? `<ul class="tips">${tips.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>` : ''}
+    </div></details>` : ''}
     <div class="card row" style="justify-content:space-between"><div><div class="eyebrow" style="margin:0">Logbook</div><b>Entry #${entry} logged</b></div><div class="small muted">${weekStreak(list)}-week streak · ${Object.keys(S.badges||{}).length}/${BADGES.length} badges</div></div>
     <details class="card"><summary>Details for the curious</summary>
       <div class="stack" style="margin-top:6px">
@@ -2560,19 +2590,21 @@ $('#btn-demo-notmet').addEventListener('click', () => {
   roster.push(ymd(missed));
   loadDemo(items, roster, 'Loaded a month that is not met yet.', 'org');
 });
+$$('.tag-name').forEach(e => e.textContent = TAG_NAME);
+if(!/[?&]dev\b/.test(location.search)){ const st = $('#btn-selftest'); if(st) st.hidden = true; }
 $('#btn-selftest').addEventListener('click', () => { const r = runStatusTests(); toast(`${r.pass} of ${r.total} self-tests passed. Details in the console.`); });
 $('#btn-clear').addEventListener('click', () => sheet('Delete all results?', '<p class="small">This removes every check and daily duty entry from this device. It cannot be undone.</p>', 'Delete everything', () => { S.checks = []; S.badges = {}; S.honest = null; S.roster = []; S.days = {}; save(); toast('All results deleted.'); go('home'); }));
 $('#btn-signout').addEventListener('click', () => { save(); DB.active = null; S = defaults(); save(); go('signin'); });
 renderers.settings = () => {
   const nm = S.user ? S.user.name : '';
   $('#me-name').textContent = nm; $('#me-avatar').innerHTML = uniformSVG(nm, wornBadge(), rankOf(preChecks().length).bars, true);
-  $('#set-user').textContent = `${preChecks().length} checks logged on this phone`;
+  $('#set-user').textContent = `${plural(preChecks().length, 'check')} logged on this phone`;
   $('#set-age').value = S.age || '';
   $$('#set-look input').forEach(i => i.checked = i.value === (S.testLook || 'radar'));
   $$('#set-share input').forEach(i => i.checked = Number(i.value) === shareLevel());
   $('#set-badge').value = S.badgeUid || '';
   $('#badge-now').innerHTML = S.badgeLast
-    ? `<b>Last saved to your badge</b> (${esc(S.badgeLast.date)}, level ${S.badgeLast.lv}):<ul class="tips small" style="margin:4px 0 0">${S.badgeLast.lines.map(x => `<li>${esc(x)}</li>`).join('')}</ul>${S.badgeLast.lv < 3 ? '<span class="muted">No scores or test details beyond this.</span>' : ''}`
+    ? `<b>Last saved to your tag</b> (${esc(S.badgeLast.date)}, level ${S.badgeLast.lv}):<ul class="tips small" style="margin:4px 0 0">${S.badgeLast.lines.map(x => `<li>${esc(x)}</li>`).join('')}</ul>${S.badgeLast.lv < 3 ? '<span class="muted">No scores or test details beyond this.</span>' : ''}`
     : '<span class="muted">Nothing saved to a badge yet.</span>';
   $('#set-sound').checked = soundOn();
   // Last 7 daily duty entries, newest first
