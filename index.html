@@ -122,6 +122,19 @@ ul.tips{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px}
 .demo-box{display:grid;place-items:center;height:110px;background:#000;border-radius:14px;border:1px solid #1f2a3c}
 .demo-box .target{width:80px;box-shadow:0 0 0 6px rgba(255,194,26,.18)}
 .demo-box .fix{width:10px;height:10px}
+.test-pad.radar{background:
+  radial-gradient(circle at center, rgba(67,192,138,.10) 0, rgba(67,192,138,0) 62%),
+  repeating-radial-gradient(circle at center, transparent 0 58px, rgba(67,192,138,.16) 58px 59px),
+  linear-gradient(transparent calc(50% - .5px), rgba(67,192,138,.14) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px)),
+  linear-gradient(90deg, transparent calc(50% - .5px), rgba(67,192,138,.14) calc(50% - .5px) calc(50% + .5px), transparent calc(50% + .5px));
+  border-radius:18px}
+.radar .fix{width:14px;height:14px;background:transparent;border:2px solid #43c08a;box-shadow:0 0 0 5px rgba(67,192,138,.12)}
+.radar #stim{position:relative}
+.radar .blip{position:absolute;left:50%;bottom:100%;transform:translate(-50%,-6px);width:46px;height:46px;color:var(--test-ink);filter:drop-shadow(0 0 8px rgba(255,194,26,.55))}
+.radar .feedback b{color:#7ee2b0}
+.radar .feedback.bad b{color:#ff9a8a}
+.radar .tag{display:block;font-size:.75rem;letter-spacing:.14em;color:#43c08a;margin-bottom:2px}
+.test-sound{background:#121a28;color:#b7c2d3;border:1px solid #2a3549}
 .test-msg{position:absolute;bottom:18%;left:0;right:0;text-align:center;font-family:var(--font-mono);color:#8e9bb0;font-size:.95rem}
 .test-intro{max-width:420px;margin:auto;text-align:left;display:flex;flex-direction:column;gap:14px}
 .test-intro h2{color:#fff}
@@ -543,6 +556,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <div class="test-top">
         <span id="test-time">0:00 / 3:00</span>
         <span class="eye-ind" id="eye-ind"><span class="dot"></span><span id="eye-ind-text">Eye analysis on</span></span>
+        <button class="icon-btn test-sound" id="btn-test-sound" aria-label="Sound on or off">🔊</button>
         <button class="icon-btn" id="btn-test-stop" style="background:#121a28;color:#b7c2d3;border-color:#2a3549">Stop</button>
       </div>
       <div class="test-progress"><i id="test-bar"></i></div>
@@ -605,7 +619,14 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="card stack">
       <h3 style="margin:0">About you</h3>
       <div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="field" style="flex:1">Age in years<input type="number" id="set-age" min="18" max="80" inputmode="numeric"></label><button class="btn" id="btn-set-age">Save</button></div>
-      <p class="small muted" style="margin:0">Used to pick the comparison group for your first 14 readiness checks. Stays on this phone.</p>
+      <p class="small muted" style="margin:0">Used to compare your reaction speed with your age group until your own baseline exists (after 3 practice checks and 5 more). Stays on this phone.</p>
+    </div>
+    <div class="card stack">
+      <h3 style="margin:0">Reaction test</h3>
+      <div class="small muted">Look</div>
+      <div class="chips" id="set-look"><label class="chip"><input type="radio" name="look" value="radar"> Radar</label><label class="chip"><input type="radio" name="look" value="classic"> Classic</label></div>
+      <label class="row small" style="flex-wrap:nowrap;gap:8px"><input type="checkbox" id="set-sound"> Sound and vibration after each tap</label>
+      <p class="small muted" style="margin:0">Only the look changes. The test itself, its timing and its scoring stay exactly the same.</p>
     </div>
     <div class="card stack">
       <h3 style="margin:0">Daily duty entries</h3>
@@ -1453,11 +1474,41 @@ $('#btn-cam-skip').addEventListener('click', () => { draft.useCamera = false; st
 
 /* ---------- reaction test (PVT-B style) ---------- */
 const T = {};
+/* ---------- Phase 3: game-like look (visual only; timing, position and scoring unchanged) ---------- */
+const PLANE_SVG = '<svg class="blip" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 15.5v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V8.5l-8 5v2l8-2.5V18l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-5z"/></svg>';
+const radarOn = () => (S.testLook || 'radar') === 'radar';
+const soundOn = () => S.testSound !== false;
+let audioCtx = null;
+function unlockAudio(){ try{ if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if(audioCtx.state === 'suspended') audioCtx.resume(); }catch(e){} }
+// Feedback AFTER a tap only. Nothing ever sounds when a stimulus appears, so no cue is added to the test.
+function tapFeedback(kind){
+  if(!soundOn()) return;
+  try{ if(navigator.vibrate) navigator.vibrate(kind === 'ok' ? 15 : [30, 40, 30]); }catch(e){}
+  try{
+    if(!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain(), t = audioCtx.currentTime;
+    o.type = 'sine'; o.frequency.value = kind === 'ok' ? 880 : 220;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+    o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + 0.13);
+  }catch(e){}
+}
+function applyTestLook(){
+  $('#test-pad').classList.toggle('radar', radarOn());
+  $('#btn-test-sound').textContent = soundOn() ? '🔊' : '🔇';
+}
+const stimHTML = () => radarOn() ? PLANE_SVG + '<div class="counter">000</div>' : '<div class="counter">000</div>';
+const WAIT_TXT = () => radarOn() ? 'wait for a contact on your radar' : 'wait for the yellow number';
 function resetTest(){
   Object.assign(T, {running:false, t0:0, stimOn:false, stimStart:0, timer:null, raf:null, tick:null, trials:[], seq:[], fs:0, device:'touch', done:false});
 }
 renderers.test = () => {
-  resetTest(); startDemoStim();
+  resetTest(); startDemoStim(); applyTestLook();
+  const R = radarOn();
+  $('#test-intro h2').textContent = R ? 'Tap the moment a contact appears on your radar.' : 'Tap the moment the yellow number appears.';
+  $('#test-intro .how').innerHTML = R
+    ? '<li>Watch the green dot in the middle of the radar.</li><li>A contact appears: a yellow plane with a fast-counting number. <b>Tap anywhere</b> (space bar on a laptop).</li><li>Your time shows in green. Wait for the next contact.</li>'
+    : '<li>Watch the small grey dot.</li><li>A yellow number pops up and counts fast. <b>Tap anywhere</b> (space bar on a laptop).</li><li>Your time shows in white. Wait for the next one.</li>';
+  $('#demo-box').classList.toggle('radar', R);
   $('#test-intro').hidden = false; $('#test-run').hidden = true;
   // New users see practice first; after 3 real checks, starting straight away becomes the main button.
   const seasoned = preChecks().filter(c => !c.simulated).length >= 3;
@@ -1468,18 +1519,21 @@ renderers.test = () => {
   $('#eye-ind-text').textContent = draft.useCamera ? 'Eye analysis on' : 'Camera off';
 };
 $('#btn-test-cancel').addEventListener('click', leaveCheck);
+$('#btn-test-sound').addEventListener('click', e => { e.stopPropagation(); e.currentTarget.blur(); S.testSound = !soundOn(); save(); unlockAudio(); applyTestLook(); });
+$('#set-look').addEventListener('change', e => { S.testLook = e.target.value; save(); toast(S.testLook === 'radar' ? 'Radar look on.' : 'Classic look on.'); });
+$('#set-sound').addEventListener('change', e => { S.testSound = e.target.checked; save(); });
 $('#btn-test-start').addEventListener('click', () => {
-  clearInterval(demoTimer);
+  clearInterval(demoTimer); unlockAudio();
   $('#test-intro').hidden = true; $('#test-run').hidden = false;
   $('#stim').innerHTML = '<div class="fix"></div>';
   T.practice = true; T.practiceLeft = 3; T.running = true; T.t0 = performance.now();
   $('#test-time').textContent = 'Practice';
-  $('#test-hint').textContent = 'Practice: wait for the yellow number, then tap';
+  $('#test-hint').textContent = `Practice: ${WAIT_TXT()}, then tap`;
   $('#test-msg').textContent = '';
   scheduleNext();
 });
 $('#btn-test-skip').addEventListener('click', () => {
-  clearInterval(demoTimer);
+  clearInterval(demoTimer); unlockAudio();
   $('#test-intro').hidden = true; $('#test-run').hidden = false;
   T.practice = false; beginRealTest(true);
 });
@@ -1487,7 +1541,7 @@ function beginRealTest(skipped){
   T.practice = false; T.running = false; T.trials = []; T.seq = []; T.fs = 0;
   $('#test-hint').textContent = '';
   $('#test-time').textContent = '0:00 / 3:00';
-  $('#stim').innerHTML = skipped ? '<div class="feedback"><b>Get ready</b>Tap when the yellow number appears</div>' : '<div class="feedback"><b>Practice done</b>The real test starts now</div>';
+  $('#stim').innerHTML = skipped ? (radarOn() ? '<div class="feedback"><b>Radar on</b>Tap the moment a contact appears</div>' : '<div class="feedback"><b>Get ready</b>Tap when the yellow number appears</div>') : '<div class="feedback"><b>Practice done</b>The real test starts now</div>';
   T.eye = {frames:0, face:0, lastT:null, time:0, closed80:0, inClose:false, closeStart:0, longClose:0, blinks:0, ears:[], openEAR:draft.openEAR||null, calib:[]};
   if(draft.useCamera && landmarker){
     onEye = (f, t) => { if(!T.running || T.practice) return; eyeFrame(f, t); };
@@ -1533,7 +1587,7 @@ function showStim(){
   if(!T.running) return;
   T.stimOn = true; T.stimStart = performance.now();
   if(T.practice) $('#test-hint').textContent = 'Tap now!';
-  const el = $('#stim'); el.innerHTML = '<div class="counter">000</div>'; const c = el.firstChild;
+  const el = $('#stim'); el.innerHTML = stimHTML(); const c = el.querySelector('.counter');
   const update = () => { if(!T.stimOn) return; const ms = Math.floor(performance.now() - T.stimStart); c.textContent = String(Math.min(ms,9999)).padStart(3,'0'); };
   T.cint = setInterval(update, 16);
   const loop = () => { if(!T.stimOn) return; update(); T.raf = requestAnimationFrame(loop); };
@@ -1542,15 +1596,17 @@ function showStim(){
 }
 function respond(rt, timedOut, early){
   T.stimOn = false; cancelAnimationFrame(T.raf); clearInterval(T.cint); clearTimeout(T.miss);
+  const R = radarOn();
   $('#stim').innerHTML = timedOut
-    ? '<div class="feedback"><b>Missed</b>tap as soon as you see the number</div>'
-    : early ? '<div class="feedback"><b>Too early</b>wait for the number</div>'
-    : `<div class="feedback"><b>${Math.round(rt)} ms</b>your reaction</div>`;
+    ? `<div class="feedback bad"><b>Missed</b>${R ? 'tap as soon as a contact appears' : 'tap as soon as you see the number'}</div>`
+    : early ? `<div class="feedback bad"><b>Too early</b>${R ? 'wait for the contact' : 'wait for the number'}</div>`
+    : `<div class="feedback">${R ? '<span class="tag">CONTACT</span>' : ''}<b>${Math.round(rt)} ms</b>your reaction</div>`;
+  tapFeedback(timedOut || early ? 'bad' : 'ok');
   if(T.practice){
     if(!early) T.practiceLeft--;
     $('#test-hint').textContent = T.practiceLeft > 0 ? `Practice: ${T.practiceLeft} more` : '';
     if(T.practiceLeft <= 0){ T.running = false; setTimeout(beginRealTest, 1000); return; }
-    T.timer = setTimeout(() => { if(!T.running) return; $('#stim').innerHTML = '<div class="fix"></div>'; $('#test-hint').textContent = 'Practice: wait for the yellow number'; T.timer = setTimeout(showStim, 800 + Math.random()*2200); }, 1000);
+    T.timer = setTimeout(() => { if(!T.running) return; $('#stim').innerHTML = '<div class="fix"></div>'; $('#test-hint').textContent = `Practice: ${WAIT_TXT()}`; T.timer = setTimeout(showStim, 800 + Math.random()*2200); }, 1000);
     return;
   }
   // PVT rule: a response under 100 ms (raw, before removing touch delay) is an anticipation, i.e. a false start.
@@ -2397,6 +2453,8 @@ renderers.settings = () => {
   $('#me-name').textContent = nm; $('#me-avatar').innerHTML = uniformSVG(nm, wornBadge(), rankOf(preChecks().length).bars, true);
   $('#set-user').textContent = `${preChecks().length} checks logged on this phone`;
   $('#set-age').value = S.age || '';
+  $$('#set-look input').forEach(i => i.checked = i.value === (S.testLook || 'radar'));
+  $('#set-sound').checked = soundOn();
   // Last 7 daily duty entries, newest first
   const days = Object.values(S.days || {}).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
   $('#set-days').innerHTML = days.length
