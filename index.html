@@ -621,6 +621,19 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="field" style="flex:1">Age in years<input type="number" id="set-age" min="18" max="80" inputmode="numeric"></label><button class="btn" id="btn-set-age">Save</button></div>
       <p class="small muted" style="margin:0">Used to compare your reaction speed with your age group until your own baseline exists (after 3 practice checks and 5 more). Stays on this phone.</p>
     </div>
+    <div class="card stack" id="badge-settings">
+      <h3 style="margin:0">My wings badge (NFC)</h3>
+      <p class="small muted" style="margin:0">Your badge holds only what you choose below. Your full results never leave this phone unless you pick level 3.</p>
+      <div class="small muted">What can be shared</div>
+      <div class="stack" id="set-share" style="gap:6px">
+        <label class="chip" style="justify-content:flex-start"><input type="radio" name="share" value="1"> <span><b>Level 1: completion only</b> (default). "Check completed today."</span></label>
+        <label class="chip" style="justify-content:flex-start"><input type="radio" name="share" value="2"> <span><b>Level 2: daily status</b>. Completion + Ready, Caution or Low alertness.</span></label>
+        <label class="chip" style="justify-content:flex-start"><input type="radio" name="share" value="3"> <span><b>Level 3: full results</b>. Status + reaction time, slow reactions, early taps and duty load.</span></label>
+      </div>
+      <div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="field" style="flex:1">Badge ID (UID)<input type="text" id="set-badge" placeholder="e.g. 04:A2:3B:1C:5D:80:00" autocomplete="off" autocapitalize="characters"></label><button class="btn" id="btn-set-badge">Pair</button></div>
+      <p class="small muted" style="margin:0">To find the ID: open the free NFC Tools app, tap <b>Read</b>, hold your phone near the badge, and copy the <b>Serial number</b>.</p>
+      <div class="small" id="badge-now"></div>
+    </div>
     <div class="card stack">
       <h3 style="margin:0">Reaction test</h3>
       <div class="small muted">Look</div>
@@ -715,6 +728,12 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <p class="small" style="margin:0">Your first 3 checks are practice and are not used for any baseline, because the reaction test has a short learning curve of 1 to 3 tries. Until you have 5 checks after practice, your reaction speed is compared with a typical value for your age group. These age values are placeholders and must be replaced with published norms.</p>
       <p class="small muted" style="margin:0">All weights are design choices in one settings block of the code. They are not validated and will be tuned with study data.</p>
     </div>
+    <div class="card stack">
+      <h3>9. Your wings badge</h3>
+      <p class="small" style="margin:0">After a check, you can save a short record to an NFC chip inside your wings badge. You choose how much it holds: level 1 completion only (default), level 2 daily status, or level 3 full results. The record also holds your badge ID, so it only counts on your own badge.</p>
+      <p class="small" style="margin:0">The record is encrypted with AES-GCM before it is written. Someone else's phone reading your badge sees only scrambled text. The badge holds about 500 bytes, so your full test data could not fit on it anyway. Each save replaces the last one.</p>
+      <p class="small muted" style="margin:0">Prototype: one demo key is built into the code so the base station can read badges. A real product would give each pilot their own key.</p>
+    </div>
     <div class="card flat stack">
       <h3>Limitations</h3>
       <ul class="tips small">
@@ -803,6 +822,50 @@ const AGE_NORMS = [
   {upTo: 29, med: 260, sd: 35}, {upTo: 39, med: 270, sd: 35}, {upTo: 49, med: 280, sd: 38},
   {upTo: 59, med: 295, sd: 40}, {upTo: 69, med: 310, sd: 45}, {upTo: 120, med: 325, sd: 50}
 ];
+/* ---------- Phase 4: what goes on the wings badge ---------- */
+// DEMO ONLY: one shared AES-256 key for the prototype, so the base station can decrypt.
+// A real product would give each pilot their own key and keep keys out of the page code.
+const BADGE = {
+  demoKeyHex: '6b3f9a1d2c7e4b8f0a5d3c9e1f7b2a6d4c8e0f3a9b1d5c7e2f4a6b8d0c1e3f5a',
+  prefix: 'RC1.',            // marks a ReadyCheck badge record, version 1
+  maxBytes: 480              // NTAG215 holds about 500 bytes of data
+};
+const SHARE_TXT = {1:'Completion only', 2:'Daily status', 3:'Full results'};
+const shareLevel = () => Number(S.shareLevel) || 1;
+const normUid = u => String(u || '').toUpperCase().replace(/[^0-9A-F]/g, '').replace(/(..)(?!$)/g, '$1:');
+// Exactly what will be written, before encryption. Keys are short to fit the badge.
+function badgePayload(c){
+  const lv = shareLevel();
+  const p = {v:1, n: S.user ? S.user.name : '', b: normUid(S.badgeUid), d: ymd(c.ts), lv, done: 1};
+  if(lv >= 2) p.st = ['ready','caution','low'][c.level];
+  if(lv >= 3){ p.rt = c.pvt.medianRT; p.lp = c.pvt.lapses; p.fs = c.pvt.fs; if(c.load) p.load = c.load.cum; }
+  return p;
+}
+function badgeLines(p){
+  const L = [`Name: ${p.n || '(not set)'}`, `Badge: ${p.b || '(not paired)'}`, `Date: ${p.d}`, 'Check completed: yes'];
+  if(p.st) L.push(`Status: ${{ready:'Ready', caution:'Caution', low:'Low alertness'}[p.st]}`);
+  if(p.rt != null) L.push(`Median reaction: ${p.rt} ms`, `Slow reactions: ${p.lp}`, `Early taps: ${p.fs}`);
+  if(p.load != null) L.push(`Duty load: ${p.load}`);
+  return L;
+}
+const hexBytes = h => new Uint8Array(h.match(/../g).map(x => parseInt(x, 16)));
+const b64url = u8 => btoa(String.fromCharCode(...u8)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const fromB64url = s => Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/') + '==='.slice((s.length + 3) % 4)), ch => ch.charCodeAt(0));
+async function badgeKey(){ return crypto.subtle.importKey('raw', hexBytes(BADGE.demoKeyHex), 'AES-GCM', false, ['encrypt','decrypt']); }
+// AES-GCM: 12-byte random IV + ciphertext with tag, as base64url after the RC1. prefix.
+async function encryptBadge(p){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM', iv}, await badgeKey(), new TextEncoder().encode(JSON.stringify(p))));
+  const all = new Uint8Array(12 + ct.length); all.set(iv); all.set(ct, 12);
+  return BADGE.prefix + b64url(all);
+}
+async function decryptBadge(str){
+  if(!String(str).startsWith(BADGE.prefix)) throw new Error('Not a ReadyCheck badge');
+  const all = fromB64url(str.slice(BADGE.prefix.length));
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv: all.slice(0,12)}, await badgeKey(), all.slice(12));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+const canWebNFC = () => 'NDEFReader' in window;
 const ageNorm = age => AGE_NORMS.find(n => (Number(age) || 40) <= n.upTo);
 
 /* ---------- storage: one profile per name on this device ---------- */
@@ -1522,6 +1585,12 @@ $('#btn-test-cancel').addEventListener('click', leaveCheck);
 $('#btn-test-sound').addEventListener('click', e => { e.stopPropagation(); e.currentTarget.blur(); S.testSound = !soundOn(); save(); unlockAudio(); applyTestLook(); });
 $('#set-look').addEventListener('change', e => { S.testLook = e.target.value; save(); toast(S.testLook === 'radar' ? 'Radar look on.' : 'Classic look on.'); });
 $('#set-sound').addEventListener('change', e => { S.testSound = e.target.checked; save(); });
+$('#set-share').addEventListener('change', e => { S.shareLevel = Number(e.target.value); save(); toast(`Sharing set to level ${S.shareLevel}: ${SHARE_TXT[S.shareLevel].toLowerCase()}.`); });
+$('#btn-set-badge').addEventListener('click', () => {
+  const u = normUid($('#set-badge').value);
+  if(u.replace(/:/g,'').length < 8){ toast('Enter the badge serial number from NFC Tools.'); return; }
+  S.badgeUid = u; save(); $('#set-badge').value = u; toast('Badge paired.');
+});
 $('#btn-test-start').addEventListener('click', () => {
   clearInterval(demoTimer); unlockAudio();
   $('#test-intro').hidden = true; $('#test-run').hidden = false;
@@ -2153,6 +2222,50 @@ function loadCard(c){
     <div class="small"><b>Today: +${c.load.today}</b></div>${items}
     <p class="small muted" style="margin:0">${b === 2 ? 'High load makes today\'s result one level more cautious.' : b === 1 ? 'Building: it does not change today\'s result, but plan your rest.' : 'Light: no effect on today\'s result.'} Lines mark ${SCORE.elevated} (building) and ${SCORE.high} (high). Design weights, not a validated model.</p></div>`;
 }
+function badgeCard(c){
+  if(!sameDay(c.ts, Date.now())) return '';
+  const p = badgePayload(c), paired = !!S.badgeUid;
+  return `<div class="card stack" id="badge-card"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:8px"><h2 style="margin:0">Save to my wings badge</h2><span class="pill">Level ${p.lv}</span></div>
+    ${paired ? '' : `<div class="notice warn small"><b>Pair your badge first.</b> Go to Me > My wings badge and enter its ID, so the base station can check the badge is yours.</div>`}
+    <div class="small"><b>Exactly what goes on your badge</b> (${SHARE_TXT[p.lv]}):</div>
+    <ul class="tips small" style="margin:0">${badgeLines(p).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <p class="small muted" style="margin:0">It is encrypted first, so anyone else who reads the badge sees only scrambled text. Each save replaces the last one; the badge holds only your latest check. Change the level in Me.</p>
+    <div class="mono small" id="badge-enc" style="word-break:break-all;display:none"></div>
+    ${canWebNFC() ? `<button class="btn primary block" id="btn-badge-write" ${paired?'':'disabled'}>Write to my badge</button>` : ''}
+    <button class="btn ${canWebNFC() ? '' : 'primary'} block" id="btn-badge-copy" ${paired?'':'disabled'}>Copy for my badge</button>
+    <ol class="tips small" id="badge-steps" style="display:none;margin:0">
+      <li>Open the free <b>NFC Tools</b> app.</li>
+      <li>Tap <b>Write</b> > <b>Add a record</b> > <b>Text</b>.</li>
+      <li>Paste, then tap <b>OK</b> > <b>Write</b>.</li>
+      <li>Hold the <b>top</b> of your iPhone (or the <b>back</b> of an Android phone) near your badge until it says done.</li>
+    </ol>
+    <div class="small" id="badge-status"></div></div>`;
+}
+async function prepareBadge(c){
+  const p = badgePayload(c), enc = await encryptBadge(p);
+  if(new TextEncoder().encode(enc).length > BADGE.maxBytes){ toast('Too much data for the badge. Choose a lower sharing level.'); return null; }
+  const box = $('#badge-enc'); box.textContent = 'Encrypted: ' + enc; box.style.display = 'block';
+  S.badgeLast = {date: p.d, lv: p.lv, lines: badgeLines(p), ts: Date.now()}; save();
+  return enc;
+}
+function bindBadgeCard(c){
+  const copy = $('#btn-badge-copy'), write = $('#btn-badge-write'), status = $('#badge-status');
+  if(copy) copy.onclick = async () => {
+    const enc = await prepareBadge(c); if(!enc) return;
+    try{ await navigator.clipboard.writeText(enc); status.textContent = '✓ Copied. Now write it to your badge with NFC Tools:'; }
+    catch(e){ status.textContent = 'Copy did not work here. Press and hold the encrypted text above to copy it.'; }
+    $('#badge-steps').style.display = 'block';
+  };
+  if(write) write.onclick = async () => {
+    const enc = await prepareBadge(c); if(!enc) return;
+    try{
+      status.textContent = 'Hold the back of your phone near your badge...';
+      const nfc = new NDEFReader(); await nfc.write({records:[{recordType:'text', data: enc}]});
+      try{ navigator.vibrate && navigator.vibrate(30); }catch(e){}
+      status.textContent = '✓ Saved to your wings badge.'; toast('Saved to your wings badge.');
+    }catch(e){ status.textContent = 'Not saved: ' + (e.message || e.name) + '. Keep the phone still on the badge, check NFC is on, and keep the badge away from metal.'; }
+  };
+}
 renderers.results = () => {
   const c = S.checks.find(x => x.id === lastCheckId) || preChecks().pop();
   const el = $('#scr-results');
@@ -2201,6 +2314,7 @@ renderers.results = () => {
     ${loadCard(c)}
     ${c.context ? `<div class="card stack"><div class="eyebrow" style="margin:0">Duty info for this day</div><p class="small" style="margin:0">${esc(ctxSummary(c.context))}</p></div>` : ''}
     ${tips.length ? `<div class="card stack"><h2>More for today</h2><ul class="tips">${tips.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
+    ${badgeCard(c)}
     <div class="card stack"><h2>Your choices</h2>
       <p class="small muted" style="margin:0">All optional. Nothing is sent unless you tap it.</p>
       ${fly ? `<button class="btn block" id="act-crew">${c.shared && c.shared.crew ? '✓ Crew told' : 'Tell my crew'}</button>
@@ -2222,6 +2336,7 @@ renderers.results = () => {
     <button class="btn primary block" data-go="home">Done</button>`;
   requestAnimationFrame(() => requestAnimationFrame(() => { const n = el.querySelector('.needle'); if(n) n.style.transform = `rotate(${n.dataset.deg}deg)`; }));
   $$('#scr-results [data-wear-now]').forEach(btn => btn.onclick = () => { S.worn = btn.dataset.wearNow; save(); toast('Wings pinned to your uniform.'); btn.textContent = '✓ Wearing'; btn.disabled = true; });
+  bindBadgeCard(c);
   const crew = () => crewSheet(c);
   const fatigue = fatigueSheet;
   [['#act-crew', crew], ['#adv-crew', crew], ['#act-fatigue', fatigue], ['#adv-fatigue', fatigue]].forEach(([sel, fn]) => { const b = $(sel); if(b) b.onclick = fn; });
@@ -2454,6 +2569,11 @@ renderers.settings = () => {
   $('#set-user').textContent = `${preChecks().length} checks logged on this phone`;
   $('#set-age').value = S.age || '';
   $$('#set-look input').forEach(i => i.checked = i.value === (S.testLook || 'radar'));
+  $$('#set-share input').forEach(i => i.checked = Number(i.value) === shareLevel());
+  $('#set-badge').value = S.badgeUid || '';
+  $('#badge-now').innerHTML = S.badgeLast
+    ? `<b>Last saved to your badge</b> (${esc(S.badgeLast.date)}, level ${S.badgeLast.lv}):<ul class="tips small" style="margin:4px 0 0">${S.badgeLast.lines.map(x => `<li>${esc(x)}</li>`).join('')}</ul>${S.badgeLast.lv < 3 ? '<span class="muted">No scores or test details beyond this.</span>' : ''}`
+    : '<span class="muted">Nothing saved to a badge yet.</span>';
   $('#set-sound').checked = soundOn();
   // Last 7 daily duty entries, newest first
   const days = Object.values(S.days || {}).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
