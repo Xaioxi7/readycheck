@@ -337,6 +337,16 @@ details[open] summary{margin-bottom:8px}
 ul.never{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:.92rem}
 ul.never li{display:flex;align-items:center;gap:8px}
 ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted);background:linear-gradient(45deg,transparent 45%,var(--muted) 45%,var(--muted) 55%,transparent 55%)}
+/* Daily context form (Phase 1): tap steppers and a time zone list */
+select{font:inherit;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;width:100%}
+select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.q>span{font-size:.92rem;min-width:0}
+.stepper{display:flex;align-items:center;gap:8px;flex:none}
+.stepper button{appearance:none;width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:1.4rem;line-height:1;cursor:pointer}
+.stepper button:disabled{opacity:.35;cursor:not-allowed}
+.stepper button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stepper output{min-width:2.2ch;text-align:center;font-family:var(--font-mono);font-size:1.3rem;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -411,21 +421,31 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
     <button class="btn ghost block" id="btn-consent-back">Not now</button>
   </section>
 
+  <!-- AGE (asked once at first setup, editable in Me) -->
+  <section class="screen stack" id="scr-age" hidden>
+    <div><div class="eyebrow">One-time setup</div><h1>How old are you?</h1>
+      <p class="muted">Until you have 14 readiness checks of your own, your results are compared with typical results for your age group. Your age stays on this phone. You can change it any time in Me.</p></div>
+    <label class="field">Age in years<input type="number" id="age-input" min="18" max="80" inputmode="numeric" placeholder="e.g. 38"></label>
+    <button class="btn amber block big" id="btn-age">Continue</button>
+  </section>
+
   <!-- TODAY (tab) -->
   <section class="screen stack" id="scr-home" hidden>
     <div id="home-hero"></div>
   </section>
 
-  <!-- STEP 1: FLYING TODAY? -->
+  <!-- STEP 1: DUTY STATUS TODAY (on duty / standby / rest day) -->
   <section class="screen stack" id="scr-fly" hidden>
-    <div><div class="eyebrow">Step 1 of 5 · 5 seconds</div><h1>Flying today?</h1>
-      <p class="muted">Checks on days off count too. They build the picture of how you are really doing.</p></div>
+    <div><div class="eyebrow">Step 1 of 5 · 5 seconds</div><h1>What's on today?</h1>
+      <p class="muted">Readiness checks on rest days count too. They build the picture of how you are really doing.</p></div>
     <div id="fly-hint"></div>
     <div class="fly-opts">
-      <button class="fly-opt" id="fly-yes" data-fly="yes"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--accent-soft)"/><g transform="translate(9 15) scale(.25)" fill="var(--accent-ink)"><path d="M8 22 C8 18 14 16 26 16 L92 16 C104 16 112 19 116 22 C112 25 104 27 92 27 L26 27 C14 27 8 25 8 22 Z"/><path d="M14 16 L4 2 L12 2 L30 16 Z"/><path d="M50 24 L74 24 L58 42 L48 42 Z"/><path d="M50 19 L74 19 L58 1 L48 1 Z"/></g></svg>
-        <span><b>Yes, I have a flight duty today</b><span class="small muted">We'll ask about report time and duty length.</span></span></button>
-      <button class="fly-opt" id="fly-no" data-fly="no"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--accent-soft)"/><path d="M14 31h20M17 31v-7a7 7 0 0 1 14 0v7" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round"/><path d="M24 12v4M13 17l2.6 2.6M35 17l-2.6 2.6" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round"/></svg>
-        <span><b>No flight today</b><span class="small muted">Just two quick questions about last night.</span></span></button>
+      <button class="fly-opt" data-fly="duty"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--accent-soft)"/><g transform="translate(9 15) scale(.25)" fill="var(--accent-ink)"><path d="M8 22 C8 18 14 16 26 16 L92 16 C104 16 112 19 116 22 C112 25 104 27 92 27 L26 27 C14 27 8 25 8 22 Z"/><path d="M14 16 L4 2 L12 2 L30 16 Z"/><path d="M50 24 L74 24 L58 42 L48 42 Z"/><path d="M50 19 L74 19 L58 1 L48 1 Z"/></g></svg>
+        <span><b>On duty</b><span class="small muted">I have a flight duty today.</span></span></button>
+      <button class="fly-opt" data-fly="standby"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--accent-soft)"/><circle cx="24" cy="24" r="11" fill="none" stroke="var(--accent-ink)" stroke-width="2.4"/><path d="M24 17v7l5 3" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span><b>Standby (reserve)</b><span class="small muted">I could be called out today.</span></span></button>
+      <button class="fly-opt" data-fly="rest"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="var(--accent-soft)"/><path d="M14 31h20M17 31v-7a7 7 0 0 1 14 0v7" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round"/><path d="M24 12v4M13 17l2.6 2.6M35 17l-2.6 2.6" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <span><b>Rest day</b><span class="small muted">No duty today.</span></span></button>
     </div>
   </section>
 
@@ -436,17 +456,32 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
     <form class="opts" id="sp-form"></form>
   </section>
 
-  <!-- STEP 2: DUTY -->
+  <!-- STEP 3: TODAY'S CONTEXT. Saved as one entry per date before the test.
+       Cards marked ctx-on show for On duty and Standby; ctx-legs only for On duty. -->
   <section class="screen stack" id="scr-duty" hidden>
-    <div><div class="eyebrow" id="duty-eyebrow">Step 3 of 5 · 20 seconds</div><h1 id="duty-title">About today</h1>
-      <p class="muted" id="duty-sub">Used to forecast when you're likely to feel your lowest during duty. We remember these for next time.</p></div>
-    <div class="card stack">
+    <div><div class="eyebrow" id="duty-eyebrow">Step 3 of 5 · about 20 seconds</div><h1 id="duty-title">About today's duty</h1>
+      <p class="muted" id="duty-sub"></p></div>
+    <div class="card stack ctx-on">
       <div class="grid2">
-        <label class="field duty-fly">Report time<input type="time" id="d-report"></label>
-        <label class="field duty-fly">Duty length (hours)<input type="number" id="d-hours" min="1" max="16" step="0.5" inputmode="decimal"></label>
-        <label class="field duty-fly">Number of legs<input type="number" id="d-legs" min="1" max="8" inputmode="numeric"></label>
-        <label class="field">Woke up at<input type="time" id="d-wake"></label>
+        <label class="field"><span id="d-report-label">Report time</span><input type="time" id="d-report"></label>
+        <label class="field"><span id="d-hours-label">Duty length (hours)</span><input type="number" id="d-hours" min="1" max="16" step="0.5" inputmode="decimal"></label>
       </div>
+      <label class="field">Time zone of that time<select id="d-tz"></select></label>
+    </div>
+    <div class="card stack">
+      <div class="q ctx-legs"><span>Legs planned today</span>
+        <div class="stepper" id="d-legs" data-min="0" data-max="10"><button type="button" data-d="-1" aria-label="One leg fewer">−</button><output aria-live="polite">0</output><button type="button" data-d="1" aria-label="One leg more">+</button></div></div>
+      <div class="q"><span>Time zones crossed in the last 24 hours</span>
+        <div class="stepper" id="d-tzx" data-min="0" data-max="12"><button type="button" data-d="-1" aria-label="One time zone fewer">−</button><output aria-live="polite">0</output><button type="button" data-d="1" aria-label="One time zone more">+</button></div></div>
+    </div>
+    <div class="card stack ctx-on">
+      <div><div class="small muted" style="margin-bottom:6px">Physical workload today (loading bags, fueling, cleaning)</div>
+        <div class="chips" id="d-work"></div></div>
+      <div><div class="small muted" style="margin-bottom:6px">Anything extra today? Tap all that apply.</div>
+        <div class="chips" id="d-extras"></div></div>
+    </div>
+    <div class="card stack">
+      <label class="field">Woke up at<input type="time" id="d-wake"></label>
       <div>
         <div class="small muted" style="margin-bottom:6px">Late hotel check-in or short rest last night?</div>
         <div class="chips">
@@ -557,6 +592,16 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
       <button class="menu-item" id="btn-review-terms"><span>Review the agreement</span><span>›</span></button>
     </div>
     <div class="card stack">
+      <h3 style="margin:0">About you</h3>
+      <div class="row" style="flex-wrap:nowrap;align-items:flex-end"><label class="field" style="flex:1">Age in years<input type="number" id="set-age" min="18" max="80" inputmode="numeric"></label><button class="btn" id="btn-set-age">Save</button></div>
+      <p class="small muted" style="margin:0">Used to pick the comparison group for your first 14 readiness checks. Stays on this phone.</p>
+    </div>
+    <div class="card stack">
+      <h3 style="margin:0">Daily duty entries</h3>
+      <p class="small muted" style="margin:0">One entry per day, saved before each readiness check. Last 7 shown. Stays on this phone.</p>
+      <div class="list" id="set-days"></div>
+    </div>
+    <div class="card stack">
       <div class="row" style="justify-content:space-between"><h3 style="margin:0">Demo mode</h3><span class="demo-tag">For presentations</span></div>
       <p class="small muted" style="margin:0">Show the app without doing a real 3-minute test.</p>
       <button class="btn block" id="btn-demo-check">Simulated check: tired, flight day</button>
@@ -621,7 +666,7 @@ ul.never li:before{content:"";flex:none;width:14px;height:14px;border-radius:50%
         <li>28 days matches the FAA's 672-consecutive-hour cumulative window (14 CFR 117.23).</li>
         <li>Every flight day matches the fit-for-duty statement each pilot makes before each flight (14 CFR 117.5(d)).</li>
       </ul>
-      <p class="small muted" style="margin:0">The 12-in-28 number is a design rule derived from these sources. It is not a regulation. In this prototype, flight days come from your answer to "Flying today?". A real version would use the airline roster.</p>
+      <p class="small muted" style="margin:0">The 12-in-28 number is a design rule derived from these sources. It is not a regulation. In this prototype, flight days are the days you answer "On duty" to "What's on today?". A real version would use the airline roster.</p>
     </div>
     <div class="card flat stack">
       <h3>Limitations</h3>
@@ -676,13 +721,28 @@ const LEVELS = [
 ];
 const LEGEND = `<span><i class="sw" style="background:var(--ok)"></i>Ready</span><span><i class="sw" style="background:var(--warn)"></i>Caution</span><span><i class="sw" style="background:var(--bad)"></i>Low alertness</span>`;
 
+/* ---------- daily context (Phase 1): what the pilot tells us about today ---------- */
+// Saved in S.days as one entry per date, e.g. S.days['2026-11-10'] = {status:'duty', report:'06:00', tz:'America/Phoenix', ...}.
+// The phone's own time zone is the default for the report time.
+const DEVICE_TZ = (() => { try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; }catch(e){ return 'UTC'; } })();
+const DUTY_STATUS = {duty:'On duty', standby:'Standby (reserve)', rest:'Rest day'};
+const WORKLOAD = {low:'Low', medium:'Medium', high:'High'};
+const EXTRAS = {weather:'Bad weather', deice:'De-icing', pax:'Difficult passengers', pressure:'Company pressure'};
+const AGE_MIN = 18, AGE_MAX = 80;
+
 /* ---------- storage: one profile per name on this device ---------- */
 const DB_KEY = 'readycheck_profiles_v1';
-function defaults(){ return {user:null, checks:[], badges:{}, roster:[], duty:{report:'14:00', hours:9, legs:3, wake:'07:30'}}; }
+function defaults(){ return {user:null, checks:[], badges:{}, roster:[], days:{}, age:null,
+  duty:{report:'14:00', hours:9, legs:3, wake:'07:30', tz:DEVICE_TZ, workload:'low'}}; }
 // Second example support partner, shown in Your plan when talking to someone is suggested.
 const SUPPORT_SITE = {name:'Listenr', url:'listenr.io'};
 // Checks saved before the "Flying today?" step were all pre-duty checks, so they count as flight days.
-function migrate(p){ (p.checks||[]).forEach(c => { if(c.flyingToday === undefined) c.flyingToday = true; }); if(!Array.isArray(p.roster)) p.roster = []; return p; }
+function migrate(p){ (p.checks||[]).forEach(c => { if(c.flyingToday === undefined) c.flyingToday = true; }); if(!Array.isArray(p.roster)) p.roster = [];
+  // Profiles saved before Phase 1 have no daily entries and no time zone yet.
+  if(!p.days || typeof p.days !== 'object') p.days = {};
+  if(p.duty && !p.duty.tz) p.duty.tz = DEVICE_TZ;
+  if(p.duty && !p.duty.workload) p.duty.workload = 'low';
+  return p; }
 function loadDB(){
   let db = null;
   try{ const r = localStorage.getItem(DB_KEY); if(r) db = JSON.parse(r); }catch(e){}
@@ -946,7 +1006,9 @@ function go(id){
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if(b){ e.preventDefault(); go(b.dataset.go); } });
 $('#btn-back').addEventListener('click', () => go(current === 'results' && lastTab === 'settings' ? 'home' : lastTab));
 function leaveCheck(){
-  sheet('Leave the check?', '<p class="small">Nothing from this check will be saved.</p>', 'Leave', () => { clearInterval(demoTimer); stopCamera(); if(T){ T.running = false; clearTimeout(T.timer); clearInterval(T.tick); clearInterval(T.cint); clearTimeout(T.miss); T.stimOn = false; } go('home'); });
+  // Today's duty info is saved when the pilot taps Continue on step 3, so after that point it is kept.
+  const kept = draft && draft.context;
+  sheet('Leave the readiness check?', `<p class="small">${kept ? "Today's duty info is kept. Nothing from the test is saved." : 'Nothing from this check will be saved.'}</p>`, 'Leave', () => { clearInterval(demoTimer); stopCamera(); if(T){ T.running = false; clearTimeout(T.timer); clearInterval(T.tick); clearInterval(T.cint); clearTimeout(T.miss); T.stimOn = false; } go('home'); });
 }
 $('#flow-close').addEventListener('click', leaveCheck);
 $('#flow-back').addEventListener('click', () => { if(current === 'fly') leaveCheck(); else if(current === 'rate') go('fly'); else if(current === 'duty') go('rate'); else if(current === 'camera') go('duty'); });
@@ -991,7 +1053,19 @@ renderers.signin = () => {
 
 renderers.consent = () => { const seen = !!S.agreed; $('#consent-check').checked = seen; $('#btn-consent').disabled = !seen; $('#btn-consent').textContent = seen ? 'Done' : 'Agree and continue'; $('#btn-consent-back').hidden = seen; };
 $('#consent-check').addEventListener('change', e => { $('#btn-consent').disabled = !e.target.checked; });
-$('#btn-consent').addEventListener('click', () => { const back = !!S.agreed; if(!S.agreed){ S.agreed = Date.now(); save(); } go(back ? 'settings' : 'home'); });
+$('#btn-consent').addEventListener('click', () => { const back = !!S.agreed; if(!S.agreed){ S.agreed = Date.now(); save(); } if(back) go('settings'); else if(!S.age){ ageNext = 'home'; go('age'); } else go('home'); });
+
+/* ---------- age: asked once, editable in Me ---------- */
+let ageNext = 'home'; // where to go after the age screen
+function validAge(v){ v = Math.round(Number(v)); return v >= AGE_MIN && v <= AGE_MAX ? v : null; }
+renderers.age = () => { $('#age-input').value = S.age || ''; };
+function saveAge(){
+  const a = validAge($('#age-input').value);
+  if(!a){ toast(`Enter an age from ${AGE_MIN} to ${AGE_MAX}.`); $('#age-input').focus(); return; }
+  S.age = a; save(); go(ageNext);
+}
+$('#btn-age').addEventListener('click', saveAge);
+$('#age-input').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); saveAge(); } });
 $('#btn-consent-back').addEventListener('click', () => { DB.active = null; S = defaults(); save(); go('signin'); });
 
 /* ---------- ring ---------- */
@@ -1031,7 +1105,7 @@ renderers.home = () => {
     hero.innerHTML = `<div class="card hero has-scene">${heroScene(new Date().getHours())}
       <div><div class="eyebrow" style="margin:0">Daily check · about 4 min</div><h2 style="margin:4px 0 0">${firstTime ? 'Take your first check' : 'How are you really doing today?'}</h2></div>
       <div class="small muted" style="margin-bottom:-6px">What happens when you tap Start:</div>
-      <div class="route"><div style="--d:0s">${STEP_ICONS.duty}<span>Flying today?</span><em>5 s</em></div><i></i><div style="--d:1.6s">${STEP_ICONS.feel}<span>Rate how you feel</span><em>10 s</em></div><i></i><div style="--d:3.2s">${STEP_ICONS.test}<span>Tap-speed test</span><em>3 min</em></div></div>
+      <div class="route"><div style="--d:0s">${STEP_ICONS.duty}<span>Today's duty</span><em>5 s</em></div><i></i><div style="--d:1.6s">${STEP_ICONS.feel}<span>Rate how you feel</span><em>10 s</em></div><i></i><div style="--d:3.2s">${STEP_ICONS.test}<span>Tap-speed test</span><em>3 min</em></div></div>
       <button class="btn amber block big pulse" data-go="fly">Start check <span class="go-arrow">›</span></button>
       <p class="small muted" style="margin:0;text-align:center">${firstTime ? 'First time? You can do a short practice before the test.' : 'On a flight day, best done about an hour before report time.'}</p></div>`;
   }
@@ -1051,21 +1125,25 @@ function buildSP(form, name){
   form.innerHTML = SP.map((t,i)=>`<label class="opt"><input type="radio" name="${name}" value="${i+1}"><span class="opt-num">${i+1}</span><span>${t}</span></label>`).join('');
 }
 buildSP($('#sp-form'), 'sp');
-/* ---------- step 1: flying today? ---------- */
+/* ---------- step 1: duty status today ---------- */
 renderers.fly = () => {
-  draft = {type:'pre', ts:null, sp:null, late:false, wake:S.duty.wake, flyingToday:null};
-  $$('.fly-opt').forEach(b => b.classList.remove('on'));
-  const onRoster = (S.roster || []).includes(ymd(Date.now()));
-  $('#fly-hint').innerHTML = onRoster ? '<div class="notice info">Your duty calendar shows a flight duty today.</div>' : '';
-  $('#fly-yes').classList.toggle('on', onRoster);
+  if(!S.age){ ageNext = 'fly'; go('age'); return; } // age is needed once before the first readiness check
+  draft = {type:'pre', ts:null, sp:null, late:false, wake:S.duty.wake, flyingToday:null, status:null, context:null};
+  // Highlight today's earlier answer, or "On duty" if the duty calendar says so. The pilot still taps to confirm.
+  const saved = S.days[ymd(Date.now())], onRoster = (S.roster || []).includes(ymd(Date.now()));
+  const hinted = saved ? saved.status : (onRoster ? 'duty' : null);
+  $$('.fly-opt').forEach(b => b.classList.toggle('on', b.dataset.fly === hinted));
+  $('#fly-hint').innerHTML = saved ? `<div class="notice info">Earlier today you chose ${esc(DUTY_STATUS[saved.status])}.</div>`
+    : onRoster ? '<div class="notice info">Your duty calendar shows a flight duty today.</div>' : '';
 };
 $$('.fly-opt').forEach(b => b.addEventListener('click', () => {
-  draft.flyingToday = b.dataset.fly === 'yes';
+  draft.status = b.dataset.fly;                // 'duty', 'standby' or 'rest'
+  draft.flyingToday = draft.status === 'duty'; // only On duty counts as a flight day (monthly requirement, forecast)
   $$('.fly-opt').forEach(x => x.classList.toggle('on', x === b));
   clearTimeout(renderers.fly._t); renderers.fly._t = setTimeout(() => { if(current === 'fly') go('rate'); }, 220);
 }));
 renderers.rate = () => {
-  if(!draft || draft.flyingToday == null){ go('fly'); return; }
+  if(!draft || !draft.status){ go('fly'); return; }
   $$('#sp-form input').forEach(i=>i.checked=false);
 };
 $('#sp-form').addEventListener('change', () => {
@@ -1074,21 +1152,83 @@ $('#sp-form').addEventListener('change', () => {
   clearTimeout(renderers.rate._t); renderers.rate._t = setTimeout(() => { if(current === 'rate') go('duty'); }, 280);
 });
 
-/* ---------- step 2: duty ---------- */
+/* ---------- step 3: today's context (duty info) ---------- */
+// Tap steppers ( −  3  + ). The current number lives in the <output> inside each one.
+function getStep(id){ return Number($('#' + id + ' output').textContent) || 0; }
+function setStep(id, v){
+  const el = $('#' + id), lo = Number(el.dataset.min), hi = Number(el.dataset.max);
+  v = clamp(Math.round(Number(v) || 0), lo, hi);
+  el.querySelector('output').textContent = v;
+  el.querySelector('[data-d="-1"]').disabled = v <= lo;
+  el.querySelector('[data-d="1"]').disabled = v >= hi;
+}
+$$('.stepper').forEach(el => el.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if(b) setStep(el.id, getStep(el.id) + Number(b.dataset.d)); }));
+// Workload (pick one) and extra load (pick any) chips, built from the lists at the top of the script.
+$('#d-work').innerHTML = Object.entries(WORKLOAD).map(([k, t]) => `<label class="chip"><input type="radio" name="work" value="${k}"> ${t}</label>`).join('');
+$('#d-extras').innerHTML = Object.entries(EXTRAS).map(([k, t]) => `<label class="chip"><input type="checkbox" value="${k}"> ${t}</label>`).join('');
+// Time zone list: this phone's zone first, then UTC, then every zone the browser knows.
+const tzName = z => String(z || '').replace(/_/g, ' ');
+function fillTzSelect(sel, chosen){
+  if(!sel.options.length){
+    let zones = []; try{ zones = Intl.supportedValuesOf('timeZone'); }catch(e){} // older browsers: just the two below
+    zones = [...new Set([DEVICE_TZ, 'UTC', ...zones])];
+    sel.innerHTML = zones.map(z => `<option value="${esc(z)}">${esc(tzName(z))}${z === DEVICE_TZ ? ' (this phone)' : ''}</option>`).join('');
+  }
+  if(chosen && ![...sel.options].some(o => o.value === chosen)) sel.insertAdjacentHTML('afterbegin', `<option value="${esc(chosen)}">${esc(tzName(chosen))}</option>`);
+  sel.value = chosen || DEVICE_TZ;
+}
+// One line in plain words, e.g. "On duty · report 06:00 America/Phoenix · 3 legs · 2 time zones crossed · high physical workload · de-icing"
+function ctxSummary(e){
+  if(!e) return '';
+  const parts = [DUTY_STATUS[e.status] || e.status];
+  if(e.status !== 'rest' && e.report) parts.push(`${e.status === 'standby' ? 'standby from' : 'report'} ${e.report} ${tzName(e.tz)}`);
+  if(e.status === 'duty') parts.push(plural(e.legs, 'leg'));
+  parts.push(e.tzCrossed ? `${plural(e.tzCrossed, 'time zone')} crossed` : 'no time zones crossed');
+  if(e.workload) parts.push(`${(WORKLOAD[e.workload] || e.workload).toLowerCase()} physical workload`);
+  (e.extras || []).forEach(k => parts.push((EXTRAS[k] || k).toLowerCase()));
+  return parts.join(' · ');
+}
 renderers.duty = () => {
-  if(!draft){ go('fly'); return; }
-  const fly = !!draft.flyingToday;
-  $$('.duty-fly').forEach(el => el.hidden = !fly);
-  $('#duty-eyebrow').textContent = fly ? 'Step 3 of 5 · 20 seconds' : 'Step 3 of 5 · 10 seconds';
-  $('#duty-title').textContent = fly ? 'About today' : 'About last night';
-  $('#duty-sub').textContent = fly ? "Used to forecast when you're likely to feel your lowest during duty. We remember these for next time." : 'Two quick questions. They help explain how you feel today.';
-  $('#d-report').value = S.duty.report; $('#d-hours').value = S.duty.hours; $('#d-legs').value = S.duty.legs; $('#d-wake').value = S.duty.wake;
-  $$('input[name=late]').forEach(i => i.checked = i.value === (draft && draft.late ? 'yes' : 'no'));
+  if(!draft || !draft.status){ go('fly'); return; }
+  const st = draft.status, on = st !== 'rest';
+  $$('.ctx-on').forEach(el => el.hidden = !on);           // report time, time zone, workload, extras
+  $$('.ctx-legs').forEach(el => el.hidden = st !== 'duty'); // legs only when on duty
+  $('#duty-eyebrow').textContent = on ? 'Step 3 of 5 · about 20 seconds' : 'Step 3 of 5 · 10 seconds';
+  $('#duty-title').textContent = {duty:"About today's duty", standby:'About your standby', rest:'About your rest day'}[st];
+  $('#duty-sub').textContent = on ? 'Mostly taps. We remember your usual answers for next time.' : 'A few quick questions. They help explain how you feel today.';
+  $('#d-report-label').textContent = st === 'standby' ? 'Standby starts' : 'Report time';
+  $('#d-hours-label').textContent = st === 'standby' ? 'Standby length (hours)' : 'Duty length (hours)';
+  // Usual answers come from S.duty. Things that change daily (time zones crossed, extras, late night)
+  // start empty, unless the pilot already saved an entry earlier today.
+  const today = S.days[ymd(Date.now())];
+  $('#d-report').value = S.duty.report; $('#d-hours').value = S.duty.hours; $('#d-wake').value = S.duty.wake;
+  fillTzSelect($('#d-tz'), S.duty.tz || DEVICE_TZ);
+  setStep('d-legs', S.duty.legs);
+  setStep('d-tzx', today ? today.tzCrossed : 0);
+  $$('#d-work input').forEach(i => i.checked = i.value === (S.duty.workload || 'low'));
+  const ex = today ? (today.extras || []) : [];
+  $$('#d-extras input').forEach(i => i.checked = ex.includes(i.value));
+  $$('input[name=late]').forEach(i => i.checked = i.value === (today && today.late ? 'yes' : 'no'));
 };
 $('#btn-duty-next').addEventListener('click', () => {
-  if(draft.flyingToday) S.duty = {report: $('#d-report').value || S.duty.report, hours: Number($('#d-hours').value) || S.duty.hours, legs: Number($('#d-legs').value) || S.duty.legs, wake: $('#d-wake').value || S.duty.wake};
-  else S.duty.wake = $('#d-wake').value || S.duty.wake;
+  const st = draft.status, on = st !== 'rest';
+  // Remember the usual answers for next time.
+  if(on){
+    S.duty.report = $('#d-report').value || S.duty.report;
+    S.duty.hours = Number($('#d-hours').value) || S.duty.hours;
+    S.duty.tz = $('#d-tz').value || DEVICE_TZ;
+    S.duty.workload = ($('#d-work input:checked') || {}).value || 'low';
+  }
+  if(st === 'duty') S.duty.legs = getStep('d-legs');
+  S.duty.wake = $('#d-wake').value || S.duty.wake;
   draft.wake = S.duty.wake; draft.late = ($('input[name=late]:checked')||{}).value === 'yes';
+  // Save today's entry: one per date. Checking again on the same day replaces it with the latest answers.
+  const entry = {date: ymd(Date.now()), savedAt: Date.now(), status: st,
+    report: on ? S.duty.report : null, tz: on ? S.duty.tz : null, hours: on ? S.duty.hours : null,
+    legs: st === 'duty' ? S.duty.legs : 0, tzCrossed: getStep('d-tzx'),
+    workload: on ? S.duty.workload : null, extras: on ? $$('#d-extras input:checked').map(i => i.value) : [],
+    wake: S.duty.wake, late: draft.late};
+  S.days[entry.date] = entry; draft.context = entry;
   save(); go('camera');
 });
 
@@ -1362,7 +1502,8 @@ function finishTest(reason){
   }
   stopCamera();
   const check = {id: 'c'+Date.now(), type:'pre', ts: Date.now(), sp: draft.sp, late: draft.late, wake: draft.wake,
-    flyingToday: !!draft.flyingToday, duty: draft.flyingToday ? {...S.duty} : null, pvt, eye, simulated:false};
+    flyingToday: !!draft.flyingToday, duty: draft.flyingToday ? {...S.duty} : null, pvt, eye, simulated:false,
+    status: draft.status, context: draft.context || null}; // today's duty info, copied onto the check
   if(reason === 'stopped' && pvt.trials < 10){ toast('Test stopped early. Not enough responses to give a result.'); go('home'); return true; }
   evaluate(check);
   // Your answer today is the latest word: it updates today on the duty calendar.
@@ -1831,6 +1972,7 @@ renderers.results = () => {
     <div class="card stack"><h2 style="margin:0">${fly ? "Today's fatigue forecast" : "Your day's alertness forecast"}</h2>
       ${weatherBlocks(fc)}
       <p class="small muted" style="margin:0">Illustrative estimate from today's result, hours awake and the body-clock low (02:00 to 06:00). Not a validated model.</p></div>
+    ${c.context ? `<div class="card stack"><div class="eyebrow" style="margin:0">Duty info for this day</div><p class="small" style="margin:0">${esc(ctxSummary(c.context))}</p></div>` : ''}
     ${tips.length ? `<div class="card stack"><h2>More for today</h2><ul class="tips">${tips.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
     <div class="card stack"><h2>Your choices</h2>
       <p class="small muted" style="margin:0">All optional. Nothing is sent unless you tap it.</p>
@@ -2077,13 +2219,24 @@ $('#btn-demo-notmet').addEventListener('click', () => {
   loadDemo(items, roster, 'Loaded a month that is not met yet.', 'org');
 });
 $('#btn-selftest').addEventListener('click', () => { const r = runStatusTests(); toast(`${r.pass} of ${r.total} self-tests passed. Details in the console.`); });
-$('#btn-clear').addEventListener('click', () => sheet('Delete all results?', '<p class="small">This removes every check from this device. It cannot be undone.</p>', 'Delete everything', () => { S.checks = []; S.badges = {}; S.honest = null; S.roster = []; save(); toast('All results deleted.'); go('home'); }));
+$('#btn-clear').addEventListener('click', () => sheet('Delete all results?', '<p class="small">This removes every check and daily duty entry from this device. It cannot be undone.</p>', 'Delete everything', () => { S.checks = []; S.badges = {}; S.honest = null; S.roster = []; S.days = {}; save(); toast('All results deleted.'); go('home'); }));
 $('#btn-signout').addEventListener('click', () => { save(); DB.active = null; S = defaults(); save(); go('signin'); });
 renderers.settings = () => {
   const nm = S.user ? S.user.name : '';
   $('#me-name').textContent = nm; $('#me-avatar').innerHTML = uniformSVG(nm, wornBadge(), rankOf(preChecks().length).bars, true);
   $('#set-user').textContent = `${preChecks().length} checks logged on this phone`;
+  $('#set-age').value = S.age || '';
+  // Last 7 daily duty entries, newest first
+  const days = Object.values(S.days || {}).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 7);
+  $('#set-days').innerHTML = days.length
+    ? days.map(e => `<div class="list-item" style="display:block"><b>${esc(fmtDate(fromYmd(e.date)))}</b><div class="small muted">${esc(ctxSummary(e))}</div></div>`).join('')
+    : '<p class="small muted" style="margin:0">No entries yet. They appear after you fill in step 3 of a readiness check.</p>';
 };
+$('#btn-set-age').addEventListener('click', () => {
+  const a = validAge($('#set-age').value);
+  if(!a){ toast(`Enter an age from ${AGE_MIN} to ${AGE_MAX}.`); $('#set-age').focus(); return; }
+  S.age = a; save(); toast('Age saved.');
+});
 $('#btn-review-terms').addEventListener('click', () => go('consent'));
 
 /* ---------- logbook tab ---------- */
