@@ -344,6 +344,16 @@ details[open] summary{margin-bottom:8px}
 .roster .c.off{background:transparent;color:var(--muted)}
 .roster .c .mk{display:block;font-size:.6rem;letter-spacing:.02em;margin-top:2px;white-space:nowrap;overflow:hidden}
 .roster .c.chk::after{content:'✓';float:right;font-size:.7rem;color:var(--ok)}
+.pin-dots{display:flex;justify-content:center;gap:16px;margin-top:8px}
+.pin-dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink);opacity:.5}
+.pin-dots i.on{background:var(--ink);opacity:1}
+.pin-dots.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@media (prefers-reduced-motion:reduce){.pin-dots.shake{animation:none}}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:300px;width:100%;margin:0 auto}
+.keypad button{appearance:none;font:inherit;font-size:1.6rem;width:72px;height:72px;justify-self:center;border-radius:50%;border:1px solid var(--line,#d5dbe5);background:var(--surface);color:var(--ink);cursor:pointer}
+.keypad button:active{background:var(--accent-soft)}
+.keypad button.fn{border:none;background:transparent;font-size:1rem}
 .week7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .week7 .d{border:1px solid var(--line,#d5dbe5);border-radius:12px;padding:6px 2px;text-align:center;font-family:var(--font-mono);font-size:.72rem;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
 .week7 .d.today{border-color:var(--accent);border-width:2px}
@@ -428,13 +438,27 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <!-- SIGN IN -->
   <section class="screen stack" id="scr-signin" hidden>
     <div class="scene-wrap" id="signin-scene"></div>
-    <div><div class="eyebrow">Sign in once</div><h1>What should we call you?</h1>
-      <p class="muted">Your name keeps your results separate if someone else uses this phone. No airline or crew ID needed.</p></div>
+    <div><div class="eyebrow">Sign in</div><h1>Welcome aboard</h1>
+      <p class="muted">Your company code connects you to your company's check requirement. Your name and a PIN keep your results private on this phone.</p></div>
     <form class="stack" id="signin-form">
+      <label class="field">Company code<input type="text" id="si-code" style="text-transform:uppercase;letter-spacing:.08em" placeholder="e.g. DEMO" autocomplete="organization" autocapitalize="characters" spellcheck="false"></label>
+      <div class="small" id="si-company" aria-live="polite"></div>
       <label class="field">Your name<input type="text" id="si-name" placeholder="e.g. Dana Ruiz" autocomplete="name" required></label>
       <button class="btn amber block big" type="button" id="btn-signin">Continue</button>
+      <p class="small muted" style="margin:0">No code? Ask your chief pilot or safety office. For this prototype, use <b>DEMO</b>.</p>
     </form>
     <div class="card stack" id="profiles-box" hidden><h3 style="margin:0">Already on this phone</h3><div class="list" id="profiles-list"></div></div>
+  </section>
+
+  <!-- PIN: create or enter -->
+  <section class="screen stack" id="scr-unlock" hidden>
+    <div style="text-align:center"><div class="eyebrow" id="pin-eyebrow">Sign in</div><h1 id="pin-title" style="margin:4px 0">Enter your PIN</h1>
+      <p class="muted" id="pin-sub" style="margin:0"></p></div>
+    <div class="pin-dots" id="pin-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="small" id="pin-msg" role="alert" style="text-align:center;min-height:1.4em"></div>
+    <div class="keypad" id="keypad"></div>
+    <button class="btn block" id="btn-pin-bio" hidden>Use Face ID or fingerprint</button>
+    <div class="row" style="justify-content:space-between;flex-wrap:nowrap"><button class="btn ghost" id="btn-pin-other">Not you?</button><button class="btn ghost" id="btn-pin-forgot">Forgot PIN?</button></div>
   </section>
 
   <!-- FIRST-TIME AGREEMENT -->
@@ -673,10 +697,20 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <button class="btn ghost block" id="btn-selftest">Run status self-tests (results in console)</button>
     </div>
     <div class="card stack">
+      <h3 style="margin:0">Account and sign-in</h3>
+      <div class="small" id="acct-info"></div>
+      <div class="small muted">Lock ReadyCheck</div>
+      <div class="chips" id="set-lock"><label class="chip"><input type="radio" name="lock" value="open"> Every time I open it</label><label class="chip"><input type="radio" name="lock" value="12h"> After 12 hours</label></div>
+      <button class="btn block" id="btn-bio">Use Face ID or fingerprint</button>
+      <button class="btn block" id="btn-pin-change">Change PIN</button>
+      <button class="btn block" id="btn-signout">Sign out</button>
+      <p class="small muted" style="margin:0">Signing out keeps your results on this phone. You need your PIN to sign back in.</p>
+    </div>
+    <div class="card stack">
       <h3 style="margin:0">Your data</h3>
-      <p class="small muted" style="margin:0">Stored in this browser on this device. Each name keeps its own results. Prototype only: there is no password.</p>
-      <button class="btn block" id="btn-signout">Switch person</button>
+      <p class="small muted" style="margin:0">Stored in this browser on this device, separately for each person.</p>
       <button class="btn block danger" id="btn-clear">Delete all my results</button>
+      <button class="btn block danger" id="btn-remove-me">Sign out and remove me from this phone</button>
     </div>
   </section>
 
@@ -918,11 +952,15 @@ function loadDB(){
 function keyOf(name){ return String(name).trim().toLowerCase().replace(/\s+/g,' '); }
 let DB = loadDB();
 let S = (DB.active && DB.profiles[DB.active]) ? migrate(Object.assign(defaults(), DB.profiles[DB.active])) : defaults();
-function save(){ if(S.user && S.user.name){ DB.profiles[keyOf(S.user.name)] = S; } try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){} }
-function switchTo(name){
-  const k = keyOf(name);
-  if(!DB.profiles[k]) DB.profiles[k] = Object.assign(defaults(), {user:{name:String(name).trim(), since:Date.now()}});
-  DB.active = k; S = migrate(Object.assign(defaults(), DB.profiles[k])); save();
+const userKey = u => u.key || keyOf(u.name);
+function save(){ if(S.user && S.user.name){ DB.profiles[userKey(S.user)] = S; } try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){} }
+// Profiles are keyed by company code + name. Earlier profiles (name only) keep their old key.
+function switchTo(name, code){
+  const k = code ? keyOf(code) + '|' + keyOf(name) : keyOf(name);
+  if(!DB.profiles[k]) DB.profiles[k] = Object.assign(defaults(), {user:{name:String(name).trim(), since:Date.now(), key:k}});
+  DB.active = k; S = migrate(Object.assign(defaults(), DB.profiles[k])); S.user.key = k;
+  if(code && !S.user.code){ S.user.code = code.toUpperCase(); S.user.company = COMPANIES[S.user.code] || null; }
+  save();
 }
 
 /* ---------- helpers ---------- */
@@ -1234,11 +1272,33 @@ function endWelcome(){ try{ localStorage.setItem('readycheck_welcomed','1'); }ca
 $('#btn-slide-next').addEventListener('click', () => { if(slide < 2){ slide++; showSlide(); } else endWelcome(); });
 $('#btn-slide-skip').addEventListener('click', endWelcome);
 
-/* ---------- sign in ---------- */
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible' && S.user && current !== 'unlock' && current !== 'test' && needsUnlock()) askPin('enter', userKey(S.user)); });
+/* ---------- sign in: company code + name, then a PIN (and optionally Face ID / fingerprint) ---------- */
+// Demo company codes. In the real system the code is checked by the server and links to the company dashboard.
+const COMPANIES = {DEMO:'Demo Air Medical', SKYMED:'SkyMed Air Ambulance (demo)', FIREAIR:'Aerial Firefighting Co. (demo)', RCAIR:'ReadyCheck Airlines (demo)'};
+const LOCK_HOURS = 12, PIN_LEN = 4;
+let pinMode = null, pinFirst = '', pinBuf = '', pinTarget = null, pinNext = null;
+const b64 = u8 => btoa(String.fromCharCode(...new Uint8Array(u8)));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function hashPin(pin, saltB64){
+  const salt = saltB64 ? unb64(saltB64) : crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt, iterations:150000, hash:'SHA-256'}, key, 256);
+  return {salt: b64(salt), hash: b64(bits)};
+}
+function companyHint(){
+  const code = $('#si-code').value.trim().toUpperCase(), el = $('#si-company');
+  el.innerHTML = !code ? '' : COMPANIES[code] ? `<span style="color:var(--ok)">✓ ${esc(COMPANIES[code])}</span>` : code.length >= 3 ? '<span class="muted">Code not found yet. Check the spelling.</span>' : '';
+}
+$('#si-code').addEventListener('input', companyHint);
 function doSignIn(){
-  const name = $('#si-name').value.trim();
+  const code = $('#si-code').value.trim().toUpperCase(), name = $('#si-name').value.trim();
+  if(!COMPANIES[code]){ $('#si-code').focus(); toast(code ? 'That company code was not found. For the demo, use DEMO.' : 'Enter your company code.'); return; }
   if(!name){ $('#si-name').focus(); toast('Enter your name to sign in.'); return; }
-  switchTo(name); $('#si-name').value = ''; go(S.agreed ? 'home' : 'consent');
+  const k = keyOf(code) + '|' + keyOf(name), p = DB.profiles[k];
+  if(p && p.user && p.user.pin){ askPin('enter', k); return; }
+  switchTo(name, code); $('#si-name').value = '';
+  askPin('set', DB.active, () => go(S.agreed ? 'home' : 'consent'));
 }
 $('#btn-signin').addEventListener('click', doSignIn);
 $('#si-name').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); doSignIn(); } });
@@ -1246,11 +1306,108 @@ $('#signin-form').addEventListener('submit', e => { e.preventDefault(); doSignIn
 
 renderers.signin = () => {
   $('#signin-scene').innerHTML = heroScene(new Date().getHours());
-  const names = Object.values(DB.profiles).filter(p=>p.user&&p.user.name);
-  $('#profiles-box').hidden = !names.length;
-  $('#profiles-list').innerHTML = names.map(p=>`<div class="list-item"><div><div>${esc(p.user.name)}</div><div class="small muted">${(p.checks||[]).length} checks</div></div><button class="btn" data-profile="${esc(keyOf(p.user.name))}">Continue as ${esc(p.user.name.split(' ')[0])}</button></div>`).join('');
-  $$('#profiles-list [data-profile]').forEach(b => b.onclick = () => { const p = DB.profiles[b.dataset.profile]; if(p){ switchTo(p.user.name); go(S.agreed ? 'home' : 'consent'); } });
+  const ps = Object.entries(DB.profiles).filter(([k, p]) => p.user && p.user.name);
+  $('#profiles-box').hidden = !ps.length; companyHint();
+  $('#profiles-list').innerHTML = ps.map(([k, p]) => `<div class="list-item"><div><div>${esc(p.user.name)}</div><div class="small muted">${p.user.company ? esc(p.user.company) + ' · ' : ''}${plural((p.checks||[]).length, 'check')}</div></div><button class="btn" data-profile="${esc(k)}">Sign in</button></div>`).join('');
+  $$('#profiles-list [data-profile]').forEach(b => b.onclick = () => {
+    const k = b.dataset.profile, p = DB.profiles[k]; if(!p) return;
+    if(p.user.pin) askPin('enter', k);
+    else { DB.active = k; S = migrate(Object.assign(defaults(), p)); S.user.key = k; save(); askPin('set', k, () => go(S.agreed ? 'home' : 'consent')); }
+  });
 };
+// ---- PIN screen ----
+function askPin(mode, key, next){ pinMode = mode; pinTarget = key; pinNext = next || null; pinBuf = ''; pinFirst = ''; go('unlock'); }
+renderers.unlock = () => {
+  const p = DB.profiles[pinTarget], u = p && p.user; if(!u){ go('signin'); return; }
+  const set = pinMode === 'set' || pinMode === 'change';
+  $('#pin-eyebrow').textContent = pinMode === 'change' ? 'Change PIN' : set ? 'Step 2 of 2 · protect your results' : (u.company || 'Sign in');
+  $('#pin-title').textContent = set ? (pinFirst ? 'Enter it again' : `Create a ${PIN_LEN}-digit PIN`) : `Hi ${u.name.split(' ')[0]}, enter your PIN`;
+  $('#pin-sub').textContent = set ? 'You need it to open ReadyCheck on this phone. Pick one others would not guess.' : '';
+  $('#pin-msg').textContent = ''; pinDots();
+  const keys = ['1','2','3','4','5','6','7','8','9','', '0', '⌫'];
+  $('#keypad').innerHTML = keys.map(k => k === '' ? '<span></span>' : `<button type="button" class="${k === '⌫' ? 'fn' : ''}" data-k="${k}" aria-label="${k === '⌫' ? 'Delete' : k}">${k}</button>`).join('');
+  $('#btn-pin-bio').hidden = set || !u.passkey || !canPasskey();
+  $('#btn-pin-other').hidden = pinMode === 'change'; $('#btn-pin-forgot').hidden = set;
+  $('#btn-pin-other').textContent = pinMode === 'enter' ? 'Not you?' : 'Back';
+  if(!set && u.passkey && canPasskey() && pinMode === 'enter' && !renderers.unlock._tried){ renderers.unlock._tried = true; setTimeout(bioUnlock, 250); }
+};
+function pinDots(){ $$('#pin-dots i').forEach((d, i) => d.classList.toggle('on', i < pinBuf.length)); }
+function pinShake(msg){ const d = $('#pin-dots'); d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); $('#pin-msg').textContent = msg; try{ navigator.vibrate && navigator.vibrate([40, 40, 40]); }catch(e){} }
+async function pinKey(k){
+  if(current !== 'unlock') return;
+  if(k === '⌫'){ pinBuf = pinBuf.slice(0, -1); pinDots(); return; }
+  if(!/^\d$/.test(k) || pinBuf.length >= PIN_LEN) return;
+  pinBuf += k; pinDots(); if(pinBuf.length < PIN_LEN) return;
+  const entered = pinBuf, p = DB.profiles[pinTarget];
+  await new Promise(r => setTimeout(r, 120));
+  if(pinMode === 'set' || pinMode === 'change'){
+    if(!pinFirst){ if(/^(\d)\1+$/.test(entered) || '0123456789'.includes(entered) || '9876543210'.includes(entered)){ pinBuf = ''; pinDots(); pinShake('Too easy to guess. Try another.'); return; }
+      pinFirst = entered; pinBuf = ''; renderers.unlock(); return; }
+    if(entered !== pinFirst){ pinFirst = ''; pinBuf = ''; renderers.unlock(); pinShake("The PINs didn't match. Start again."); return; }
+    S.user.pin = await hashPin(entered); S.user.fails = 0; S.unlockedAt = Date.now(); save();
+    const first = pinMode === 'set'; toast(first ? 'PIN set.' : 'PIN changed.');
+    const done = pinNext || (() => go('settings'));
+    if(first && canPasskey() && !S.user.passkey) sheet('Also use Face ID or fingerprint?', '<p class="small">Unlock ReadyCheck with your face or fingerprint. Your PIN still works as a backup. Nothing about your face or fingerprint is shared with ReadyCheck.</p>', 'Turn on', async () => { await enrollPasskey(); done(); }), $('#sh-cancel').addEventListener('click', done), $('#sb').addEventListener('click', e => { if(e.target.id === 'sb') done(); });
+    else done();
+    return;
+  }
+  // enter
+  const u = p.user, wait = (u.lockUntil || 0) - Date.now();
+  if(wait > 0){ pinBuf = ''; pinDots(); pinShake(`Too many tries. Wait ${Math.ceil(wait / 1000)} seconds.`); return; }
+  const h = await hashPin(entered, u.pin.salt);
+  if(h.hash !== u.pin.hash){ u.fails = (u.fails || 0) + 1; if(u.fails >= 5){ u.lockUntil = Date.now() + 30000; u.fails = 0; }
+    DB.profiles[pinTarget] = p; try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }catch(e){}
+    pinBuf = ''; pinDots(); pinShake(u.lockUntil > Date.now() ? 'Too many tries. Wait 30 seconds.' : 'Wrong PIN. Try again.'); return; }
+  unlockAs(pinTarget);
+}
+function unlockAs(k){
+  const p = DB.profiles[k]; p.user.fails = 0; p.user.lockUntil = 0;
+  DB.active = k; S = migrate(Object.assign(defaults(), p)); S.user.key = k; S.unlockedAt = Date.now(); save();
+  renderers.unlock._tried = false; pinBuf = '';
+  if(pinNext){ const n = pinNext; pinNext = null; n(); } else go(S.agreed ? 'home' : 'consent');
+}
+$('#keypad').addEventListener('click', e => { const b = e.target.closest('[data-k]'); if(b) pinKey(b.dataset.k); });
+document.addEventListener('keydown', e => { if(current !== 'unlock') return; if(/^\d$/.test(e.key)) pinKey(e.key); else if(e.key === 'Backspace') pinKey('⌫'); });
+$('#btn-pin-other').addEventListener('click', () => { renderers.unlock._tried = false;
+  if(pinMode === 'enter'){ DB.active = null; S = defaults(); save(); go('signin'); }
+  else if(pinMode === 'set'){ const k = pinTarget; if(DB.profiles[k] && !(DB.profiles[k].checks || []).length && !DB.profiles[k].user.pin) delete DB.profiles[k]; DB.active = null; S = defaults(); save(); go('signin'); }
+  else go('settings'); });
+$('#btn-pin-forgot').addEventListener('click', () => sheet('Forgot your PIN?', '<p class="small">Your results are kept only on this phone and protected by your PIN, so ReadyCheck cannot recover it. You can remove this profile from this phone and sign in again as new. Your company record of completed checks is not affected.</p>',
+  'Remove this profile from this phone', () => { delete DB.profiles[pinTarget]; DB.active = null; S = defaults(); save(); toast('Profile removed.'); go('signin'); }));
+// ---- Face ID / fingerprint (WebAuthn platform passkey). Prototype: checked on the phone only, no server. ----
+const canPasskey = () => !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext);
+async function enrollPasskey(){
+  try{
+    const cred = await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'ReadyCheck'},
+      user:{id:new TextEncoder().encode(userKey(S.user)).slice(0, 64), name:S.user.name, displayName:S.user.name},
+      pubKeyCredParams:[{type:'public-key', alg:-7}, {type:'public-key', alg:-257}],
+      authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged'}, timeout:60000}});
+    S.user.passkey = b64(cred.rawId); save(); toast('Face ID or fingerprint is on.'); return true;
+  }catch(e){ toast('Not turned on' + (e && e.name === 'NotAllowedError' ? ' (cancelled).' : '. This phone or browser may not support it.')); return false; }
+}
+async function bioUnlock(){
+  const p = DB.profiles[pinTarget]; if(!p || !p.user.passkey) return;
+  try{
+    await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)), allowCredentials:[{type:'public-key', id:unb64(p.user.passkey)}], userVerification:'required', timeout:60000}});
+    unlockAs(pinTarget);
+  }catch(e){ $('#pin-msg').textContent = 'Face ID or fingerprint did not work. Enter your PIN.'; }
+}
+$('#btn-pin-bio').addEventListener('click', bioUnlock);
+// ---- lock on open ----
+function needsUnlock(){
+  if(!S.user || !S.user.pin) return false;
+  if((S.lockMode || '12h') === 'open') return true;
+  return !S.unlockedAt || Date.now() - S.unlockedAt > LOCK_HOURS * 3.6e6;
+}
+// ---- settings: account ----
+$('#set-lock').addEventListener('change', e => { S.lockMode = e.target.value; save(); toast(S.lockMode === 'open' ? 'ReadyCheck will ask for your PIN every time you open it.' : 'ReadyCheck will ask for your PIN after 12 hours.'); });
+$('#btn-pin-change').addEventListener('click', () => askPin('change', userKey(S.user)));
+$('#btn-bio').addEventListener('click', async () => {
+  if(S.user.passkey){ sheet('Turn off Face ID or fingerprint?', '<p class="small">You will sign in with your PIN only.</p>', 'Turn off', () => { S.user.passkey = null; save(); renderers.settings(); }); return; }
+  if(await enrollPasskey()) renderers.settings();
+});
+$('#btn-remove-me').addEventListener('click', () => sheet('Remove you from this phone?', '<p class="small">Signs you out and deletes your results, schedule and settings from this phone. It cannot be undone. Your company record of completed checks is not affected.</p>',
+  'Remove me', () => { delete DB.profiles[userKey(S.user)]; DB.active = null; S = defaults(); save(); toast('Removed from this phone.'); go('signin'); }));
 
 renderers.consent = () => { const seen = !!S.agreed; $('#consent-check').checked = seen; $('#btn-consent').disabled = !seen; $('#btn-consent').textContent = seen ? 'Done' : 'Agree and continue'; $('#btn-consent-back').hidden = seen; };
 $('#consent-check').addEventListener('change', e => { $('#btn-consent').disabled = !e.target.checked; });
@@ -2832,11 +2989,15 @@ $$('.tag-name').forEach(e => e.textContent = TAG_NAME);
 if(!/[?&]dev\b/.test(location.search)){ const st = $('#btn-selftest'); if(st) st.hidden = true; }
 $('#btn-selftest').addEventListener('click', () => { const r = runStatusTests(); toast(`${r.pass} of ${r.total} self-tests passed. Details in the console.`); });
 $('#btn-clear').addEventListener('click', () => sheet('Delete all results?', '<p class="small">This removes every check and daily duty entry from this device. It cannot be undone.</p>', 'Delete everything', () => { S.checks = []; S.badges = {}; S.honest = null; S.roster = []; S.days = {}; S.sched = {}; save(); toast('All results deleted.'); go('home'); }));
-$('#btn-signout').addEventListener('click', () => { save(); DB.active = null; S = defaults(); save(); go('signin'); });
+$('#btn-signout').addEventListener('click', () => sheet('Sign out?', '<p class="small">Your results stay on this phone. Sign back in with your company code, name and PIN.</p>', 'Sign out', () => { S.unlockedAt = 0; save(); DB.active = null; S = defaults(); save(); toast('Signed out.'); go('signin'); }));
 renderers.settings = () => {
   const nm = S.user ? S.user.name : '';
   $('#me-name').textContent = nm; $('#me-avatar').innerHTML = uniformSVG(nm, wornBadge(), rankOf(preChecks().length).bars, true);
-  $('#set-user').textContent = `${plural(preChecks().length, 'check')} logged on this phone`;
+  $('#set-user').textContent = `${S.user && S.user.company ? S.user.company + ' · ' : ''}${plural(preChecks().length, 'check')} logged on this phone`;
+  $('#acct-info').innerHTML = S.user ? `Signed in as <b>${esc(S.user.name)}</b>${S.user.code ? ` · company code <b>${esc(S.user.code)}</b>` : ''}. ${S.user.pin ? 'PIN on' : '<span style="color:var(--bad)">No PIN yet</span>'}${S.user.passkey ? ', Face ID or fingerprint on' : ''}.` : '';
+  $$('#set-lock input').forEach(i => i.checked = i.value === (S.lockMode || '12h'));
+  $('#btn-bio').textContent = S.user && S.user.passkey ? 'Turn off Face ID or fingerprint' : 'Use Face ID or fingerprint'; $('#btn-bio').hidden = !canPasskey();
+  $('#btn-pin-change').textContent = S.user && S.user.pin ? 'Change PIN' : 'Set a PIN';
   $('#set-age').value = S.age || '';
   $$('#set-look input').forEach(i => i.checked = i.value === (S.testLook || 'radar'));
   $$('#set-share input').forEach(i => i.checked = Number(i.value) === shareLevel());
@@ -2882,7 +3043,9 @@ renderers.logbook = () => {
 
 /* ---------- start ---------- */
 let welcomed = false; try{ welcomed = !!localStorage.getItem('readycheck_welcomed'); }catch(e){}
-go(S.user ? (S.agreed ? 'home' : 'consent') : (welcomed || Object.keys(DB.profiles).length ? 'signin' : 'welcome'));
+if(S.user && needsUnlock()) askPin('enter', userKey(S.user));
+else if(S.user && !S.user.pin) askPin('set', userKey(S.user), () => go(S.agreed ? 'home' : 'consent'));
+else go(S.user ? (S.agreed ? 'home' : 'consent') : (welcomed || Object.keys(DB.profiles).length ? 'signin' : 'welcome'));
 if(/[?&]selftest/.test(location.search)) runStatusTests();
 })();
 </script>
